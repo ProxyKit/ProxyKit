@@ -1,0 +1,57 @@
+# Set default behaviour, in case users don't have core.autocrlf set.
+* text=atuo
+
+[attr]utf16 diff merge -lf
+*.ncrunchproject utf16 eol=lf
+
+# Custom for Visual Studio
+*.sln text eol=crlf merge=union
+*.csproj merge=union
+*.vbproj merge=union
+*.fsproj merge=union
+*.dbproj merge=union
+
+# Explicitly declare text files we want to always be normalized and converted 
+# to native line endings on checkout.
+*.c text
+*.h text
+*.cs text
+*.config text
+*.xml text
+*.manifest text
+*.bat text
+*.cmd text
+*.sh text
+*.txt text
+*.dat text
+*.rc text
+*.ps1 text
+*.psm1 text
+*.js text
+*.css text
+*.html text
+*.sln text
+*.DotSettings text
+*.csproj text
+*.ncrunchproject text
+*.fs text
+*.fsproj text
+*.liquid text
+*.boo text
+*.pp text
+*.targets text
+*.markdown text
+*.md text
+*.bat text
+*.xslt text
+
+# Declare files that will always have CRLF line endings on checkout.
+
+# Denote all files that are truly binary and should not be modified.
+*.ico binary
+*.gif binary
+*.png binary
+*.jpg binary
+*.dll binary
+*.exe binary
+*.pdb binary
