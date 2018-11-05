@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit", "ProxyKit\ProxyKit.csproj", "{9BD55660-9B5A-400E-B099-E52EE3C3A813}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit", "src\ProxyKit\ProxyKit.csproj", "{9BD55660-9B5A-400E-B099-E52EE3C3A813}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit.Tests", "ProxyKit.Tests\ProxyKit.Tests.csproj", "{10818657-9BA0-4E37-9E55-7B24DA381144}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit.Tests", "src\ProxyKit.Tests\ProxyKit.Tests.csproj", "{10818657-9BA0-4E37-9E55-7B24DA381144}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "src\Examples\Examples.csproj", "{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{10818657-9BA0-4E37-9E55-7B24DA381144}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10818657-9BA0-4E37-9E55-7B24DA381144}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10818657-9BA0-4E37-9E55-7B24DA381144}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -8,55 +8,68 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
+using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Proxy.Test
+namespace ProxyKit
 {
-    public class ProxyTest
+    public class ProxyTests
     {
+        private readonly TestMessageHandler _testMessageHandler;
+        private readonly IWebHostBuilder _builder;
+
+        public ProxyTests()
+        {
+            _testMessageHandler = new TestMessageHandler
+            {
+                Sender = req =>
+                {
+                    var response = new HttpResponseMessage(HttpStatusCode.Created);
+                    response.Headers.Add("testHeader", "testHeaderValue");
+                    response.Content = new StringContent("Response Body");
+                    return response;
+                }
+            };
+
+            _builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddProxy(options =>
+                {
+                    options.MessageHandler = _testMessageHandler;
+                }));
+        }
+
+
         [Theory]
         [InlineData("GET", 3001)]
         [InlineData("HEAD", 3002)]
         [InlineData("TRACE", 3003)]
         [InlineData("DELETE", 3004)]
-        public async Task PassthroughRequestsWithoutBodyWithResponseHeaders(string MethodType, int Port)
+        public async Task PassthroughRequestsWithoutBodyWithResponseHeaders(string methodType, int port)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddProxy(options =>
-                {
-                    options.MessageHandler = new TestMessageHandler
-                    {
-                        Sender = req =>
-                        {
-                            IEnumerable<string> hostValue;
-                            req.Headers.TryGetValues("Host", out hostValue);
-                            Assert.Equal("localhost:" + Port, hostValue.Single());
-                            Assert.Equal("http://localhost:" + Port + "/", req.RequestUri.ToString());
-                            Assert.Equal(new HttpMethod(MethodType), req.Method);
-                            var response = new HttpResponseMessage(HttpStatusCode.Created);
-                            response.Headers.Add("testHeader", "testHeaderValue");
-                            response.Content = new StringContent("Response Body");
-                            return response;
-                        }
-                    };
-                }))
-                .Configure(app => app.RunProxy(new Uri($"http://localhost:{Port}")));
-            var server = new TestServer(builder);
+            _builder.Configure(app => app.RunProxy(requestContext => requestContext.ForwardTo($"http://localhost:{port}")));
+            var server = new TestServer(_builder);
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(MethodType), "");
+            var requestMessage = new HttpRequestMessage(new HttpMethod(methodType), "");
             var responseMessage = await server.CreateClient().SendAsync(requestMessage);
-            Assert.Equal(HttpStatusCode.Created, responseMessage.StatusCode);
-            var responseContent = responseMessage.Content.ReadAsStringAsync();
-            Assert.True(responseContent.Wait(3000) && !responseContent.IsFaulted);
-            Assert.Equal("Response Body", responseContent.Result);
-            IEnumerable<string> testHeaderValue;
-            responseMessage.Headers.TryGetValues("testHeader", out testHeaderValue);
-            Assert.Equal("testHeaderValue", testHeaderValue.Single());
+            var responseContent = await responseMessage.Content.ReadAsStringAsync();
+            responseMessage.Headers.TryGetValues("testHeader", out var testHeaderValue);
+
+            responseMessage.StatusCode.ShouldBe(HttpStatusCode.Created);
+            responseContent.ShouldBe("Response Body");
+            testHeaderValue.SingleOrDefault().ShouldBe("testHeaderValue");
+
+            var sentRequest = _testMessageHandler.SentRequestMessages.Single();
+            sentRequest.ShouldSatisfyAllConditions(
+                () =>
+                {
+                    sentRequest.Headers.TryGetValues("Host", out var hostValue);
+                    hostValue.Single().ShouldBe("localhost:" + port);
+                },
+                () => sentRequest.RequestUri.ToString().ShouldBe("http://localhost:" + port + "/"),
+                () => sentRequest.Method.ShouldBe(new HttpMethod(methodType))
+            );
         }
 
         [Theory]
@@ -64,68 +77,66 @@ namespace Microsoft.AspNetCore.Proxy.Test
         [InlineData("PUT", 3006)]
         [InlineData("OPTIONS", 3007)]
         [InlineData("NewHttpMethod", 3008)]
-        public async Task PassthroughRequestsWithBody(string MethodType, int Port)
+        public async Task PassthroughRequestsWithBody(string methodType, int port)
         {
-            const string hostHeader = "mydomain.example";
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddProxy(options =>
-                {
-                    options.PrepareRequest = (originalRequest, message) =>
-                    {
-                        message.Headers.Add("X-Forwarded-Host", originalRequest.Host.Host);
-                        return Task.FromResult(0);
-                    };
-                    options.MessageHandler = new TestMessageHandler
-                    {
-                        Sender = req =>
-                        {
-                            IEnumerable<string> hostValue;
-                            req.Headers.TryGetValues("Host", out hostValue);
-                            IEnumerable<string> forwardedHostValue;
-                            req.Headers.TryGetValues("X-Forwarded-Host", out forwardedHostValue);
-                            Assert.Equal(hostHeader, forwardedHostValue.Single());
-                            Assert.Equal("localhost:" + Port, hostValue.Single());
-                            Assert.Equal("http://localhost:" + Port + "/", req.RequestUri.ToString());
-                            Assert.Equal(new HttpMethod(MethodType), req.Method);
-                            var content = req.Content.ReadAsStringAsync();
-                            Assert.True(content.Wait(3000) && !content.IsFaulted);
-                            Assert.Equal("Request Body", content.Result);
-                            var response = new HttpResponseMessage(HttpStatusCode.Created);
-                            response.Headers.Add("testHeader", "testHeaderValue");
-                            response.Content = new StringContent("Response Body");
-                            return response;
-                        }
-                    };
-                }))
-                .Configure(app => app.RunProxy(new ProxyOptions
-                {
-                    Scheme = "http",
-                    Host = new HostString("localhost", Port),
-                }));
-            var server = new TestServer(builder);
+            _builder.Configure(app => app.RunProxy(
+                requestContext => requestContext.ForwardTo($"http://localhost:{port}/foo/"),
+                prepareRequestContext => prepareRequestContext.ApplyForwardedHeader()));
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(MethodType), "http://mydomain.example");
-            requestMessage.Content = new StringContent("Request Body");
-            var responseMessage = await server.CreateClient().SendAsync(requestMessage);
-            var responseContent = responseMessage.Content.ReadAsStringAsync();
-            Assert.True(responseContent.Wait(3000) && !responseContent.IsFaulted);
-            Assert.Equal("Response Body", responseContent.Result);
-            Assert.Equal(HttpStatusCode.Created, responseMessage.StatusCode);
+            var request = new HttpRequestMessage(new HttpMethod(methodType), "http://mydomain.example")
+            {
+                Content = new StringContent("Request Body")
+            };
+            var response = await client.SendAsync(request);
+
+            // Assert response
+            var responseContent = await response.Content.ReadAsStringAsync();
+            responseContent.ShouldBe("Response Body");
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+            // Assert sent message
+            var sentRequest = _testMessageHandler.SentRequestMessages.Single();
+            sentRequest.Headers.TryGetValues("Host", out var hostValue);
+            hostValue.SingleOrDefault().ShouldBe("localhost:" + port);
+            sentRequest.RequestUri.ToString().ShouldBe("http://localhost:" + port + "/foo/");
+            sentRequest.Method.ShouldBe(new HttpMethod(methodType));
         }
 
-        private class TestMessageHandler : HttpMessageHandler
+        [Fact]
+        public async Task ApplyForwardedHeader()
         {
-            public Func<HttpRequestMessage, HttpResponseMessage> Sender { get; set; }
+            _builder.Configure(app => app.RunProxy(
+                requestContext => requestContext.ForwardTo("http://localhost:5000/bar/"),
+                prepareRequestContext => prepareRequestContext.ApplyForwardedHeader()));
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://mydomain.example")
             {
-                if (Sender != null)
-                {
-                    return Task.FromResult(Sender(request));
-                }
+                Content = new StringContent("Request Body")
+            };
+            await client.SendAsync(requestMessage);
 
-                return Task.FromResult<HttpResponseMessage>(null);
-            }
+            var sentRequest = _testMessageHandler.SentRequestMessages.Single();
+            sentRequest.Headers.Contains(ForwardedExtensions.Forwarded).ShouldBeTrue();
+        }
+    }
+
+    internal class TestMessageHandler : HttpMessageHandler
+    {
+        public Func<HttpRequestMessage, HttpResponseMessage> Sender { get; set; }
+
+        public List<HttpRequestMessage> SentRequestMessages { get; } = new List<HttpRequestMessage>();
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            SentRequestMessages.Add(request);
+
+            return Sender != null
+                ? Task.FromResult(Sender(request))
+                : Task.FromResult<HttpResponseMessage>(null);
         }
     }
 }
