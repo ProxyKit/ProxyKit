@@ -1,5 +1,5 @@
 language: csharp
 mono: none
-sudo: true
+sudo: false
 dotnet: 2.1.402
 script: ./build.sh --travis
