@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
 
-namespace Examples
+namespace ProxyKit.Examples
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            WebHost.CreateDefaultBuilder<Simple.Startup>(args)
+                .Build()
+                .Run();
         }
     }
 }
