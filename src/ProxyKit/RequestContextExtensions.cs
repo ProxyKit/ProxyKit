@@ -10,10 +10,10 @@ namespace ProxyKit
         ///     Generates a URI to forward the request to. The incoming path and
         ///     querystring are appended.
         /// </summary>
-        /// <param name="requestContext"></param>
-        /// <param name="scheme"></param>
-        /// <param name="host"></param>
-        /// <param name="pathBase"></param>
+        /// <param name="requestContext">The incoming HTTP request context.</param>
+        /// <param name="scheme">The destination scheme.</param>
+        /// <param name="host">The destination host.</param>
+        /// <param name="pathBase">The destination path base.</param>
         /// <returns></returns>
         public static Uri ForwardTo(
             this RequestContext requestContext,
@@ -27,6 +27,13 @@ namespace ProxyKit
                 requestContext.Path,
                 requestContext.QueryString));
 
+        /// <summary>
+        ///     Generates a URI to forward the request to. The incoming path and
+        ///     querystring are appended.
+        /// </summary>
+        /// <param name="requestContext">The incoming HTTP request context.</param>
+        /// <param name="uri"></param>
+        /// <returns></returns>
         public static Uri ForwardTo(
             this RequestContext requestContext,
             Uri uri)
@@ -37,6 +44,13 @@ namespace ProxyKit
                 requestContext.Path,
                 requestContext.QueryString));
 
+        /// <summary>
+        ///     Generates a URI to forward the request to. The incoming path and
+        ///     querystring are appended.
+        /// </summary>
+        /// <param name="requestContext"></param>
+        /// <param name="uriString"></param>
+        /// <returns></returns>
         public static Uri ForwardTo(
             this RequestContext requestContext,
             string uriString)
