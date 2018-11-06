@@ -16,21 +16,6 @@ namespace build
 
         static void Main(string[] args)
         {
-            Target(Clean, () =>
-            {
-                var di = new DirectoryInfo(ArtifactsDir);
-                foreach (var file in di.GetFiles())
-                {
-                    file.Delete();
-                }
-
-                foreach (var dir in di.GetDirectories())
-                {
-                    dir.Delete(true);
-                }
-            
-            });
-
             Target(Build, () => Run("dotnet", "build ProxyKit.sln -c Release"));
 
             Target(
@@ -62,7 +47,7 @@ namespace build
                 }
             });
 
-            Target("default", DependsOn(Clean, RunTests, Publish));
+            Target("default", DependsOn(RunTests, Publish));
 
             RunTargets(args);
         }
