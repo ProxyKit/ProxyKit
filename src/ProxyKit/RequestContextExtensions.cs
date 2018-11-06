@@ -19,7 +19,7 @@ namespace ProxyKit
             this RequestContext requestContext,
             string scheme,
             HostString host,
-            PathString pathBase = default(PathString)) 
+            PathString pathBase = default) 
             => new Uri(UriHelper.BuildAbsolute(
                 scheme,
                 host,
