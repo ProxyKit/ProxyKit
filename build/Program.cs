@@ -43,7 +43,7 @@ namespace build
 
                 foreach (var packageToPush in packagesToPush)
                 {
-                    Run("dotnet", $"nuget push {packageToPush} -s https://www.myget.org/F/sqlstreamstore/api/v3/index.json -k {apiKey}", true);
+                    Run("dotnet", $"nuget push {packageToPush} -s https://www.myget.org/F/dh/api/v3/index.json -k {apiKey}", true);
                 }
             });
 
