@@ -26,8 +26,15 @@ namespace ProxyKit
         public Task Invoke(HttpContext context)
         {
             var requestContext = new RequestContext(context.Request);
-            var uri = _proxyOptions.GetDestinationUri(requestContext);
-            return context.ProxyRequest(uri, _proxyOptions, _httpClientFactory);
+            var proxyReponse = _proxyOptions.HandleProxyRequest(requestContext);
+
+            if (proxyReponse.StatusCode != null)
+            {
+                context.Response.StatusCode = (int)proxyReponse.StatusCode;
+                return Task.CompletedTask;
+            }
+
+            return context.ProxyRequest(proxyReponse.DestinationUri, _proxyOptions, _httpClientFactory);
         }
     }
 }

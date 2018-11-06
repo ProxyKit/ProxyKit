@@ -20,7 +20,7 @@ namespace ProxyKit
         ///     request path. If the request path starts with the given path,
         ///     the branch is executed.
         /// </param>
-        /// <param name="getDestinationUri">
+        /// <param name="handleProxyRequest">
         ///     A delegate that can resolve the destination Uri.
         /// </param>
         /// <param name="prepareRequest">
@@ -30,7 +30,7 @@ namespace ProxyKit
         public static void RunProxy(
             this IApplicationBuilder app,
             PathString pathMatch,
-            GetDestinationUri getDestinationUri,
+            HandleProxyRequest handleProxyRequest,
             PrepareRequest prepareRequest = null)
         {
             if (app == null)
@@ -40,7 +40,7 @@ namespace ProxyKit
 
             var proxyOptions = new ProxyOptions
             {
-                GetDestinationUri = getDestinationUri,
+                HandleProxyRequest = handleProxyRequest,
                 PrepareRequest = prepareRequest
             };
 
@@ -56,7 +56,7 @@ namespace ProxyKit
         /// <param name="app">
         ///     The application builder.
         /// </param>
-        /// <param name="getDestinationUri">
+        /// <param name="handleProxyRequest">
         ///     A delegate that can resolve the destination Uri.
         /// </param>
         /// <param name="prepareRequest">
@@ -65,7 +65,7 @@ namespace ProxyKit
         /// </param>
         public static void RunProxy(
             this IApplicationBuilder app,
-            GetDestinationUri getDestinationUri,
+            HandleProxyRequest handleProxyRequest,
             PrepareRequest prepareRequest = null)
         {
             if (app == null)
@@ -75,7 +75,7 @@ namespace ProxyKit
 
             var proxyOptions = new ProxyOptions
             {
-                GetDestinationUri = getDestinationUri,
+                HandleProxyRequest = handleProxyRequest,
                 PrepareRequest = prepareRequest
             };
 

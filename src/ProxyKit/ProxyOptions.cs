@@ -7,6 +7,6 @@ namespace ProxyKit
     {
         public PrepareRequest PrepareRequest { get; set; }
 
-        public GetDestinationUri GetDestinationUri { get; set; }
+        public HandleProxyRequest HandleProxyRequest { get; set; }
     }
 }

@@ -122,6 +122,23 @@ namespace ProxyKit
             var sentRequest = _testMessageHandler.SentRequestMessages.Single();
             sentRequest.Headers.Contains(ForwardedExtensions.Forwarded).ShouldBeTrue();
         }
+
+        [Fact]
+        public async Task ReturnsStatusCode()
+        {
+            _builder.Configure(app => 
+                app.RunProxy(requestContext => HttpStatusCode.ServiceUnavailable));
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://mydomain.example")
+            {
+                Content = new StringContent("Request Body")
+            };
+            var response = await client.SendAsync(requestMessage);
+
+            response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        }
     }
 
     internal class TestMessageHandler : HttpMessageHandler
