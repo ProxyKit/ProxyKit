@@ -1,7 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>An AspNet core middleware toolkit to create proxy servers. Can
+    be used in applications or used as a standalone proxy (i.e. containerised system).</Description>
+    <PackageId>ProxyKit</PackageId>
+    <Authors>Damian Hickey</Authors>
+    <PackageProjectUrl>https://github.com/damianh/ProxyKit</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/damianh/ProxyKit/blob/master/LICENSE</PackageLicenseUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;proxy;http</PackageTags>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
