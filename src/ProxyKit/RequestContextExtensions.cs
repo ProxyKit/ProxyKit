@@ -8,7 +8,7 @@ namespace ProxyKit
     {
         /// <summary>
         ///     Generates a URI to forward the request to. The incoming path and
-        ///     querystring are appened
+        ///     querystring are appended.
         /// </summary>
         /// <param name="requestContext"></param>
         /// <param name="scheme"></param>
