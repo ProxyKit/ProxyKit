@@ -7,7 +7,7 @@ namespace ProxyKit.Examples
     {
         static void Main(string[] args)
         {
-            WebHost.CreateDefaultBuilder<Simple.Startup>(args)
+            WebHost.CreateDefaultBuilder<IdSrv.Startup>(args)
                 .Build()
                 .Run();
         }
