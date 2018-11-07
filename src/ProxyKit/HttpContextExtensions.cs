@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -29,14 +30,48 @@ namespace ProxyKit
 
                 var httpClient = httpClientFactory.CreateClient("ProxyKit");
 
-                using (var responseMessage = await httpClient.SendAsync(
-                    requestMessage,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    context.RequestAborted))
+                try
                 {
-                    await context.CopyProxyHttpResponse(responseMessage);
+                    using (var responseMessage = await httpClient.SendAsync(
+                        requestMessage,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        context.RequestAborted))
+                    {
+                        await context.CopyProxyHttpResponse(responseMessage);
+                    }
+                }
+                
+                catch (TaskCanceledException ex)
+                {
+                    if (RequestHasTimedOut(ex))
+                    {
+                        context.Response.StatusCode = 504;
+                        return;
+                    }
+
+                    throw;
+                }
+                catch (HttpRequestException ex)
+                {
+                    if (UpstreamIsUnavailable(ex))
+                    {
+                        context.Response.StatusCode = 503;
+                        return;
+                    }
+
+                    throw;
                 }
             }
+        }
+        
+        private static bool UpstreamIsUnavailable(HttpRequestException ex)
+        {
+            return ex.InnerException is IOException;
+        }
+
+        private static bool RequestHasTimedOut(TaskCanceledException ex)
+        {
+            return ex.InnerException is IOException;
         }
 
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpContext context, Uri destinationUri)
