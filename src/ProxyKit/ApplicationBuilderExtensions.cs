@@ -46,7 +46,7 @@ namespace ProxyKit
 
             app.Map(pathMatch, appInner =>
             {
-                app.UseMiddleware<ProxyMiddleware>(proxyOptions);
+                appInner.UseMiddleware<ProxyMiddleware>(proxyOptions);
             });
         }
 
