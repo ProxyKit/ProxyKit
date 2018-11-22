@@ -55,8 +55,7 @@ namespace ProxyKit
                 }
                 catch (OperationCanceledException)
                 {
-                    // Operation cancelled exception can happen if a timeout occurs before the proxy has time to detect
-                    // the timeout
+                    // Operation cancelled exception can happen if a timeout occurs while the proxy is still handling the requests
                     context.Response.StatusCode = 504;
                 }
                 catch (HttpRequestException ex)
