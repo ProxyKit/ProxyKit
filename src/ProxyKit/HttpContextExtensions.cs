@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -40,9 +41,10 @@ namespace ProxyKit
                         await context.CopyProxyHttpResponse(responseMessage);
                     }
                 }
-                
-                catch (TaskCanceledException ex)
+                catch(TaskCanceledException ex)
                 {
+                    // Task cancelled exceptions can happen when either client disconnects before server has time to respond 
+                    // or when the proxy request times out. 
                     if (RequestHasTimedOut(ex))
                     {
                         context.Response.StatusCode = 504;
@@ -50,6 +52,12 @@ namespace ProxyKit
                     }
 
                     throw;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Operation cancelled exception can happen if a timeout occurs before the proxy has time to detect
+                    // the timeout
+                    context.Response.StatusCode = 504;
                 }
                 catch (HttpRequestException ex)
                 {
@@ -66,10 +74,10 @@ namespace ProxyKit
         
         private static bool UpstreamIsUnavailable(HttpRequestException ex)
         {
-            return ex.InnerException is IOException;
+            return ex.InnerException is IOException || ex.InnerException is SocketException;
         }
 
-        private static bool RequestHasTimedOut(TaskCanceledException ex)
+        private static bool RequestHasTimedOut(OperationCanceledException ex)
         {
             return ex.InnerException is IOException;
         }
