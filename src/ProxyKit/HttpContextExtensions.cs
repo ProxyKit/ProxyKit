@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -40,22 +41,30 @@ namespace ProxyKit
                         await context.CopyProxyHttpResponse(responseMessage);
                     }
                 }
-                
-                catch (TaskCanceledException ex)
+                catch(TaskCanceledException ex)
                 {
+                    // Task cancelled exceptions can happen when either client disconnects before server has time to respond 
+                    // or when the proxy request times out. 
                     if (RequestHasTimedOut(ex))
                     {
-                        context.Response.StatusCode = 504;
+                        context.Response.StatusCode = 504; // GatewayTimeout
                         return;
                     }
 
                     throw;
                 }
+                catch (OperationCanceledException)
+                {
+                    // On Windows (kestrel), this can happen if the proxy timeout is set smaller than the 
+                    // request takes to execute. On linux (docker) the code UpstreamIsUnavailable(ex) returns
+                    // true. To make the behavior the same, we return a 503 (ServiceNotAvailable)
+                    context.Response.StatusCode = 503; // ServiceNotAvailable
+                }
                 catch (HttpRequestException ex)
                 {
                     if (UpstreamIsUnavailable(ex))
                     {
-                        context.Response.StatusCode = 503;
+                        context.Response.StatusCode = 503; // ServiceNotAvailable
                         return;
                     }
 
@@ -66,10 +75,10 @@ namespace ProxyKit
         
         private static bool UpstreamIsUnavailable(HttpRequestException ex)
         {
-            return ex.InnerException is IOException;
+            return ex.InnerException is IOException || ex.InnerException is SocketException;
         }
 
-        private static bool RequestHasTimedOut(TaskCanceledException ex)
+        private static bool RequestHasTimedOut(OperationCanceledException ex)
         {
             return ex.InnerException is IOException;
         }
