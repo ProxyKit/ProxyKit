@@ -21,10 +21,7 @@ namespace ProxyKit
 {
     public class EndToEndTests
     {
-
-        public EndToEndTests()
-        {
-        }
+        public EndToEndTests() { }
 
         [Fact]
         public async Task Can_get_proxied_route()
@@ -85,18 +82,19 @@ namespace ProxyKit
                         {
                         }
                     }
+
                     // When server is stopped, should return 
                     await server.StopAsync();
                     result = await client.GetAsync("/realServer/normal");
                     result?.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
                 }
             }
-
         }
 
 
         [Fact]
-        public async Task When_timeout_is_really_tight_and_server_not_available_then_operation_cancelled_is_handled_correctly()
+        public async Task
+            When_timeout_is_really_tight_and_server_not_available_then_operation_cancelled_is_handled_correctly()
         {
             using (var server = BuildKestrelBasedServerOnRandomPort())
             {
@@ -111,25 +109,14 @@ namespace ProxyKit
                     var client = testServer.CreateClient();
                     // When server is running, response code should be 'ok'
                     var result = await client.GetAsync("/realServer/normal");
-                    result.StatusCode.ShouldBe(HttpStatusCode.OK);
+                    Assert.Equal(result.StatusCode, HttpStatusCode.OK);
 
                     // When server is stopped, should return 
                     await server.StopAsync();
                     result = await client.GetAsync("/realServer/normal");
-                    if (result != null)
-                    {
-                        try
-                        {
-                            result.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
-                        }
-                        catch (NullReferenceException)
-                        {
-                            // This happens on the build server.. but I don't understand why
-                        }
-                    }
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
                 }
             }
-
         }
 
         private static IWebHost BuildKestrelBasedServerOnRandomPort()
@@ -158,9 +145,7 @@ namespace ProxyKit
 
     public class RealStartup
     {
-        public void ConfigureServices(IServiceCollection services)
-        {
-        }
+        public void ConfigureServices(IServiceCollection services) { }
 
         public void Configure(IApplicationBuilder app)
         {
@@ -195,21 +180,17 @@ namespace ProxyKit
     {
         private readonly IConfiguration _config;
 
-        public TestStartup(IConfiguration config)
-        {
-            _config = config;
-        }
+        public TestStartup(IConfiguration config) { _config = config; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             var timeout = _config.GetValue<int>("timeout", 60);
-            services.AddProxy(options => 
-                options.ConfigureHttpClient = (sp, client) => client.Timeout = TimeSpan.FromSeconds(timeout)); 
+            services.AddProxy(options =>
+                options.ConfigureHttpClient = (sp, client) => client.Timeout = TimeSpan.FromSeconds(timeout));
         }
 
         public void Configure(IApplicationBuilder app, IServiceProvider sp)
         {
-
             // Can return the destination URI in three different ways.
             app.RunProxy(
                 "/accepted",
@@ -220,12 +201,9 @@ namespace ProxyKit
             var port = _config.GetValue<int>("Port", 0);
             if (port != 0)
             {
-                app.RunProxy("/realServer", 
-                    requestContext => requestContext.ForwardTo("http://localhost:" + port +"/"));
+                app.RunProxy("/realServer",
+                    requestContext => requestContext.ForwardTo("http://localhost:" + port + "/"));
             }
-
-            
-
         }
     }
 }
