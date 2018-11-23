@@ -47,7 +47,7 @@ namespace ProxyKit
                     // or when the proxy request times out. 
                     if (RequestHasTimedOut(ex))
                     {
-                        context.Response.StatusCode = 504;
+                        context.Response.StatusCode = 504; // GatewayTimeout
                         return;
                     }
 
@@ -55,14 +55,16 @@ namespace ProxyKit
                 }
                 catch (OperationCanceledException)
                 {
-                    // Operation cancelled exception can happen if a timeout occurs while the proxy is still handling the requests
-                    context.Response.StatusCode = 504;
+                    // On Windows (kestrel), this can happen if the proxy timeout is set smaller than the 
+                    // request takes to execute. On linux (docker) the code UpstreamIsUnavailable(ex) returns
+                    // true. To make the behavior the same, we return a 503 (ServiceNotAvailable)
+                    context.Response.StatusCode = 503; // ServiceNotAvailable
                 }
                 catch (HttpRequestException ex)
                 {
                     if (UpstreamIsUnavailable(ex))
                     {
-                        context.Response.StatusCode = 503;
+                        context.Response.StatusCode = 503; // ServiceNotAvailable
                         return;
                     }
 
