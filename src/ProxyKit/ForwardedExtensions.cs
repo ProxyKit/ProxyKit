@@ -11,7 +11,7 @@ namespace ProxyKit
         public const string Forwarded = "Forwarded";
 
         /// <summary>
-        ///     Applies X-Forwarded-* headers to the outgoing header collection.
+        ///     Applies Forwarded headers to the outgoing header collection.
         /// </summary>
         /// <remarks>
         ///     Not a pure function because <see cref="HttpRequestHeaders"/>
