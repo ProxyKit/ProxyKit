@@ -19,7 +19,7 @@ namespace ProxyKit.Examples.Paths
             app.RunProxy(
                 "/app1",
                 requestContext => requestContext.ForwardTo("http", new HostString("localhost", 5001), "foo"),
-                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeader());
+                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders());
 
             app.RunProxy("/app2", requestContext => requestContext.ForwardTo(new Uri("http://localhost:5002/bar/")));
 
@@ -32,7 +32,7 @@ namespace ProxyKit.Examples.Paths
             // default handler (optional). Alternatively can just have an MVC application here.
             app.RunProxy(
                 requestContext => requestContext.ForwardTo("http://localhost:5000/"),
-                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeader());
+                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders());
         }
     }
 }
