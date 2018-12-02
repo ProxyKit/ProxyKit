@@ -38,7 +38,7 @@ namespace ProxyKit.Examples.MultitenantJWT
 
                    return requestContext.ForwardTo($"http://{tenantIdClaim.Value}.internal:5001");
                },
-               prepareRequestContext => prepareRequestContext.ApplyForwardedHeader());
+               prepareRequestContext => prepareRequestContext.ApplyXForwardedHeader());
         }
     }
 }

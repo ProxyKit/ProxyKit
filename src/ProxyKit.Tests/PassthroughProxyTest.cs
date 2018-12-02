@@ -81,7 +81,7 @@ namespace ProxyKit
         {
             _builder.Configure(app => app.RunProxy(
                 requestContext => requestContext.ForwardTo($"http://localhost:{port}/foo/"),
-                prepareRequestContext => prepareRequestContext.ApplyForwardedHeader()));
+                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeader()));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
@@ -109,7 +109,7 @@ namespace ProxyKit
         {
             _builder.Configure(app => app.RunProxy(
                 requestContext => requestContext.ForwardTo("http://localhost:5000/bar/"),
-                prepareRequestContext => prepareRequestContext.ApplyForwardedHeader()));
+                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeader()));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
@@ -120,7 +120,8 @@ namespace ProxyKit
             await client.SendAsync(requestMessage);
 
             var sentRequest = _testMessageHandler.SentRequestMessages.Single();
-            sentRequest.Headers.Contains(ForwardedExtensions.Forwarded).ShouldBeTrue();
+            sentRequest.Headers.Contains(XForwardedExtensions.XForwardedHost).ShouldBeTrue();
+            sentRequest.Headers.Contains(XForwardedExtensions.XForwardedProto).ShouldBeTrue();
         }
 
         [Fact]
