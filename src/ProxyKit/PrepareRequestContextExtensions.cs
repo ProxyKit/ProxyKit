@@ -4,10 +4,10 @@ namespace ProxyKit
 {
     public static class PrepareRequestContextExtensions
     {
-        public static void ApplyXForwardedHeader(this PrepareRequestContext prepareRequest)
+        public static void ApplyXForwardedHeaders(this PrepareRequestContext prepareRequest)
         {
             var headers = prepareRequest.DestinationRequestMessage.Headers;
-            var protocol = prepareRequest.IncomingRequest.Protocol;
+            var protocol = prepareRequest.IncomingRequest.Scheme;
             var @for = prepareRequest.ConnectionInfo.RemoteIpAddress;
             var host = prepareRequest.IncomingRequest.Host;
             var pathBase = prepareRequest.IncomingRequest.PathBase.Value; // TODO should be escaped?
