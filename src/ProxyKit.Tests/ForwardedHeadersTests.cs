@@ -18,49 +18,43 @@ namespace ProxyKit
             _headers = httpRequestMessage.Headers;
         }
 
-
-        [Theory]
-        [InlineData(null, null, null, null, null)]
-        [InlineData(null, null, null, "/foo/bar/", "pathbase=/foo/bar/")]
-        [InlineData(null, null, "example.com", null, "host=example.com")]
-        [InlineData(null, "1.2.3.4", null, null, "for=1.2.3.4")]
-        [InlineData(null, "2001:db8:cafe::17", null, null, "for=\"[2001:db8:cafe::17]\"")]
-        [InlineData("http", null, null, null, "proto=http")]
-        [InlineData("http", "1.2.3.4", "example.com", "/foo/bar/", "for=1.2.3.4; host=example.com; proto=http; pathbase=/foo/bar/")]
-        public void Can_apply_forwarded_headers(
-            string proto,
-            string @for,
-            string host,
-            string pathBase,
-            string expected)
+        [Fact]
+        public void Can_append_x_forwarded_headers()
         {
-            var ipAddress = @for == null ? null : IPAddress.Parse(@for);
-            _headers.ApplyForwardedHeaders(ipAddress, new HostString(host), proto, pathBase);
+            _headers.ApplyXForwardedHeaders(IPAddress.Parse("1.2.3.4"), new HostString("example.com"), "https");
 
-            if (expected == null)
-            {
-                _headers.Contains(ForwardedExtensions.Forwarded).ShouldBeFalse();
-            }
-            else
-            {
-                _headers.Contains(ForwardedExtensions.Forwarded).ShouldBeTrue();
-                _headers.GetValues(ForwardedExtensions.Forwarded)
-                    .SingleOrDefault()
-                    .ShouldBe(expected);
-            }
+            var forValue = _headers.GetValues(XForwardedExtensions.XForwardedFor).ToArray();
+            var hostValue = _headers.GetValues(XForwardedExtensions.XForwardedHost).ToArray();
+            var protoValue = _headers.GetValues(XForwardedExtensions.XForwardedProto).ToArray();
+
+            forValue.ShouldBe(new [] { "1.2.3.4"} );
+            hostValue.ShouldBe(new [] { "example.com" });
+            protoValue.ShouldBe(new [] { "https" });
         }
 
         [Fact]
-        public void Can_append_forwarded_headers()
+        public void Can_append_x_forwarded_headers_multiple_times()
         {
-            _headers.ApplyForwardedHeaders(IPAddress.Any, new HostString("example.com"), "https", "/");
+            _headers.ApplyXForwardedHeaders(IPAddress.Parse("1.2.3.4"), new HostString("example.com"), "https");
+            _headers.ApplyXForwardedHeaders(IPAddress.Parse("[2001:db8:cafe::17]"), new HostString("bar.com"), "http");
 
-            _headers.ApplyForwardedHeaders(IPAddress.Loopback, new HostString("localhost", 4043), "http", "/foo/");
+            var forValue = _headers.GetValues(XForwardedExtensions.XForwardedFor).ToArray();
+            var hostValue = _headers.GetValues(XForwardedExtensions.XForwardedHost).ToArray();
+            var protoValue = _headers.GetValues(XForwardedExtensions.XForwardedProto).ToArray();
 
-            var forwardedHeaders = _headers.GetValues(ForwardedExtensions.Forwarded).ToArray();
+            forValue.ShouldBe(new[] { "1.2.3.4", "\"[2001:db8:cafe::17]\"" });
+            hostValue.ShouldBe(new[] { "example.com" , "bar.com" });
+            protoValue.ShouldBe(new[] { "https" , "http" });
+        }
 
-            forwardedHeaders.Length.ShouldBe(2);
-            forwardedHeaders.Last().ShouldContain("localhost");
+        [Fact]
+        public void Can_append_x_forwarded_headers_with_pathbase()
+        {
+            _headers.ApplyXForwardedHeaders(IPAddress.Parse("1.2.3.4"), new HostString("example.com"), "https", "/foo/");
+
+            var pathBaseValue = _headers.GetValues(XForwardedExtensions.XForwardedPathBase).ToArray();
+
+            pathBaseValue.ShouldBe(new[] { "/foo/" });
         }
     }
 }

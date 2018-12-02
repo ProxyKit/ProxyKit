@@ -4,7 +4,7 @@ namespace ProxyKit
 {
     public static class PrepareRequestContextExtensions
     {
-        public static void ApplyForwardedHeader(this PrepareRequestContext prepareRequest)
+        public static void ApplyXForwardedHeader(this PrepareRequestContext prepareRequest)
         {
             var headers = prepareRequest.DestinationRequestMessage.Headers;
             var protocol = prepareRequest.IncomingRequest.Protocol;
@@ -12,7 +12,7 @@ namespace ProxyKit
             var host = prepareRequest.IncomingRequest.Host;
             var pathBase = prepareRequest.IncomingRequest.PathBase.Value; // TODO should be escaped?
 
-            headers.ApplyForwardedHeaders(@for, host, protocol, pathBase);
+            headers.ApplyXForwardedHeaders(@for, host, protocol, pathBase);
         }
     }
 }
