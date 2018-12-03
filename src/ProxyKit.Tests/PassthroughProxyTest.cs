@@ -36,7 +36,7 @@ namespace ProxyKit
             _builder = new WebHostBuilder()
                 .ConfigureServices(services => services.AddProxy(options =>
                 {
-                    options.MessageHandler = _testMessageHandler;
+                    options.GetMessageHandler = () => _testMessageHandler;
                 }));
         }
 
