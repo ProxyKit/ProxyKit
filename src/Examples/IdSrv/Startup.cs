@@ -63,7 +63,10 @@ namespace ProxyKit.Examples.IdSrv
             {
                 if (!context.User.Identity.IsAuthenticated)
                 {
-                    await context.ChallengeAsync("IdSrv", new AuthenticationProperties() {RedirectUri = context.Request.GetEncodedUrl()});
+                    await context.ChallengeAsync("IdSrv", new AuthenticationProperties
+                    {
+                        RedirectUri = context.Request.GetEncodedUrl()
+                    });
                     return;
                 }
 

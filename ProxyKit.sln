@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit", "src\ProxyKit\Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit.Tests", "src\ProxyKit.Tests\ProxyKit.Tests.csproj", "{10818657-9BA0-4E37-9E55-7B24DA381144}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples", "src\Examples\Examples.csproj", "{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "src\Examples\Examples.csproj", "{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

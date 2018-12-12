@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -81,5 +83,35 @@ namespace ProxyKit
 
             app.UseMiddleware<ProxyMiddleware>(proxyOptions);
         }
+
+        public static void RunProxy2(
+            this IApplicationBuilder app,
+            HandleProxyRequest2 handleProxyRequest)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            var proxyOptions = new ProxyOptions2
+            {
+                HandleProxyRequest = handleProxyRequest,
+            };
+
+            app.UseMiddleware<ProxyMiddleware>(proxyOptions);
+        }
     }
+
+    public class ProxyContext
+    {
+        public ConnectionInfo ConnectionInfo { get; }
+
+        public IncomingRequest IncomingRequest { get; }
+
+        public HttpRequestMessage OutgoingRequestMessage { get; }
+    }
+
+    public delegate Task HandleProxyRequest2(ProxyContext proxyContext, ForwardToHost forwardToHost);
+
+    public delegate Task ForwardToHost(ProxyContext proxyContext, string targetUri);
 }
