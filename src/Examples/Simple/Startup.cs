@@ -1,12 +1,24 @@
 ﻿using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Examples.Simple
 {
+    public class SimpleExample : ExampleBase
+    {
+        protected override async Task RunAsync(CancellationToken cancellationToken)
+        {
+            await WebHost.CreateDefaultBuilder<Startup>(Array.Empty<string>())
+                .Build()
+                .RunAsync(cancellationToken);
+        }
+    }
+
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
@@ -16,18 +28,12 @@ namespace ProxyKit.Examples.Simple
 
         public void Configure(IApplicationBuilder app)
         {
-           app.RunProxy(
-               requestContext => 
-                   requestContext.ForwardTo("http://localhost:5001"),
-               prepareRequestContext => 
-                   prepareRequestContext.ApplyXForwardedHeaders());
-
-            app.RunProxy2(
-                (context, forwardToHost) =>
-                {
-                    context.ApplyXForwardedHeaders();
-                    return forwardToHost(context, "http://localhost:5001");
-                });
+            app.RunProxy((context, handle) =>
+            {
+                context.ForwardTo("http://localhost:5001");
+                context.ApplyXForwardedHeaders();
+                return handle();
+            });
         }
     }
 }

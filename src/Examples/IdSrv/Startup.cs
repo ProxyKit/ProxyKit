@@ -74,8 +74,12 @@ namespace ProxyKit.Examples.IdSrv
             });
 
             app.RunProxy(
-                requestContext => requestContext.ForwardTo(this.appConfiguration.ForwardUrl),
-                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders());
+                (context, handle) =>
+                {
+                    context.ForwardTo(appConfiguration.ForwardUrl);
+                    context.ApplyXForwardedHeaders();
+                    return handle();
+                });
         }
     }
 }

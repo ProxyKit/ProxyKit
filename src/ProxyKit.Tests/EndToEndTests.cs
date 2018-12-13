@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -136,7 +133,7 @@ namespace ProxyKit
 
             if (match.Success)
             {
-                port = Int32.Parse(match.Groups[1].Value);
+                port = int.Parse(match.Groups[1].Value);
             }
 
             return port;
@@ -184,25 +181,36 @@ namespace ProxyKit
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var timeout = _config.GetValue<int>("timeout", 60);
+            var timeout = _config.GetValue("timeout", 60);
             services.AddProxy(options =>
                 options.ConfigureHttpClient = (sp, client) => client.Timeout = TimeSpan.FromSeconds(timeout));
         }
 
         public void Configure(IApplicationBuilder app, IServiceProvider sp)
         {
-            // Can return the destination URI in three different ways.
-            app.RunProxy(
-                "/accepted",
-                requestContext => HttpStatusCode.Accepted);
+            app.Map("/accepted", appInner => 
+                appInner.RunProxy((context, _) =>
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Accepted;
+                    return Task.CompletedTask;
+                }));
 
-            app.RunProxy("/forbidden", requestContext => HttpStatusCode.Forbidden);
+            app.Map("/forbidden", appInner => 
+                appInner.RunProxy((context, _) =>
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    return Task.CompletedTask;
+                }));
 
-            var port = _config.GetValue<int>("Port", 0);
+            var port = _config.GetValue("Port", 0);
             if (port != 0)
             {
-                app.RunProxy("/realServer",
-                    requestContext => requestContext.ForwardTo("http://localhost:" + port + "/"));
+                app.Map("/realServer", appInner =>
+                    appInner.RunProxy((context, handle) =>
+                    {
+                        context.ForwardTo("http://localhost:" + port + "/");
+                        return handle();
+                    }));
             }
         }
     }

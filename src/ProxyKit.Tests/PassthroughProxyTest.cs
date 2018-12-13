@@ -48,7 +48,11 @@ namespace ProxyKit
         [InlineData("DELETE", 3004)]
         public async Task PassthroughRequestsWithoutBodyWithResponseHeaders(string methodType, int port)
         {
-            _builder.Configure(app => app.RunProxy(requestContext => requestContext.ForwardTo($"http://localhost:{port}")));
+            _builder.Configure(app => app.RunProxy((context, handle)=>
+            {
+                context.ForwardTo($"http://localhost:{port}");
+                return handle();
+            }));
             var server = new TestServer(_builder);
 
             var requestMessage = new HttpRequestMessage(new HttpMethod(methodType), "");
@@ -80,8 +84,12 @@ namespace ProxyKit
         public async Task PassthroughRequestsWithBody(string methodType, int port)
         {
             _builder.Configure(app => app.RunProxy(
-                requestContext => requestContext.ForwardTo($"http://localhost:{port}/foo/"),
-                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders()));
+                (context, handle) =>
+                {
+                    context.ForwardTo($"http://localhost:{port}/foo/");
+                    context.ApplyXForwardedHeaders();
+                    return handle();
+                }));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
@@ -108,8 +116,12 @@ namespace ProxyKit
         public async Task ApplyXForwardedHeaders()
         {
             _builder.Configure(app => app.RunProxy(
-                requestContext => requestContext.ForwardTo("http://localhost:5000/bar/"),
-                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders()));
+                (context, handle) =>
+                {
+                    context.ForwardTo("http://localhost:5000/bar/");
+                    context.ApplyXForwardedHeaders();
+                    return handle();
+                }));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
@@ -128,7 +140,11 @@ namespace ProxyKit
         public async Task ReturnsStatusCode()
         {
             _builder.Configure(app => 
-                app.RunProxy(requestContext => HttpStatusCode.ServiceUnavailable));
+                app.RunProxy((context, handle) =>
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                    return Task.CompletedTask;
+                }));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 

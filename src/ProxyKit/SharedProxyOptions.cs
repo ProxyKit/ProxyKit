@@ -17,6 +17,9 @@ namespace ProxyKit
         /// </summary>
         public Func<HttpMessageHandler> GetMessageHandler { get; set; }
 
+        /// <summary>
+        /// Configures the HttpClient.
+        /// </summary>
         public Action<IServiceProvider, HttpClient> ConfigureHttpClient { get; set; }
-}
+    }
 }

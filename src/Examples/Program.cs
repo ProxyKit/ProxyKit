@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using System.Threading;
+using EasyConsole;
+using ProxyKit.Examples.Simple;
 
 namespace ProxyKit.Examples
 {
@@ -7,9 +9,13 @@ namespace ProxyKit.Examples
     {
         static void Main(string[] args)
         {
-            WebHost.CreateDefaultBuilder<IdSrv.Startup>(args)
-                .Build()
-                .Run();
+            var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (_, __) => cts.Cancel();
+            new Menu()
+                .Add(
+                    "Simple Forwarding",
+                    () => new SimpleExample().Run(cts.Token))
+                .Display();
         }
     }
 }

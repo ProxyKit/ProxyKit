@@ -17,18 +17,11 @@ namespace ProxyKit
 
         internal static async Task ProxyRequest(
             this HttpContext context,
-            Uri destinationUri,
-            ProxyOptions proxyOptions,
+            ProxyContext proxyContext,
             IHttpClientFactory httpClientFactory)
         {
-            using (var requestMessage = context.CreateProxyHttpRequest(destinationUri))
+            using (var requestMessage = proxyContext.ProxyRequest)
             {
-                if (proxyOptions.PrepareRequest != null)
-                {
-                    var prepareRequestContext = new PrepareRequestContext(context.Request, context.Connection, requestMessage);
-                    proxyOptions.PrepareRequest(prepareRequestContext);
-                }
-
                 var httpClient = httpClientFactory.CreateClient("ProxyKit");
 
                 try
@@ -83,10 +76,8 @@ namespace ProxyKit
             return ex.InnerException is IOException;
         }
 
-        private static HttpRequestMessage CreateProxyHttpRequest(this HttpContext context, Uri destinationUri)
+        internal static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
         {
-            var request = context.Request;
-
             var requestMessage = new HttpRequestMessage();
             var requestMethod = request.Method;
             if (!HttpMethods.IsGet(requestMethod) &&
@@ -107,8 +98,8 @@ namespace ProxyKit
                 }
             }
 
-            requestMessage.Headers.Host = destinationUri.Authority;
-            requestMessage.RequestUri = destinationUri;
+            /*requestMessage.Headers.Host = destinationUri.Authority;
+            requestMessage.RequestUri = destinationUri;*/
             requestMessage.Method = new HttpMethod(request.Method);
 
             return requestMessage;

@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,15 +17,16 @@ namespace ProxyKit.Examples.MultitenantJWT
         public void Configure(IApplicationBuilder app)
         {
            app.RunProxy(
-               requestContext =>
+               (context, handle) =>
                {
                    // Example of how to route a request to a backend host based on TenantId claim
                    // in a JWT Bearer token. Note: the backend service should still token validation.
                    // (Token validation can also be done here).
-                   var authorization = requestContext.Headers.Get<string>("Authorization");
+                   var authorization = context.IncomingRequest.Headers["Authorization"].SingleOrDefault();
                    if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer"))
                    {
-                       return HttpStatusCode.Unauthorized;
+                       context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                       return Task.CompletedTask;
                    }
                    var token = authorization.Substring(0, "Bearer ".Length);
                    var handler = new JwtSecurityTokenHandler();
@@ -33,12 +35,14 @@ namespace ProxyKit.Examples.MultitenantJWT
 
                    if (tenantIdClaim == null)
                    {
-                       return HttpStatusCode.Unauthorized;
+                       context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                       return Task.CompletedTask;
                    }
 
-                   return requestContext.ForwardTo($"http://{tenantIdClaim.Value}.internal:5001");
-               },
-               prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders());
+                   context.ForwardTo($"http://{tenantIdClaim.Value}.internal:5001");
+
+                   return handle();
+               });
         }
     }
 }

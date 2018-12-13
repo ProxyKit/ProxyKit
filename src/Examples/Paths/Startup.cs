@@ -18,21 +18,20 @@ namespace ProxyKit.Examples.Paths
             // Can return the destination URI in three different ways.
             app.RunProxy(
                 "/app1",
-                requestContext => requestContext.ForwardTo("http", new HostString("localhost", 5001), "foo"),
-                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders());
+                (context, handle) =>
+                {
+                    context.ForwardTo("http", new HostString("localhost", 5001), "foo");
+                    context.ApplyXForwardedHeaders();
+                    return handle();
+                });
 
-            app.RunProxy("/app2", requestContext => requestContext.ForwardTo(new Uri("http://localhost:5002/bar/")));
-
-            app.RunProxy("/app3", requestContext => requestContext.ForwardTo("http://localhost:5003/"));
-
-            // Can return a status code instead. Leverage AspNetCores StatusCodePages middleware to customize
-            // the response body.
-            app.RunProxy("/app4", requestContext => HttpStatusCode.ServiceUnavailable);
-
-            // default handler (optional). Alternatively can just have an MVC application here.
-            app.RunProxy(
-                requestContext => requestContext.ForwardTo("http://localhost:5000/"),
-                prepareRequestContext => prepareRequestContext.ApplyXForwardedHeaders());
+            app.RunProxy("/app2",
+                (context, handle) =>
+                {
+                    context.ForwardTo(new Uri("http://localhost:5002/bar/"));
+                    context.ApplyXForwardedHeaders();
+                    return handle();
+                });
         }
     }
 }

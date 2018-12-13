@@ -26,45 +26,16 @@ namespace ProxyKit
 
         public Task Invoke(HttpContext context)
         {
-            var requestContext = new RequestContext(context.Request);
-            var proxyReponse = _proxyOptions.HandleProxyRequest(requestContext);
+            var proxyRequest = context.Request.CreateProxyHttpRequest();
+            var proxyContext = new ProxyContext(
+                context.Connection,
+                context.Request,
+                proxyRequest,
+                context.Response);
 
-            if (proxyReponse.StatusCode != null)
-            {
-                context.Response.StatusCode = (int)proxyReponse.StatusCode;
-                return Task.CompletedTask;
-            }
+            Task ToHost() => context.ProxyRequest(proxyContext, _httpClientFactory);
 
-            return context.ProxyRequest(proxyReponse.DestinationUri, _proxyOptions, _httpClientFactory);
-        }
-    }
-
-    public class ProxyMiddleware2
-    {
-        private readonly ProxyOptions2 _proxyOptions;
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public ProxyMiddleware2(RequestDelegate _,
-            ProxyOptions2 proxyOptions,
-            IHttpClientFactory httpClientFactory)
-        {
-            _proxyOptions = proxyOptions;
-            _httpClientFactory = httpClientFactory;
-        }
-
-        public Task Invoke(HttpContext context)
-        {
-            throw new NotImplementedException();
-            /*var requestContext = new RequestContext(context.Request);
-            var proxyReponse = _proxyOptions.HandleProxyRequest(requestContext);
-
-            if (proxyReponse.StatusCode != null)
-            {
-                context.Response.StatusCode = (int)proxyReponse.StatusCode;
-                return Task.CompletedTask;
-            }
-
-            return context.ProxyRequest(proxyReponse.DestinationUri, _proxyOptions, _httpClientFactory);*/
+            return _proxyOptions.HandleProxyRequest(proxyContext, ToHost);
         }
     }
 }
