@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,6 +41,9 @@ namespace ProxyKit.Examples
                 .Add(
                     "Path Forwarding",
                     () => new Paths().Run(cts.Token))
+                .Add(
+                    "Round Robin",
+                    () => new RoundRobinLoadBalancer().Run(cts.Token))
                 .Display();
         }
 
