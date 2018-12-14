@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Examples
 {
-    class Program
+    internal class Program
     {
         static async Task Main(string[] args)
         {
@@ -44,6 +44,9 @@ namespace ProxyKit.Examples
                 .Add(
                     "Round Robin",
                     () => new RoundRobinLoadBalancer().Run(cts.Token))
+                .Add(
+                    "Testing",
+                    () => new Testing().Run())
                 .Display();
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,7 +27,7 @@ namespace ProxyKit.Examples
                 var roundRobin = new RoundRobin<string>(hosts);
 
                 app.RunProxy(
-                    (context, handle) =>
+                    async (context, handle) =>
                     {
                         var host = roundRobin.Next();
 
@@ -34,7 +35,17 @@ namespace ProxyKit.Examples
                             .ForwardTo(host)
                             .ApplyXForwardedHeaders();
 
-                        return handle(forwardContext);
+                        var response = await handle(forwardContext);
+
+                        // failover
+                        if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                        {
+                            forwardContext = context
+                                .ForwardTo(host)
+                                .ApplyXForwardedHeaders();
+
+                            return await handle(forwardContext);
+                        }
                     });
             }
         }
