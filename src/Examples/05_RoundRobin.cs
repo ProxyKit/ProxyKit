@@ -46,6 +46,8 @@ namespace ProxyKit.Examples
 
                             return await handle(forwardContext);
                         }
+
+                        return response;
                     });
             }
         }

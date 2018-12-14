@@ -46,7 +46,7 @@ namespace ProxyKit.Examples
                     () => new RoundRobinLoadBalancer().Run(cts.Token))
                 .Add(
                     "Testing",
-                    () => new Testing().Run())
+                    () => new Testing().Run().GetAwaiter().GetResult())
                 .Display();
         }
 
