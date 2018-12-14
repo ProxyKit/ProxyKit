@@ -5,6 +5,6 @@ namespace ProxyKit
 {
     public class ProxyOptions
     {
-        public HandleProxyRequestDelegate HandleProxyRequest { get; set; }
+        public HandleProxyRequest HandleProxyRequest { get; set; }
     }
 }

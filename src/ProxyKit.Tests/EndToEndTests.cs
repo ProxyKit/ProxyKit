@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -189,18 +191,12 @@ namespace ProxyKit
         public void Configure(IApplicationBuilder app, IServiceProvider sp)
         {
             app.Map("/accepted", appInner => 
-                appInner.RunProxy((context, _) =>
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.Accepted;
-                    return Task.CompletedTask;
-                }));
+                appInner.RunProxy(async (context, _) 
+                    => new HttpResponseMessage(HttpStatusCode.Accepted)));
 
             app.Map("/forbidden", appInner => 
-                appInner.RunProxy((context, _) =>
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    return Task.CompletedTask;
-                }));
+                appInner.RunProxy(async (context, _) 
+                    => new HttpResponseMessage(HttpStatusCode.Forbidden)));
 
             var port = _config.GetValue("Port", 0);
             if (port != 0)
@@ -208,8 +204,8 @@ namespace ProxyKit
                 app.Map("/realServer", appInner =>
                     appInner.RunProxy((context, handle) =>
                     {
-                        context.ForwardTo("http://localhost:" + port + "/");
-                        return handle();
+                        var forwardContext = context.ForwardTo("http://localhost:" + port + "/");
+                        return handle(forwardContext);
                     }));
             }
         }

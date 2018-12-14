@@ -20,7 +20,7 @@ namespace ProxyKit
         /// </param>
         public static void RunProxy(
             this IApplicationBuilder app,
-            HandleProxyRequestDelegate handleProxyRequest)
+            HandleProxyRequest handleProxyRequest)
         {
             if (app == null)
             {
@@ -52,7 +52,7 @@ namespace ProxyKit
         public static void RunProxy(
             this IApplicationBuilder app,
             PathString pathMatch,
-            HandleProxyRequestDelegate handleProxyRequest)
+            HandleProxyRequest handleProxyRequest)
         {
             if (app == null)
             {

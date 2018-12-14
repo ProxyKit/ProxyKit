@@ -6,58 +6,35 @@ namespace ProxyKit
 {
     public static class ProxyContextExtensions
     {
-        /// <summary>
-        ///     Applies X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host and X-Forwarded-PathBase
-        ///     headers.
-        /// </summary>
-        /// <param name="context"></param>
-        public static void ApplyXForwardedHeaders(this ProxyContext context)
+        public static ForwardContext ForwardTo(this ProxyContext proxyContext, string destinationUri)
         {
-            var headers = context.ProxyRequest.Headers;
-            var protocol = context.IncomingRequest.Scheme;
-            var @for = context.Connection.RemoteIpAddress;
-            var host = context.IncomingRequest.Headers["Host"];
+            var destUri = new Uri(destinationUri);
+            var uri = new Uri(UriHelper.BuildAbsolute(
+                destUri.Scheme,
+                new HostString(destUri.Host, destUri.Port),
+                destUri.AbsolutePath,
+                proxyContext.IncomingRequest.Path,
+                proxyContext.IncomingRequest.QueryString));
+
+            var request = proxyContext.IncomingRequest.CreateProxyHttpRequest();
+            request.Headers.Host = uri.Authority;
+            request.RequestUri = uri;
+
+            return new ForwardContext(proxyContext, request);
+        }
+
+        public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext)
+        {
+            var headers = forwardContext.Request.Headers;
+            var protocol = forwardContext.ProxyContext.IncomingRequest.Scheme;
+            var @for = forwardContext.ProxyContext.Connection.RemoteIpAddress;
+            var host = forwardContext.ProxyContext.IncomingRequest.Headers["Host"];
             var hostString = HostString.FromUriComponent(host);
-            var pathBase = context.IncomingRequest.PathBase.Value; // TODO should be escaped?
+            var pathBase = forwardContext.ProxyContext.IncomingRequest.PathBase.Value;
 
             headers.ApplyXForwardedHeaders(@for, hostString, protocol, pathBase);
-        }
 
-        public static void ForwardTo(
-            this ProxyContext context,
-            Uri destinationUri)
-        {
-            var uri = new Uri(UriHelper.BuildAbsolute(
-                destinationUri.Scheme,
-                new HostString(destinationUri.Host, destinationUri.Port),
-                destinationUri.AbsolutePath,
-                context.IncomingRequest.Path,
-                context.IncomingRequest.QueryString));
-
-            context.ProxyRequest.Headers.Host = uri.Authority;
-            context.ProxyRequest.RequestUri = uri;
-        }
-
-        public static void ForwardTo(
-            this ProxyContext context,
-            string scheme,
-            HostString host,
-            PathString pathBase = default)
-        {
-            var uri = new Uri(UriHelper.BuildAbsolute(
-                scheme,
-                host,
-                pathBase,
-                context.IncomingRequest.Path,
-                context.IncomingRequest.QueryString));
-
-            context.ProxyRequest.Headers.Host = uri.Authority;
-            context.ProxyRequest.RequestUri = uri;
-        }
-
-        public static void ForwardTo(this ProxyContext context, string destinationUri)
-        {
-            context.ForwardTo(new Uri(destinationUri));
+            return forwardContext;
         }
     }
 }

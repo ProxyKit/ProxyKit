@@ -50,8 +50,8 @@ namespace ProxyKit
         {
             _builder.Configure(app => app.RunProxy((context, handle)=>
             {
-                context.ForwardTo($"http://localhost:{port}");
-                return handle();
+                var forwardContext = context.ForwardTo($"http://localhost:{port}");
+                return handle(forwardContext);
             }));
             var server = new TestServer(_builder);
 
@@ -86,9 +86,10 @@ namespace ProxyKit
             _builder.Configure(app => app.RunProxy(
                 (context, handle) =>
                 {
-                    context.ForwardTo($"http://localhost:{port}/foo/");
-                    context.ApplyXForwardedHeaders();
-                    return handle();
+                    var forwardContext = context
+                        .ForwardTo($"http://localhost:{port}/foo/")
+                        .ApplyXForwardedHeaders();
+                    return handle(forwardContext);
                 }));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
@@ -118,9 +119,10 @@ namespace ProxyKit
             _builder.Configure(app => app.RunProxy(
                 (context, handle) =>
                 {
-                    context.ForwardTo("http://localhost:5000/bar/");
-                    context.ApplyXForwardedHeaders();
-                    return handle();
+                    var fowardContext = context
+                        .ForwardTo("http://localhost:5000/bar/")
+                        .ApplyXForwardedHeaders();
+                    return handle(fowardContext);
                 }));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
@@ -140,10 +142,9 @@ namespace ProxyKit
         public async Task ReturnsStatusCode()
         {
             _builder.Configure(app => 
-                app.RunProxy((context, handle) =>
+                app.RunProxy(async (context, handle) =>
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-                    return Task.CompletedTask;
+                    return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
                 }));
             var server = new TestServer(_builder);
             var client = server.CreateClient();

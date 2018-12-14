@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>ProxyKit.Examples</AssemblyName>
     <RootNamespace>ProxyKit.Examples</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

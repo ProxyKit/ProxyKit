@@ -1,28 +1,28 @@
-using System.Net.Http;
+using System;
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
 {
     public class ProxyContext
     {
-        public ProxyContext(
-            ConnectionInfo connection, 
+        public ProxyContext(ConnectionInfo connection,
             HttpRequest request,
-            HttpRequestMessage proxyRequest,
-            HttpResponse response)
+            CancellationToken requestAborted,
+            IServiceProvider requestServices)
         {
             Connection = connection;
             IncomingRequest = request;
-            ProxyRequest = proxyRequest;
-            Response = response;
+            RequestAborted = requestAborted;
+            RequestServices = requestServices;
         }
 
         public ConnectionInfo Connection { get; }
 
         public HttpRequest IncomingRequest { get; }
 
-        public HttpRequestMessage ProxyRequest { get; }
+        public CancellationToken RequestAborted { get; }
 
-        public HttpResponse Response { get; }
+        public IServiceProvider RequestServices { get; }
     }
 }
