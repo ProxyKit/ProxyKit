@@ -31,12 +31,6 @@ namespace ProxyKit
 
         public async Task Invoke(HttpContext context)
         {
-            var proxyContext = new ProxyContext(
-                context.Connection,
-                context.Request,
-                context.RequestAborted,
-                context.RequestServices);
-
             var httpClient = _httpClientFactory.CreateClient("ProxyKit");
 
             async Task<HttpResponseMessage> Handle(ForwardContext forwardContext)
@@ -74,7 +68,7 @@ namespace ProxyKit
                 }
             }
 
-            using (var response = await _proxyOptions.HandleProxyRequest(proxyContext, Handle))
+            using (var response = await _proxyOptions.HandleProxyRequest(context, Handle))
             {
                 await CopyProxyHttpResponse(context, response);
             }

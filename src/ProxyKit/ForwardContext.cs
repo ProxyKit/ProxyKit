@@ -1,18 +1,19 @@
 using System.Net.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
 {
     public class ForwardContext
     {
         public ForwardContext(
-            ProxyContext proxyContext,
+            HttpContext httpContext,
             HttpRequestMessage request)
         {
-            ProxyContext = proxyContext;
+            HttpContext = httpContext;
             Request = request;
         }
 
-        public ProxyContext ProxyContext { get; }
+        public HttpContext HttpContext { get; }
 
         public HttpRequestMessage Request { get; }
     }

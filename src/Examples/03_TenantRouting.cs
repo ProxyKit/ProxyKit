@@ -24,7 +24,7 @@ namespace ProxyKit.Examples
                         // Example of how to route a request to a backend host based on TenantId claim
                         // in a JWT Bearer token. Note: the backend service should still token validation.
                         // (Token validation can also be done here).
-                        var authorization = context.IncomingRequest.Headers["Authorization"].SingleOrDefault();
+                        var authorization = context.Request.Headers["Authorization"].SingleOrDefault();
                         if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer"))
                         {
                             return new HttpResponseMessage(HttpStatusCode.Unauthorized);

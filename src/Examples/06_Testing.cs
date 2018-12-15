@@ -64,7 +64,8 @@ namespace ProxyKit.Examples
 
             public void ConfigureServices(IServiceCollection services)
             {
-                services.AddProxy(options => options.GetMessageHandler= () => _handler);
+                services.AddProxy(options 
+                    => options.GetMessageHandler= () => _handler);
             }
 
             public void Configure(IApplicationBuilder app)

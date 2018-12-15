@@ -6,17 +6,17 @@ namespace ProxyKit
 {
     public static class ProxyContextExtensions
     {
-        public static ForwardContext ForwardTo(this ProxyContext proxyContext, string destinationUri)
+        public static ForwardContext ForwardTo(this HttpContext proxyContext, string destinationUri)
         {
             var destUri = new Uri(destinationUri);
             var uri = new Uri(UriHelper.BuildAbsolute(
                 destUri.Scheme,
                 new HostString(destUri.Host, destUri.Port),
                 destUri.AbsolutePath,
-                proxyContext.IncomingRequest.Path,
-                proxyContext.IncomingRequest.QueryString));
+                proxyContext.Request.Path,
+                proxyContext.Request.QueryString));
 
-            var request = proxyContext.IncomingRequest.CreateProxyHttpRequest();
+            var request = proxyContext.Request.CreateProxyHttpRequest();
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
@@ -26,11 +26,11 @@ namespace ProxyKit
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext)
         {
             var headers = forwardContext.Request.Headers;
-            var protocol = forwardContext.ProxyContext.IncomingRequest.Scheme;
-            var @for = forwardContext.ProxyContext.Connection.RemoteIpAddress;
-            var host = forwardContext.ProxyContext.IncomingRequest.Headers["Host"];
+            var protocol = forwardContext.HttpContext.Request.Scheme;
+            var @for = forwardContext.HttpContext.Connection.RemoteIpAddress;
+            var host = forwardContext.HttpContext.Request.Headers["Host"];
             var hostString = HostString.FromUriComponent(host);
-            var pathBase = forwardContext.ProxyContext.IncomingRequest.PathBase.Value;
+            var pathBase = forwardContext.HttpContext.Request.PathBase.Value;
 
             headers.ApplyXForwardedHeaders(@for, hostString, protocol, pathBase);
 
