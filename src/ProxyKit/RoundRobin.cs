@@ -1,30 +1,32 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace ProxyKit
 {
-    public class RoundRobin<T>
+    /// <summary>
+    ///     Represents a round robing collection of hosts.
+    /// </summary>
+    public class RoundRobin
     {
-        private readonly IList<T> _list;
-        private readonly int _size;
+        private readonly UpstreamHost[] _hosts;
         private int _position;
 
-        public RoundRobin(IList<T> list)
+        public RoundRobin(params UpstreamHost[] hosts)
         {
-            _list = new List<T>(list);
-            _size = _list.Count;
+            _hosts = hosts.ToArray();
         }
 
-        public T Next()
+        public UpstreamHost Next()
         {
-            if (_size == 1)
+            if (_hosts.Length == 1)
             {
-                return _list[0];
+                return _hosts[0];
             }
 
             Interlocked.Increment(ref _position);
-            var mod = _position % _size;
-            return _list[mod];
+            var mod = _position % _hosts.Length;
+            return _hosts[mod];
         }
     }
 }

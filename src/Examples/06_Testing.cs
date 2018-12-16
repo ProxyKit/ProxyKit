@@ -70,12 +70,12 @@ namespace ProxyKit.Examples
 
             public void Configure(IApplicationBuilder app)
             {
-                var hosts = new List<string>
+                var hosts = new UpstreamHost[]
                 {
                     "http://localhost:5001",
                     "http://localhost:5002"
                 };
-                var roundRobin = new RoundRobin<string>(hosts);
+                var roundRobin = new RoundRobin(hosts);
 
                 app.RunProxy(
                     context =>
