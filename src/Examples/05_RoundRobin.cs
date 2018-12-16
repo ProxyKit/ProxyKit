@@ -21,8 +21,8 @@ namespace ProxyKit.Examples
             {
                 var roundRobin = new RoundRobin
                 {
-                    "http://localhost:5001",
-                    "http://localhost:5002"
+                    new UpstreamHost("http://localhost:5001", weight: 1),
+                    new UpstreamHost("http://localhost:5002", weight: 2)
                 };
 
                 app.RunProxy(
