@@ -191,22 +191,20 @@ namespace ProxyKit
         public void Configure(IApplicationBuilder app, IServiceProvider sp)
         {
             app.Map("/accepted", appInner => 
-                appInner.RunProxy(async (context, _) 
+                appInner.RunProxy(async context 
                     => new HttpResponseMessage(HttpStatusCode.Accepted)));
 
             app.Map("/forbidden", appInner => 
-                appInner.RunProxy(async (context, _) 
+                appInner.RunProxy(async context 
                     => new HttpResponseMessage(HttpStatusCode.Forbidden)));
 
             var port = _config.GetValue("Port", 0);
             if (port != 0)
             {
                 app.Map("/realServer", appInner =>
-                    appInner.RunProxy((context, handle) =>
-                    {
-                        var forwardContext = context.ForwardTo("http://localhost:" + port + "/");
-                        return handle(forwardContext);
-                    }));
+                    appInner.RunProxy(context => context
+                        .ForwardTo("http://localhost:" + port + "/")
+                        .Handle()));
             }
         }
     }

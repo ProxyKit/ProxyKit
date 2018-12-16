@@ -16,24 +16,17 @@ namespace ProxyKit.Examples
             {
                 app.RunProxy(
                     "/app1",
-                    async (context, handle) =>
-                    {
-                        var forwardContext = context
-                            .ForwardTo("http://localhost:5001/foo/")
-                            .ApplyXForwardedHeaders();
+                    context => context
+                        .ForwardTo("http://localhost:5001/foo/")
+                        .ApplyXForwardedHeaders()
+                        .Handle());
 
-                        return await handle(forwardContext);
-                    });
-
-                app.RunProxy("/app2",
-                    (context, handle) =>
-                    {
-                        var fowardContext = context
-                            .ForwardTo("http://localhost:5002/bar/")
-                            .ApplyXForwardedHeaders();
-
-                        return handle(fowardContext);
-                    });
+                app.RunProxy(
+                    "/app2",
+                    context => context
+                        .ForwardTo("http://localhost:5002/bar/")
+                        .ApplyXForwardedHeaders()
+                        .Handle());
             }
         }
     }

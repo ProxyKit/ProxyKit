@@ -1,26 +1,30 @@
 using System;
+using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit
 {
     public static class ProxyContextExtensions
     {
-        public static ForwardContext ForwardTo(this HttpContext proxyContext, string destinationUri)
+        public static ForwardContext ForwardTo(this HttpContext conext, string destinationUri)
         {
             var destUri = new Uri(destinationUri);
             var uri = new Uri(UriHelper.BuildAbsolute(
                 destUri.Scheme,
                 new HostString(destUri.Host, destUri.Port),
                 destUri.AbsolutePath,
-                proxyContext.Request.Path,
-                proxyContext.Request.QueryString));
+                conext.Request.Path,
+                conext.Request.QueryString));
 
-            var request = proxyContext.Request.CreateProxyHttpRequest();
+            var request = conext.Request.CreateProxyHttpRequest();
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            return new ForwardContext(proxyContext, request);
+            var httpClientFactory = conext.RequestServices.GetRequiredService<IHttpClientFactory>();
+
+            return new ForwardContext(conext, request, httpClientFactory);
         }
 
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext)

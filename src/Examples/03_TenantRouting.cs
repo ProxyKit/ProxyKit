@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +20,7 @@ namespace ProxyKit.Examples
             public void Configure(IApplicationBuilder app)
             {
                 app.RunProxy(
-                    async (context, handle) =>
+                    context =>
                     {
                         // Example of how to route a request to a backend host based on TenantId claim
                         // in a JWT Bearer token. Note: the backend service should still token validation.
@@ -27,7 +28,7 @@ namespace ProxyKit.Examples
                         var authorization = context.Request.Headers["Authorization"].SingleOrDefault();
                         if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer"))
                         {
-                            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
                         }
                         var token = authorization.Substring(0, "Bearer ".Length);
                         var handler = new JwtSecurityTokenHandler();
@@ -36,13 +37,12 @@ namespace ProxyKit.Examples
 
                         if (tenantIdClaim == null)
                         {
-                            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Unauthorized));
                         }
 
-                        var forwardContext = context
-                            .ForwardTo($"http://{tenantIdClaim.Value}.internal:5001");
-
-                        return await handle(forwardContext);
+                        return context
+                            .ForwardTo($"http://{tenantIdClaim.Value}.internal:5001")
+                            .Handle();
                     });
             }
         }

@@ -27,24 +27,22 @@ namespace ProxyKit.Examples
                 var roundRobin = new RoundRobin<string>(hosts);
 
                 app.RunProxy(
-                    async (context, handle) =>
+                    async context =>
                     {
                         var host = roundRobin.Next();
 
-                        var forwardContext = context
+                        var response = await context
                             .ForwardTo(host)
-                            .ApplyXForwardedHeaders();
-
-                        var response = await handle(forwardContext);
+                            .ApplyXForwardedHeaders()
+                            .Handle();
 
                         // failover
                         if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                         {
-                            forwardContext = context
+                            return await context
                                 .ForwardTo(host)
-                                .ApplyXForwardedHeaders();
-
-                            return await handle(forwardContext);
+                                .ApplyXForwardedHeaders()
+                                .Handle();
                         }
 
                         return response;

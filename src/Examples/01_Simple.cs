@@ -14,14 +14,10 @@ namespace ProxyKit.Examples
 
             public void Configure(IApplicationBuilder app)
             {
-                app.RunProxy((context, handle) =>
-                {
-                    var forwardContext = context
-                        .ForwardTo("http://localhost:5001")
-                        .ApplyXForwardedHeaders();
-
-                    return handle(forwardContext);
-                });
+                app.RunProxy(context => context
+                    .ForwardTo("http://localhost:5001")
+                    .ApplyXForwardedHeaders()
+                    .Handle());
             }
         }
     }

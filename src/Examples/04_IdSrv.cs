@@ -76,14 +76,10 @@ namespace ProxyKit.Examples
                 });
 
                 app.RunProxy(
-                    (context, handle) =>
-                    {
-                        var forwardContext = context
-                            .ForwardTo(_appConfiguration.ForwardUrl)
-                            .ApplyXForwardedHeaders();
-
-                        return handle(forwardContext);
-                    });
+                    context => context
+                        .ForwardTo(_appConfiguration.ForwardUrl)
+                        .ApplyXForwardedHeaders()
+                        .Handle());
             }
         }
 

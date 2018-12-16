@@ -78,15 +78,14 @@ namespace ProxyKit.Examples
                 var roundRobin = new RoundRobin<string>(hosts);
 
                 app.RunProxy(
-                    (context, handle) =>
+                    context =>
                     {
                         var host = roundRobin.Next();
 
-                        var forwardContext = context
+                        return context
                             .ForwardTo(host)
-                            .ApplyXForwardedHeaders();
-
-                        return handle(forwardContext);
+                            .ApplyXForwardedHeaders()
+                            .Handle();
                     });
             }
         }

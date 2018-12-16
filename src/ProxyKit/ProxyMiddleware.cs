@@ -31,44 +31,7 @@ namespace ProxyKit
 
         public async Task Invoke(HttpContext context)
         {
-            var httpClient = _httpClientFactory.CreateClient("ProxyKit");
-
-            async Task<HttpResponseMessage> Handle(ForwardContext forwardContext)
-            {
-                try
-                {
-                    return await httpClient.SendAsync(
-                        forwardContext.Request,
-                        HttpCompletionOption.ResponseHeadersRead,
-                        context.RequestAborted);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    // Task cancelled exceptions can happen when either client disconnects before server has time to respond 
-                    // or when the proxy request times out. 
-                    if (RequestHasTimedOut(ex))
-                    {
-                        return new HttpResponseMessage(HttpStatusCode.GatewayTimeout);
-                    }
-
-                    throw;
-                }
-                catch (OperationCanceledException)
-                {
-                    return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
-                }
-                catch (HttpRequestException ex)
-                {
-                    if (UpstreamIsUnavailable(ex))
-                    {
-                        return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
-                    }
-
-                    throw;
-                }
-            }
-
-            using (var response = await _proxyOptions.HandleProxyRequest(context, Handle))
+            using (var response = await _proxyOptions.HandleProxyRequest(context))
             {
                 await CopyProxyHttpResponse(context, response);
             }
