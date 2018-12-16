@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,13 +7,12 @@ namespace ProxyKit
 {
     public static class ProxyContextExtensions
     {
-        public static ForwardContext ForwardTo(this HttpContext conext, string destinationUri)
+        public static ForwardContext ForwardTo(this HttpContext conext, UpstreamHost upstreamHost)
         {
-            var destUri = new Uri(destinationUri);
             var uri = new Uri(UriHelper.BuildAbsolute(
-                destUri.Scheme,
-                new HostString(destUri.Host, destUri.Port),
-                destUri.AbsolutePath,
+                upstreamHost.Scheme,
+                upstreamHost.Host,
+                upstreamHost.PathBase,
                 conext.Request.Path,
                 conext.Request.QueryString));
 
