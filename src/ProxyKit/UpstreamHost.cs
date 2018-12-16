@@ -4,11 +4,15 @@ using Microsoft.AspNetCore.Http;
 namespace ProxyKit
 {
     /// <summary>
-    ///     Represents an upstream host to which request can be forwarded to.
+    ///     Represents an upstream host to which requests can be forwarded to.
     /// </summary>
-    public class UpstreamHost
+    public sealed class UpstreamHost : IEquatable<UpstreamHost>
     {
-        public UpstreamHost(string scheme, HostString host, PathString pathBase = default)
+        public UpstreamHost(
+            string scheme,
+            HostString host,
+            PathString pathBase = default,
+            uint weight = 1)
         {
             if (string.IsNullOrWhiteSpace(scheme))
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(scheme));
@@ -18,6 +22,22 @@ namespace ProxyKit
             Scheme = scheme;
             Host = host;
             PathBase = pathBase;
+            Weight = weight;
+        }
+
+        public UpstreamHost(
+            string uri,
+            uint weight = 1)
+        {
+            if (string.IsNullOrWhiteSpace(uri))
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(uri));
+
+            var upstreamUri = new Uri(uri);
+
+            Scheme = upstreamUri.Scheme;
+            Host = HostString.FromUriComponent(upstreamUri);
+            PathBase = PathString.FromUriComponent(upstreamUri);
+            Weight = weight;
         }
 
         public string Scheme { get; }
@@ -26,23 +46,51 @@ namespace ProxyKit
 
         public PathString PathBase { get; }
 
+        public uint Weight { get; }
+
         public override string ToString()
         {
-            return $"{Scheme}://{Host.ToString()}/{PathBase.Value}";
+            return $"{Scheme}://{Host.ToString()}{PathBase.Value}";
         }
 
-        public static implicit operator UpstreamHost(string upstreamUri)
-        {
-            var uri = new Uri(upstreamUri);
-            return new UpstreamHost(
-                uri.Scheme,
-                HostString.FromUriComponent(uri),
-                PathString.FromUriComponent(uri));
-        }
+        public static implicit operator UpstreamHost(string uri) 
+            => new Uri(uri);
 
         public static implicit operator UpstreamHost(Uri upstreamUri) => new UpstreamHost(
             upstreamUri.Scheme,
             HostString.FromUriComponent(upstreamUri),
             PathString.FromUriComponent(upstreamUri));
+
+        public bool Equals(UpstreamHost other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return string.Equals(Scheme, other.Scheme) && Host.Equals(other.Host) && PathBase.Equals(other.PathBase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((UpstreamHost)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Scheme.GetHashCode();
+                hashCode = (hashCode * 397) ^ Host.GetHashCode();
+                hashCode = (hashCode * 397) ^ PathBase.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(UpstreamHost left, UpstreamHost right) 
+            => Equals(left, right);
+
+        public static bool operator !=(UpstreamHost left, UpstreamHost right) 
+            => !Equals(left, right);
     }
 }
