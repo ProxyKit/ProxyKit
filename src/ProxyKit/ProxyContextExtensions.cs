@@ -22,9 +22,11 @@ namespace ProxyKit
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            var httpClientFactory = conext.RequestServices.GetRequiredService<IHttpClientFactory>();
+            var proxyKitClient = conext
+                .RequestServices
+                .GetRequiredService<ProxyKitClient>();
 
-            return new ForwardContext(conext, request, httpClientFactory);
+            return new ForwardContext(conext, request, proxyKitClient.Client);
         }
 
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext)

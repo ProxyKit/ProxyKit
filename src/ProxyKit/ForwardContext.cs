@@ -10,14 +10,14 @@ namespace ProxyKit
 {
     public class ForwardContext
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
 
-        public ForwardContext(
+        internal ForwardContext(
             HttpContext httpContext,
             HttpRequestMessage request,
-            IHttpClientFactory httpClientFactory)
+            HttpClient httpClient)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClient = httpClient;
             HttpContext = httpContext;
             Request = request;
         }
@@ -28,10 +28,9 @@ namespace ProxyKit
 
         public async Task<HttpResponseMessage> Handle()
         {
-            var httpClient = _httpClientFactory.CreateClient("ProxyKit");
             try
             {
-                return await httpClient.SendAsync(
+                return await _httpClient.SendAsync(
                     Request,
                     HttpCompletionOption.ResponseHeadersRead,
                     HttpContext.RequestAborted);

@@ -25,7 +25,7 @@ namespace ProxyKit
 
             services.Configure(configureOptions);
 
-            services.AddHttpClient("ProxyKit")
+            services.AddHttpClient<ProxyKitClient>()
                 .ConfigureHttpClient((sp, c) => sp.GetRequiredService<IOptions<SharedProxyOptions>>().Value.ConfigureHttpClient?.Invoke(sp, c))
                 .ConfigurePrimaryHttpMessageHandler(sp =>
                     // Get the message handler from the options
