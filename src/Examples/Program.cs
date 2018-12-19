@@ -57,19 +57,10 @@ namespace ProxyKit.Examples
 
             public void Configure(IApplicationBuilder app, IConfiguration config)
             {
-                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                app.UseXForwardedHeaders(new ForwardedHeadersOptions
                 {
                     AllowedHosts = new List<string> {"localhost"},
                     ForwardedHeaders = ForwardedHeaders.All
-                });
-
-                app.Use((context, next) =>
-                {
-                    if (context.Request.Headers.TryGetValue("X-Forwarded-PathBase", out var pathBase))
-                    {
-                        context.Request.PathBase = new PathString(pathBase);
-                    }
-                    return next();
                 });
 
                 app.Run(async context =>

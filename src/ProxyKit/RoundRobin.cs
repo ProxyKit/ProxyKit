@@ -10,7 +10,7 @@ namespace ProxyKit
     public class RoundRobin: IEnumerable<UpstreamHost>
     {
         private readonly HashSet<UpstreamHost> _hosts = new HashSet<UpstreamHost>();
-        private UpstreamHost[] _distribution ;
+        private UpstreamHost[] _distribution;
         private readonly ReaderWriterLockSlim _lockSlim = new ReaderWriterLockSlim();
         private int _position;
 

@@ -50,7 +50,11 @@ namespace ProxyKit
         [Fact]
         public void Can_append_x_forwarded_headers_with_pathbase()
         {
-            _headers.ApplyXForwardedHeaders(IPAddress.Parse("1.2.3.4"), new HostString("example.com"), "https", "/foo/");
+            _headers.ApplyXForwardedHeaders(
+                IPAddress.Parse("1.2.3.4"),
+                new HostString("example.com"),
+                "https",
+                "/foo/");
 
             var pathBaseValue = _headers.GetValues(XForwardedExtensions.XForwardedPathBase).ToArray();
 

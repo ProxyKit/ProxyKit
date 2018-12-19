@@ -190,6 +190,8 @@ namespace ProxyKit
 
         public void Configure(IApplicationBuilder app, IServiceProvider sp)
         {
+            app.UseXForwardedHeaders();
+
             app.Map("/accepted", appInner => 
                 appInner.RunProxy(async context 
                     => new HttpResponseMessage(HttpStatusCode.Accepted)));
