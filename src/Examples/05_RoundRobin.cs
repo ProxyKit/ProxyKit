@@ -33,7 +33,7 @@ namespace ProxyKit.Examples
                         var response = await context
                             .ForwardTo(host)
                             .ApplyXForwardedHeaders()
-                            .Handle();
+                            .Execute();
 
                         // failover
                         if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
@@ -41,7 +41,7 @@ namespace ProxyKit.Examples
                             return await context
                                 .ForwardTo(host)
                                 .ApplyXForwardedHeaders()
-                                .Handle();
+                                .Execute();
                         }
 
                         return response;

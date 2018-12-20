@@ -26,7 +26,7 @@ namespace ProxyKit
 
         public HttpRequestMessage Request { get; }
 
-        public async Task<HttpResponseMessage> Handle()
+        public async Task<HttpResponseMessage> Execute()
         {
             try
             {

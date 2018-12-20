@@ -19,14 +19,14 @@ namespace ProxyKit.Examples
                     context => context
                         .ForwardTo("http://localhost:5001/foo/")
                         .ApplyXForwardedHeaders()
-                        .Handle());
+                        .Execute());
 
                 app.RunProxy(
                     "/app2",
                     context => context
                         .ForwardTo("http://localhost:5002/bar/")
                         .ApplyXForwardedHeaders()
-                        .Handle());
+                        .Execute());
             }
         }
     }

@@ -84,7 +84,7 @@ namespace ProxyKit.Examples
                         return context
                             .ForwardTo(host)
                             .ApplyXForwardedHeaders()
-                            .Handle();
+                            .Execute();
                     });
             }
         }

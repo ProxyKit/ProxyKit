@@ -42,7 +42,7 @@ namespace ProxyKit.Examples
 
                         return context
                             .ForwardTo($"http://{tenantIdClaim.Value}.internal:5001")
-                            .Handle();
+                            .Execute();
                     });
             }
         }

@@ -79,7 +79,7 @@ namespace ProxyKit.Examples
                     context => context
                         .ForwardTo(_appConfiguration.ForwardUrl)
                         .ApplyXForwardedHeaders()
-                        .Handle());
+                        .Execute());
             }
         }
 
