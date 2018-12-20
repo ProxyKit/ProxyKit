@@ -1,5 +1,7 @@
 # ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]
 
+[Readme is WIP]
+
 A toolkit to create **reverse proxies** hosted in ASP.NET Core as middleware. This
 allows focused code-first proxies that can be embedded in existing ASP.NET Core
 applications or deployed as standalone applications. Deployable anywhere ASP.NET
