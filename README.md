@@ -20,8 +20,10 @@ environments.
 <!-- TOC depthFrom:2 -->
 
 - [1. Quick Start](#1-quick-start)
-- [2. XForwardedHeaders](#2-xforwardedheaders)
-- [3. Making upstream applications reverse proxy friendly](#3-making-upstream-applications-reverse-proxy-friendly)
+- [2. Customising the upstream request](#2-customising-the-upstream-request)
+- [3. Customising the upstream response](#3-customising-the-upstream-response)
+- [3. XForwardedHeaders](#3-xforwardedheaders)
+- [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
 - [4. Error handling](#4-error-handling)
 - [5. Testing](#5-testing)
 - [6. Distribution](#6-distribution)
@@ -38,31 +40,38 @@ environments.
 
 ProxyKit is a `NetStandard2.0` package. Install into your ASP.NET Core project:
 
-    dotnet add package ProxyKit
+```bash
+dotnet add package ProxyKit
+```
 
 In your `Startup`, add the proxy services:
 
-    public void ConfigureServices(IServiceCollection services)
-    {
-        ...
-        services.AddProxy();
-        ...
-    }
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    ...
+    services.AddProxy();
+    ...
+}
+```
 
 Forward requests to `localhost:5001`:
 
-    public void Configure(IApplicationBuilder app)
-    {
-        app.RunProxy(context => context
-            .ForwardTo("http://localhost:5001")
-            .Execute());
-    }
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context => context
+        .ForwardTo("http://upstream-server:5001")
+        .Execute());
+}
+```
 
 What is happening here?
 
  1. `context.ForwardTo(upstreamHost)` is an extension method over the
-    `HttpContext` that creates and initializes an `HttpRequestMessage`.
- 2. `Execute` forwards the request to the upstream host and return an
+    `HttpContext` that creates and initializes an `HttpRequestMessage` with
+    the original request headers copied over and returns a `ForwardContext`.
+ 2. `Execute` forwards the request to the upstream server and returns an
     `HttpResponseMessage`.
  3. The proxy middleware then takes the response and applies it to
     `HttpContext.Response`.
@@ -70,16 +79,118 @@ What is happening here?
 Note: `RunProxy` is [terminal] - anything added to the pipeline after `RunProxy`
 will never be executed.
 
-## 2. XForwardedHeaders
+## 2. Customising the upstream request
 
-Many applications will need to know what their "outside" url is in order to
-generate correct urls so we need to tell them that. This is achieved using
-`X-Forwarded` and `Forwarded` headers
+One can modify the upstream request headers prior to sending them to suit
+customisation needs. ProxyKit doesn't add, remove nor modify any headers by
+default; one must opt in any behaviours explicitly.
 
-`Forwarded` header support is on backlog. At time of writing, it is [not
-supported](https://github.com/aspnet/AspNetCore/issues/5978) in ASP.NET Core.
+In this example we will add a `X-Correlation-Id` header if it does not exist:
 
-## 3. Making upstream applications reverse proxy friendly
+```csharp
+public const string XCorrelationId = "X-Correlation-ID";
+
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context =>
+    {
+        var forwardContext = context.ForwardTo("http://localhost:5001");
+        if (forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
+        {
+            forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
+        }
+        return forwardContext.Execute();
+    });
+}
+```
+
+This can be encapsulated as an extension method:
+
+```csharp
+public static class CorrelationIdExtensions
+{
+    public static ForwardContext ApplyCorrelationId(this ForwardContext forwardContext)
+    {
+        if (forwardContext.UpstreamRequest.Headers.Contains("X-Correlation-ID"))
+        {
+            forwardContext.UpstreamRequest.Headers.Add("X-Correlation-ID", Guid.NewGuid().ToString());
+        }
+        return forwardContext;
+    }
+}
+```
+
+... making the proxy code a little nicer to read:
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context => context
+        .ForwardTo("http://localhost:5001")
+        .ApplyCorrelationId()
+        .Execute());
+}
+```
+
+## 3. Customising the upstream response
+
+Response from an upstream server can be modified before it is sent to the
+client. In this example we are removing a header:
+
+```csharp
+ public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(async context =>
+    {
+        var response = await context
+            .ForwardTo("http://localhost:5001")
+            .Execute();
+
+        response.Headers.Remove("MachineID");
+
+        return response;
+    });
+}
+```
+
+## 3. XForwardedHeaders
+
+Many applications will need to know what their "outside" host / url is in order
+to generate correct values. This is achieved using `X-Forwarded-*` and
+`Forwarded` headers. ProxyKit supports applying `X-Forward-*` headers out of the
+box (applying `Forwarded` headers support is on backlog). At time of writing,
+`Forwarded` is [not supported](https://github.com/aspnet/AspNetCore/issues/5978)
+in ASP.NET Core.
+
+To apply `X-Forwarded-Headers` to the request to the upstream server:
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context => context
+        .ForwardTo("http://upstream-server:5001")
+        .ApplyXForwardedHeaders()
+        .Execute());
+}
+```
+
+This will add `X-Forward-For`, `X-Forwarded-Host` and `X-Forwarded-Proto`
+headers to the upstream request using values from `HttpContext`. If the proxy
+middleware is hosted on a path and a `PathBase` exists on the request, then an
+`X-Forwarded-PathBase` is also added.
+
+## 4. Making upstream servers reverse proxy friendly
+
+Applications that are deployed behind a reverse proxy typically need to be
+somewhat aware of that so they can generate correct URLs and paths when
+responding to a browser. That is, they look at `X-Forward-*` \ `Forwarded`
+headers.
+
+In ASP.NET Core, this means using the Forwarded Headers Middleware in your
+application. Please refer to the [documentation][forwarded headers middleware]
+for correct usage (and note the security advisory!).
+
+
 
 ## 4. Error handling
 
@@ -131,6 +242,7 @@ gratefully accepted.
 [aspnet labs]: https://github.com/aspnet/AspLabs
 [`httpclientfactory`]:  https://github.com/aspnet/Extensions/tree/master/src/HttpClientFactory
 [terminal]: https://docs.microsoft.com/en-ie/dotnet/api/microsoft.aspnetcore.builder.runextensions.run?view=aspnetcore-2.1
+[forwarded headers middleware]: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-2.2
 [aws lambda]: https://aws.amazon.com/blogs/developer/running-serverless-asp-net-core-web-apis-with-amazon-lambda/
 [azure functions]: https://blog.wille-zone.de/post/serverless-webapi-hosting-aspnetcore-webapi-in-azure-functions/
 [ocelot]: https://github.com/ThreeMammals/Ocelot

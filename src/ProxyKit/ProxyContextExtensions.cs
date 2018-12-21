@@ -29,7 +29,7 @@ namespace ProxyKit
 
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext)
         {
-            var headers = forwardContext.Request.Headers;
+            var headers = forwardContext.UpstreamRequest.Headers;
             var protocol = forwardContext.HttpContext.Request.Scheme;
             var @for = forwardContext.HttpContext.Connection.RemoteIpAddress;
             var host = forwardContext.HttpContext.Request.Headers["Host"];

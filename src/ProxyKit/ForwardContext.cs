@@ -14,24 +14,24 @@ namespace ProxyKit
 
         internal ForwardContext(
             HttpContext httpContext,
-            HttpRequestMessage request,
+            HttpRequestMessage upstreamRequest,
             HttpClient httpClient)
         {
             _httpClient = httpClient;
             HttpContext = httpContext;
-            Request = request;
+            UpstreamRequest = upstreamRequest;
         }
 
         public HttpContext HttpContext { get; }
 
-        public HttpRequestMessage Request { get; }
+        public HttpRequestMessage UpstreamRequest { get; }
 
         public async Task<HttpResponseMessage> Execute()
         {
             try
             {
                 return await _httpClient.SendAsync(
-                    Request,
+                    UpstreamRequest,
                     HttpCompletionOption.ResponseHeadersRead,
                     HttpContext.RequestAborted);
             }
