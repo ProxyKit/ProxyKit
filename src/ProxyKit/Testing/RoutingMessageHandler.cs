@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,15 +15,27 @@ namespace ProxyKit.Testing
             = new Dictionary<string, HostHandler>();
 
         /// <summary>
-        ///     Adds a handler for a given Uri.
+        ///     Adds a handler for a given Origin.
         /// </summary>
-        /// <param name="uri"></param>
-        /// <param name="handler"></param>
-        public void AddHandler(Uri uri, HttpMessageHandler handler)
+        /// <param name="origin">The origin to whom requests are routed to.</param>
+        /// <param name="handler">The handler for requests to the specified origin.</param>
+        public void AddHandler(Origin origin, HttpMessageHandler handler)
         {
             var endpoint = new HostHandler(handler);
-            var host = $"{uri.Host}:{uri.Port}";
+            var host = $"{origin.Host}:{origin.Port}";
             _hosts.Add(host, endpoint);
+        }
+
+        /// <summary>
+        ///     Adds a handler for a given origin.
+        /// </summary>
+        /// <param name="host">The origin host.</param>
+        /// <param name="port">The origin port.</param>
+        /// <param name="handler">The handler for requests to the specified origin.</param>
+        public void AddHandler(string host, uint port, HttpMessageHandler handler)
+        {
+            var origin = new Origin(host, port);
+            AddHandler(origin, handler);
         }
 
         protected override Task<HttpResponseMessage> SendAsync(

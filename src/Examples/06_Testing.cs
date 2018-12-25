@@ -17,56 +17,56 @@ namespace ProxyKit.Examples
         {
             var router = new RoutingMessageHandler();
 
-            // Build proxy
+            // Build Proxy TestServer
             var proxyWebHostBuilder = new WebHostBuilder()
                 .UseStartup<ProxyStartup>()
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<HttpMessageHandler>(router);
+                    // configure proxy to forward requests to the router
+                    services.AddSingleton<Func<HttpMessageHandler>>(() => router);
                 })
                 .UseUrls("http://localhost:5000");
             var proxyTestServer = new TestServer(proxyWebHostBuilder);
-            router.AddHandler(new Uri("http://localhost:5000"), proxyTestServer.CreateHandler());
+            router.AddHandler("localhost", 5000, proxyTestServer.CreateHandler());
 
-            // Build Host1
+            // Build Host1 TestServer
             var host1WebHostBuilder = new WebHostBuilder()
                 .UseStartup<Program.HostStartup>()
                 .UseSetting("hostname", "HOST 1")
                 .UseUrls("http://localhost:5001");
             var host1TestServer = new TestServer(host1WebHostBuilder);
-            router.AddHandler(new Uri("http://localhost:5001"), host1TestServer.CreateHandler());
+            router.AddHandler("localhost", 5001, host1TestServer.CreateHandler());
 
-            // Build Host2
+            // Build Host2 TestServer
             var host2WebHostBuilder = new WebHostBuilder()
                 .UseStartup<Program.HostStartup>()
                 .UseSetting("hostname", "HOST 2")
                 .UseUrls("http://localhost:5002");
             var host2TestServer = new TestServer(host2WebHostBuilder);
-            router.AddHandler(new Uri("http://localhost:5002"), host2TestServer.CreateHandler());
+            router.AddHandler("localhost", 5002, host2TestServer.CreateHandler());
 
-            while (true)
-            {
-                var httpClient = new HttpClient(router);
-                var response = await httpClient.GetAsync("http://localhost:5000/", cancellationToken);
-                var body = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(body);
-                Console.ReadLine();
-            }
+            // Get HttpClient make a request to the proxy
+
+            var httpClient = new HttpClient(router);
+            var response = await httpClient.GetAsync("http://localhost:5000/", cancellationToken);
         }
 
+        // The Proxy Startup that has a handler (the routing handler) injected.
         public class ProxyStartup
         {
-            private readonly HttpMessageHandler _handler;
+            private readonly Func<HttpMessageHandler> _createHandler;
 
-            public ProxyStartup(HttpMessageHandler handler)
+            public ProxyStartup(Func<HttpMessageHandler> createHandler)
             {
-                _handler = handler;
+                _createHandler = createHandler;
             }
 
             public void ConfigureServices(IServiceCollection services)
             {
+                // Register the handler in the ProxyOptions
+                // Note: this is a 
                 services.AddProxy(options 
-                    => options.GetMessageHandler= () => _handler);
+                    => options.GetMessageHandler = _createHandler);
             }
 
             public void Configure(IApplicationBuilder app)
