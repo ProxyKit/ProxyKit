@@ -24,16 +24,11 @@ environments.
 - [3. Customising the upstream response](#3-customising-the-upstream-response)
 - [3. XForwardedHeaders](#3-xforwardedheaders)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
-- [4. Configuring HttpClient](#4-configuring-httpclient)
+- [4. Configuring ProxyOptions](#4-configuring-proxyoptions)
 - [5. Error handling](#5-error-handling)
 - [6. Testing](#6-testing)
 - [7. Distribution](#7-distribution)
     - [7.1. Round Robin](#71-round-robin)
-- [8. Further examples](#8-further-examples)
-- [9. Performance overhead](#9-performance-overhead)
-- [10. Note about Serverless](#10-note-about-serverless)
-- [9. Comparison with Ocelot](#9-comparison-with-ocelot)
-- [10. Contributing & Feedback](#10-contributing--feedback)
 
 <!-- /TOC -->
 
@@ -232,16 +227,34 @@ var options = new ForwardedHeadersOptions
 app.UseXForwardedHeaders(options);
 ```
 
-## 4. Configuring HttpClient
+## 4. Configuring ProxyOptions
 
-It is possible to configure the HTTP Client on each request e.g. configuring a
-timeout:
+When adding the Proxy to the service collection there are a couple of options 
+available to configure the proxy behavior:
 
 ```csharp
-services.AddProxy(options =>
-    options.ConfigureHttpClient = 
-        (serviceProvider, httpClient) => httpClient.Timeout = TimeSpan.FromSeconds(5));
+services.AddProxy(options => /* configure options here */);
 ```
+
+There are two options :
+
+1. `options.ConfigureHttpClient`: an `Action<HttpClient>` to configure the HTTP
+   Client on each request e.g. configuring a timeout:
+    ```csharp
+    services.AddProxy(options 
+        => options.ConfigureHttpClient =
+            (serviceProvider, client) => client.Timeout = TimeSpan.FromSeconds(5));
+    ```
+
+2. Configure the primary `HttpMessageHandler` factory. This is typically used in
+   testing to inject a test handler (see Testing below). This is a factory
+   method as, internally, `HttpClientFactory` recreates the HttpHandler pipeline 
+   disposing previously created handlers.
+
+    ```csharp
+    services.AddProxy(options =>
+        options.GetMessageHandler = () => _httpMessageHandler);
+    ```
 
 ## 5. Error handling
 
@@ -257,15 +270,80 @@ a scenario is missing.
 
 ## 6. Testing
 
+As ProxyKit is standard ASP.NET Core middleware, it can be tested using the
+standard in-memory `TestServer` mechanism.
+
+Often you will want to test ProxyKit with your application and perhaps test the
+behaviour of your application when load balanced with two or more instances as
+indicated below.
+
+```
+                               +----------+
+                               |"Outside" |
+                               |HttpClient|
+                               +-----+----+
+                                     |
+                                     |
+                                     |
+                         +-----------+---------+
+    +-------------------->RoutingMessageHandler|
+    |                    +-----------+---------+
+    |                                |
+    |                                |
+    |           +--------------------+-------------------------+
+    |           |                    |                         |
++---+-----------v----+      +--------v---------+     +---------v--------+
+|Proxy TestServer    |      |Host1 TestServer  |     |Host2 TestServer  |
+|with Routing Handler|      |HttpMessageHandler|     |HttpMessageHandler|
++--------------------+      +------------------+     +------------------+
+```
+
+`RoutingMessageHandler` is an `HttpMessageHandler` that will route requests to
+to specific host based on on the origin it is configured with. For ProyKit
+to forward requests (in memory) to the upstream hosts, it needs to be configured
+to use the `RoutingMessageHandler` as it's primary `HttpMessageHandler`.
+
+Full example can been viewed [here](src/Examples/06_Testing.cs).
+
 ## 7. Distribution
+
+A distribution is mechanism to decide which upstream server to forward the
+request to and is typically a concern for load balancing. Out of the box,
+ProxyKit currently supports one type of distribution, Round Robin. Other types
+are planned.
 
 ### 7.1. Round Robin
 
+Round Robin simply distributes requests as they arrive to the next host in a 
+distribution list:
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    var roundRobin = new RoundRobin
+    {
+        new UpstreamHost("http://localhost:5001", weight: 1),
+        new UpstreamHost("http://localhost:5002", weight: 2)
+    };
+
+    app.RunProxy(
+        async context =>
+        {
+            var host = roundRobin.Next();
+
+            return await context
+                .ForwardTo(host)
+                .Execute();
+        });
+}
+
 ## 8. Further examples
 
-## 9. Performance overhead
+Browse [Examples](src/Examples) for further inspiration.
 
-GetTypedHeaders
+## 9. Performance considerations
+
+// TODO
 
 ## 10. Note about Serverless
 
@@ -277,7 +355,7 @@ means ProxyKit should only be used for API (json) proxying in production on
 Serverless. (Though proxing other payloads is fine for dev / exploration /
 quick'n'dirty purposes.)
 
-## 9. Comparison with Ocelot
+## 11. Comparison with Ocelot
 
 [Ocelot] is an API Gateway also on ASP.NET Core, and  A key difference between API
 Gateways and general Reverse Proxies is that the former tend to be **message**
@@ -290,10 +368,10 @@ Supported Ocelot docs][ocelot not supported].
 Combining ProxyKit with Ocelot would give some nice options for a variety of
 scenarios.
 
-## 10. Contributing & Feedback
+## 12. Contributing / Feedback / Questions
 
 Any ideas for features, bugs or questions, please create an issue. Pull requests 
-gratefully accepted.
+gratefully accepted but please create an issue first.
 
 [travis build]: https://travis-ci.org/damianh/ProxyKit.svg?branch=master
 [project]: https://travis-ci.org/damianh/ProxyKit
