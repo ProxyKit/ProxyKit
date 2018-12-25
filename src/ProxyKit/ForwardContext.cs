@@ -35,36 +35,21 @@ namespace ProxyKit
                     HttpCompletionOption.ResponseHeadersRead,
                     HttpContext.RequestAborted);
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException ex) when (ex.InnerException is IOException)
             {
-                // Task cancelled exceptions can happen when either client disconnects before server has time to respond 
-                // or when the proxy request times out. 
-                if (RequestHasTimedOut(ex))
-                {
-                    return new HttpResponseMessage(HttpStatusCode.GatewayTimeout);
-                }
-
-                throw;
+                return new HttpResponseMessage(HttpStatusCode.GatewayTimeout);
             }
             catch (OperationCanceledException)
             {
+                // Happens when Timeout is low and upstream host is not reachable.
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException ex) 
+                when (ex.InnerException is IOException || ex.InnerException is SocketException)
             {
-                if (UpstreamIsUnavailable(ex))
-                {
-                    return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
-                }
-
-                throw;
+                // Happens when server is not reachable
+                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             }
         }
-
-        private static bool RequestHasTimedOut(OperationCanceledException ex)
-            => ex.InnerException is IOException;
-
-        private static bool UpstreamIsUnavailable(HttpRequestException ex)
-            => ex.InnerException is IOException || ex.InnerException is SocketException;
     }
 }
