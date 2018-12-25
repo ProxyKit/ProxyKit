@@ -24,13 +24,14 @@ environments.
 - [3. Customising the upstream response](#3-customising-the-upstream-response)
 - [3. XForwardedHeaders](#3-xforwardedheaders)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
-- [4. Error handling](#4-error-handling)
-- [5. Testing](#5-testing)
-- [6. Distribution](#6-distribution)
-    - [6.1. Round Robin](#61-round-robin)
-- [6. Further examples](#6-further-examples)
-- [7. Performance overhead](#7-performance-overhead)
-- [8. Note about Serverless](#8-note-about-serverless)
+- [4. Configuring HttpClient](#4-configuring-httpclient)
+- [5. Error handling](#5-error-handling)
+- [6. Testing](#6-testing)
+- [7. Distribution](#7-distribution)
+    - [7.1. Round Robin](#71-round-robin)
+- [8. Further examples](#8-further-examples)
+- [9. Performance overhead](#9-performance-overhead)
+- [10. Note about Serverless](#10-note-about-serverless)
 - [9. Comparison with Ocelot](#9-comparison-with-ocelot)
 - [10. Contributing & Feedback](#10-contributing--feedback)
 
@@ -184,30 +185,89 @@ middleware is hosted on a path and a `PathBase` exists on the request, then an
 Applications that are deployed behind a reverse proxy typically need to be
 somewhat aware of that so they can generate correct URLs and paths when
 responding to a browser. That is, they look at `X-Forward-*` \ `Forwarded`
-headers.
+headers and use their values .
 
-In ASP.NET Core, this means using the Forwarded Headers Middleware in your
+In ASP.NET Core, this means using the Forwarded Headers middleware in your
 application. Please refer to the [documentation][forwarded headers middleware]
 for correct usage (and note the security advisory!).
 
+**Note:** the Forwarded Headers middleware does not support
+`X-Forwarded-PathBase`. This means if you proxy `http://example.com/foo/` to
+`http://upstream-host/` the `/foo/` part is lost and absolute URLs cannot be
+generated unless you configure your applications PathBase directly.
+
+Related issues and discussions:
+
+- https://github.com/aspnet/AspNetCore/issues/5978
+- https://github.com/aspnet/AspNetCore/issues/5898
 
 
-## 4. Error handling
+To support PathBase dynamically in your application with `X-Forwarded-PathBase`,
+examine the header early in your pipeline and set the `PathBase` accordingly:
 
-## 5. Testing
+```csharp
+var options = new ForwardedHeadersOptions
+{
+   ...
+};
+app.UseForwardedHeaders(options);
+app.Use((context, next) => 
+{
+    if (context.Request.Headers.TryGetValue("X-Forwarded-PathBase", out var pathBases))
+    {
+        context.Request.PathBase = pathBases.First();
+    }
+    return next();
+});
+```
 
-## 6. Distribution
+Alternatively you can use ProxKit's `UseXForwardedHeaders` extension that
+perform the same as the above (including calling `UseForwardedHeaders`):
 
-### 6.1. Round Robin
+```csharp
+var options = new ForwardedHeadersOptions
+{
+   ...
+};
+app.UseXForwardedHeaders(options);
+```
 
-## 6. Further examples
+## 4. Configuring HttpClient
 
-## 7. Performance overhead
+It is possible to configure the HTTP Client on each request e.g. configuring a
+timeout:
+
+```csharp
+services.AddProxy(options =>
+    options.ConfigureHttpClient = 
+        (serviceProvider, httpClient) => httpClient.Timeout = TimeSpan.FromSeconds(5));
+```
+
+## 5. Error handling
+
+When `HttpClient` throws the following logic applies:
+
+1. When upstream server is not reachable then `ServiceUnavailable` is returned.
+2. When upstream server is slow and client timeouts then `GatewayTimeout` is
+   returned.
+
+Not all exception scenarios and variations are caught which may result in a
+`InternalServerError` being returned to your clients. Please create an issue if
+a scenario is missing.
+
+## 6. Testing
+
+## 7. Distribution
+
+### 7.1. Round Robin
+
+## 8. Further examples
+
+## 9. Performance overhead
 
 GetTypedHeaders
 
-
-## 8. Note about Serverless
+## 10. Note about Serverless
 
 Whilst is it is possible to run full ASP.NET Core web application in [AWS
 Lambda] and [Azure Functions] it should be noted that Serverless systems are
