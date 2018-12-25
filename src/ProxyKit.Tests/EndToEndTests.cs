@@ -72,14 +72,8 @@ namespace ProxyKit
                     using (var cts = new CancellationTokenSource())
                     {
                         cts.CancelAfter(TimeSpan.FromMilliseconds(1000));
-                        try
-                        {
-                            result = await client.GetAsync("/realServer/slow", cts.Token);
-                            result.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                        }
+                        result = await client.GetAsync("/realServer/slow", cts.Token);
+                        result.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
                     }
 
                     // When server is stopped, should return 
