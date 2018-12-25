@@ -20,7 +20,7 @@ environments.
 - [1. Quick Start](#1-quick-start)
 - [2. Customising the upstream request](#2-customising-the-upstream-request)
 - [3. Customising the upstream response](#3-customising-the-upstream-response)
-- [3. XForwardedHeaders](#3-xforwardedheaders)
+- [3. X-Forwarded Headers](#3-x-forwarded-headers)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
 - [4. Configuring ProxyOptions](#4-configuring-proxyoptions)
 - [5. Error handling](#5-error-handling)
@@ -152,7 +152,7 @@ client. In this example we are removing a header:
 }
 ```
 
-## 3. XForwardedHeaders
+## 3. X-Forwarded Headers
 
 Many applications will need to know what their "outside" host / url is in order
 to generate correct values. This is achieved using `X-Forwarded-*` and
