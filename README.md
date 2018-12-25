@@ -1,8 +1,6 @@
 # ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]
 
-[Readme is WIP]
-
-A toolkit to create **reverse proxies** hosted in ASP.NET Core as middleware. This
+A toolkit to create **HTTP proxies** hosted in ASP.NET Core as middleware. This
 allows focused code-first proxies that can be embedded in existing ASP.NET Core
 applications or deployed as standalone applications. Deployable anywhere ASP.NET
 Core is deployable such as Windows, Linux, Containers and Serverless (with
@@ -29,6 +27,11 @@ environments.
 - [6. Testing](#6-testing)
 - [7. Distribution](#7-distribution)
     - [7.1. Round Robin](#71-round-robin)
+- [8. Further examples](#8-further-examples)
+- [9. Performance considerations](#9-performance-considerations)
+- [10. Note about Serverless](#10-note-about-serverless)
+- [11. Comparison with Ocelot](#11-comparison-with-ocelot)
+- [12. Contributing / Feedback / Questions](#12-contributing--feedback--questions)
 
 <!-- /TOC -->
 
@@ -336,6 +339,7 @@ public void Configure(IApplicationBuilder app)
                 .Execute();
         });
 }
+```
 
 ## 8. Further examples
 
