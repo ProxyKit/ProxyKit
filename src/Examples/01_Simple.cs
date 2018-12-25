@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Examples
 {
-    public class Basic : ExampleBase<Basic.Startup>
+    public class Simple : ExampleBase<Simple.Startup>
     {
         public class Startup
         {
