@@ -1,7 +1,7 @@
 language: csharp
 mono: none
 sudo: false
-dotnet: 2.1.402
+dotnet: 2.2.100
 script: "./build.sh --travis"
 git:
   depth: false
