@@ -90,10 +90,33 @@ namespace ProxyKit
             }
         }
 
+        [Fact]
+        public async Task When_upstream_host_is_not_running_then_should_get_service_unavailable()
+        {
+            using (var server = BuildKestrelBasedServerOnRandomPort())
+            {
+                await server.StartAsync();
+                var port = GetServerPort(server);
+
+                using (var testServer = new TestServer(new WebHostBuilder()
+                    .UseSetting("port", port.ToString())
+                    .UseStartup<TestStartup>()))
+                {
+                    var client = testServer.CreateClient();
+                    // When server is running, response code should be 'ok'
+                    var result = await client.GetAsync("/realServer/normal");
+                    Assert.Equal(result.StatusCode, HttpStatusCode.OK);
+
+                    // When server is stopped, should return ServiceUnavailable.
+                    await server.StopAsync();
+                    result = await client.GetAsync("/realServer/normal");
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
+                }
+            }
+        }
 
         [Fact]
-        public async Task
-            When_timeout_is_really_tight_and_server_not_available_then_operation_cancelled_is_handled_correctly()
+        public async Task When_upstream_host_is_not_running_and_timeout_is_small_then_operation_cancelled_is_service_unavailable()
         {
             using (var server = BuildKestrelBasedServerOnRandomPort())
             {
@@ -106,13 +129,8 @@ namespace ProxyKit
                     .UseStartup<TestStartup>()))
                 {
                     var client = testServer.CreateClient();
-                    // When server is running, response code should be 'ok'
-                    var result = await client.GetAsync("/realServer/normal");
-                    Assert.Equal(result.StatusCode, HttpStatusCode.OK);
-
-                    // When server is stopped, should return 
                     await server.StopAsync();
-                    result = await client.GetAsync("/realServer/normal");
+                    var result = await client.GetAsync("/realServer/normal");
                     Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
                 }
             }
@@ -185,7 +203,8 @@ namespace ProxyKit
         {
             var timeout = _config.GetValue("timeout", 60);
             services.AddProxy(options =>
-                options.ConfigureHttpClient = (sp, client) => client.Timeout = TimeSpan.FromSeconds(timeout));
+                options.ConfigureHttpClient = 
+                    (serviceProvider, client) => client.Timeout = TimeSpan.FromSeconds(timeout));
         }
 
         public void Configure(IApplicationBuilder app, IServiceProvider sp)
