@@ -34,20 +34,20 @@ namespace ProxyKit.Examples
 
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (_, __) => cts.Cancel();
-            new Menu()
+            await new Menu()
                 .Add(
-                    "Basic Forwarding",
-                    () => new Basic().Run(cts.Token))
+                    "Simple Forwarding",
+                    ct => new Simple().Run(ct))
                 .Add(
                     "Path Forwarding",
-                    () => new Paths().Run(cts.Token))
+                    ct => new Paths().Run(ct))
                 .Add(
                     "Round Robin",
-                    () => new RoundRobinLoadBalancer().Run(cts.Token))
+                    ct => new RoundRobinLoadBalancer().Run(ct))
                 .Add(
                     "Testing",
-                    () => new Testing().Run().GetAwaiter().GetResult())
-                .Display();
+                    ct => new Testing().Run(ct))
+                .Display(cts.Token);
         }
 
         public class HostStartup

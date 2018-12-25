@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +13,7 @@ namespace ProxyKit.Examples
 {
     public class Testing
     {
-        public async Task Run()
+        public async Task Run(CancellationToken cancellationToken)
         {
             var router = new RoutingMessageHandler();
 
@@ -46,7 +47,7 @@ namespace ProxyKit.Examples
             while (true)
             {
                 var httpClient = new HttpClient(router);
-                var response = await httpClient.GetAsync("http://localhost:5000/");
+                var response = await httpClient.GetAsync("http://localhost:5000/", cancellationToken);
                 var body = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(body);
                 Console.ReadLine();
