@@ -94,7 +94,7 @@ public void Configure(IApplicationBuilder app)
     app.RunProxy(context =>
     {
         var forwardContext = context.ForwardTo("http://localhost:5001");
-        if (forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
+        if (!forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
         {
             forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
         }
