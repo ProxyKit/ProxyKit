@@ -11,7 +11,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <MinVerMajorMinor>0.1</MinVerMajorMinor>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <TRAVIS_BUILD_NUMBER Condition="'$(TRAVIS_BUILD_NUMBER)' == ''">0</TRAVIS_BUILD_NUMBER>
+    <MinVerBuildMetadata>build.$(TRAVIS_BUILD_NUMBER)</MinVerBuildMetadata>
     <PackageTags>aspnetcore;proxy;http</PackageTags>
     <NoWarn>1701;1702;1705;1591</NoWarn>
     <LangVersion>latest</LangVersion>
