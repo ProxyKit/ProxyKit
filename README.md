@@ -12,7 +12,7 @@ API, to facilitate a wider variety of proxying scenarios (i.e. routing based on
 a JWT claim) and interception of the proxy requests / responses for
 customization of headers and (optionally) request / response bodies. It also
 uses [`HttpClientFactory`] internally that will mitigate against dns caching
-issues and handler lifecycles making it suitable for microservice / container
+issues and handler life cycles making it suitable for microservice / container
 environments.
 
 <!-- TOC depthFrom:2 -->
@@ -20,18 +20,18 @@ environments.
 - [1. Quick Start](#1-quick-start)
 - [2. Customising the upstream request](#2-customising-the-upstream-request)
 - [3. Customising the upstream response](#3-customising-the-upstream-response)
-- [3. X-Forwarded Headers](#3-x-forwarded-headers)
-- [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
-- [4. Configuring ProxyOptions](#4-configuring-proxyoptions)
-- [5. Error handling](#5-error-handling)
-- [6. Testing](#6-testing)
-- [7. Distribution](#7-distribution)
-    - [7.1. Round Robin](#71-round-robin)
-- [8. Further examples](#8-further-examples)
-- [9. Performance considerations](#9-performance-considerations)
-- [10. Note about Serverless](#10-note-about-serverless)
-- [11. Comparison with Ocelot](#11-comparison-with-ocelot)
-- [12. Contributing / Feedback / Questions](#12-contributing--feedback--questions)
+- [4. X-Forwarded Headers](#4-x-forwarded-headers)
+- [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
+- [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
+- [7. Error handling](#7-error-handling)
+- [8. Testing](#8-testing)
+- [9. Distribution](#9-distribution)
+    - [9.1. Round Robin](#91-round-robin)
+- [10. Further examples](#10-further-examples)
+- [11. Performance considerations](#11-performance-considerations)
+- [12. Note about Serverless](#12-note-about-serverless)
+- [13. Comparison with Ocelot](#13-comparison-with-ocelot)
+- [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
 
 <!-- /TOC -->
 
@@ -152,7 +152,7 @@ client. In this example we are removing a header:
 }
 ```
 
-## 3. X-Forwarded Headers
+## 4. X-Forwarded Headers
 
 Many applications will need to know what their "outside" host / url is in order
 to generate correct values. This is achieved using `X-Forwarded-*` and
@@ -178,7 +178,7 @@ headers to the upstream request using values from `HttpContext`. If the proxy
 middleware is hosted on a path and a `PathBase` exists on the request, then an
 `X-Forwarded-PathBase` is also added.
 
-## 4. Making upstream servers reverse proxy friendly
+## 5. Making upstream servers reverse proxy friendly
 
 Applications that are deployed behind a reverse proxy typically need to be
 somewhat aware of that so they can generate correct URLs and paths when
@@ -230,7 +230,7 @@ var options = new ForwardedHeadersOptions
 app.UseXForwardedHeaders(options);
 ```
 
-## 4. Configuring ProxyOptions
+## 6. Configuring ProxyOptions
 
 When adding the Proxy to the service collection there are a couple of options 
 available to configure the proxy behavior:
@@ -259,7 +259,7 @@ There are two options :
         options.GetMessageHandler = () => _httpMessageHandler);
     ```
 
-## 5. Error handling
+## 7. Error handling
 
 When `HttpClient` throws the following logic applies:
 
@@ -271,7 +271,7 @@ Not all exception scenarios and variations are caught which may result in a
 `InternalServerError` being returned to your clients. Please create an issue if
 a scenario is missing.
 
-## 6. Testing
+## 8. Testing
 
 As ProxyKit is standard ASP.NET Core middleware, it can be tested using the
 standard in-memory `TestServer` mechanism.
@@ -308,14 +308,14 @@ to use the `RoutingMessageHandler` as it's primary `HttpMessageHandler`.
 
 Full example can been viewed [here](src/Examples/06_Testing.cs).
 
-## 7. Distribution
+## 9. Distribution
 
 A distribution is mechanism to decide which upstream server to forward the
 request to and is typically a concern for load balancing. Out of the box,
 ProxyKit currently supports one type of distribution, Round Robin. Other types
 are planned.
 
-### 7.1. Round Robin
+### 9.1. Round Robin
 
 Round Robin simply distributes requests as they arrive to the next host in a 
 distribution list:
@@ -341,15 +341,15 @@ public void Configure(IApplicationBuilder app)
 }
 ```
 
-## 8. Further examples
+## 10. Further examples
 
 Browse [Examples](src/Examples) for further inspiration.
 
-## 9. Performance considerations
+## 11. Performance considerations
 
 // TODO
 
-## 10. Note about Serverless
+## 12. Note about Serverless
 
 Whilst is it is possible to run full ASP.NET Core web application in [AWS
 Lambda] and [Azure Functions] it should be noted that Serverless systems are
@@ -359,7 +359,7 @@ means ProxyKit should only be used for API (json) proxying in production on
 Serverless. (Though proxing other payloads is fine for dev / exploration /
 quick'n'dirty purposes.)
 
-## 11. Comparison with Ocelot
+## 13. Comparison with Ocelot
 
 [Ocelot] is an API Gateway also on ASP.NET Core, and  A key difference between API
 Gateways and general Reverse Proxies is that the former tend to be **message**
@@ -372,7 +372,7 @@ Supported Ocelot docs][ocelot not supported].
 Combining ProxyKit with Ocelot would give some nice options for a variety of
 scenarios.
 
-## 12. Contributing / Feedback / Questions
+## 14. Contributing / Feedback / Questions
 
 Any ideas for features, bugs or questions, please create an issue. Pull requests 
 gratefully accepted but please create an issue first.
