@@ -43,7 +43,7 @@ ProxyKit is a `NetStandard2.0` package. Install into your ASP.NET Core project:
 dotnet add package ProxyKit
 ```
 
-In your `Startup`, add the proxy services:
+In your `Startup`, add the proxy service:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
