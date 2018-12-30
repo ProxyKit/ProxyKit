@@ -14,7 +14,7 @@ namespace SimpleProxy
         {
             WebHost
                 .CreateDefaultBuilder<Startup>(Array.Empty<string>())
-                .UseUrls("http://localhost:5001")
+                .UseUrls("http://+:5001")
                 .ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders())
                 .Build()
                 .Run();
@@ -30,7 +30,7 @@ namespace SimpleProxy
             public void Configure(IApplicationBuilder app)
             {
                 app.RunProxy(context => context
-                    .ForwardTo("http://localhost:5002")
+                    .ForwardTo("http://10.0.75.1:5002")
                     .Execute());
             }
         }

@@ -7,10 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ProxyKit\ProxyKit.csproj" />
+    <PackageReference Include="ProxyKit" Version="1.0.0-alpha.1" />
   </ItemGroup>
 
 </Project>

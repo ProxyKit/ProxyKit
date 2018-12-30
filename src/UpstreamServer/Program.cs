@@ -14,7 +14,7 @@ namespace UpstreamServer
         {
             WebHost
                 .CreateDefaultBuilder<Startup>(Array.Empty<string>())
-                .UseUrls("http://localhost:5002")
+                .UseUrls("http://+:5002")
                 .ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders())
                 .Build()
                 .Run();
