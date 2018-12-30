@@ -12,28 +12,27 @@ API, to facilitate a wider variety of proxying scenarios (i.e. routing based on
 a JWT claim) and interception of the proxy requests / responses for
 customization of headers and (optionally) request / response bodies. It also
 uses [`HttpClientFactory`] internally that will mitigate against dns caching
-issues and handler life cycles making it suitable for microservice / container
-environments.
+issues making it suitable for microservice / container environments.
 
-<!-- TOC depthFrom:2 -->
 
-- [1. Quick Start](#1-quick-start)
-- [2. Customising the upstream request](#2-customising-the-upstream-request)
-- [3. Customising the upstream response](#3-customising-the-upstream-response)
-- [4. X-Forwarded Headers](#4-x-forwarded-headers)
-- [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
-- [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
-- [7. Error handling](#7-error-handling)
-- [8. Testing](#8-testing)
-- [9. Distribution](#9-distribution)
-    - [9.1. Round Robin](#91-round-robin)
-- [10. Further examples](#10-further-examples)
-- [11. Performance considerations](#11-performance-considerations)
-- [12. Note about Serverless](#12-note-about-serverless)
-- [13. Comparison with Ocelot](#13-comparison-with-ocelot)
-- [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
 
-<!-- /TOC -->
+  - [1. Quick Start](#1-quick-start)
+  - [2. Customising the upstream request](#2-customising-the-upstream-request)
+  - [3. Customising the upstream response](#3-customising-the-upstream-response)
+  - [4. X-Forwarded Headers](#4-x-forwarded-headers)
+  - [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
+  - [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
+  - [7. Error handling](#7-error-handling)
+  - [8. Testing](#8-testing)
+  - [9. Load Balancing](#9-load-balancing)
+    - [9.1. Weighted Round Robin](#91-weighted-round-robin)
+  - [10. Further examples](#10-further-examples)
+  - [11. Performance considerations](#11-performance-considerations)
+  - [12. Note about Serverless](#12-note-about-serverless)
+  - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
+  - [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
+
+
 
 ## 1. Quick Start
 
@@ -308,17 +307,17 @@ to use the `RoutingMessageHandler` as it's primary `HttpMessageHandler`.
 
 Full example can been viewed [here](src/Examples/06_Testing.cs).
 
-## 9. Distribution
+## 9. Load Balancing
 
-A distribution is mechanism to decide which upstream server to forward the
-request to and is typically a concern for load balancing. Out of the box,
-ProxyKit currently supports one type of distribution, Round Robin. Other types
-are planned.
+Load balancing is mechanism to decide which upstream server to forward the
+request to. Out of the box, ProxyKit currently supports one type of
+load balancing - Weighted Round Robin. Other types are planned.
 
-### 9.1. Round Robin
+### 9.1. Weighted Round Robin
 
-Round Robin simply distributes requests as they arrive to the next host in a 
-distribution list:
+Round Robin simply distributes requests as they arrive to the next host in a
+distribution list. With optional weighting, more reqeusts are send to host with
+greater weights.
 
 ```csharp
 public void Configure(IApplicationBuilder app)
@@ -347,7 +346,18 @@ Browse [Examples](src/Examples) for further inspiration.
 
 ## 11. Performance considerations
 
-// TODO
+According to TechEmpower's Web Framework Benchmarks, ASP.NET Core [is up there
+with the fastest for plain text](https://www.techempower.com/benchmarks/#section=data-r17&hw=ph&test=plaintext).
+
+Stress testing shows that ProxyKit is approximately 8% slower than nginx for
+simple forwarding. If absolute raw throughput is a concern for you then consider
+nginx or alternatives. For me being able to create flexible proxies using C# is a
+reasonable tradeoff for the (small) performance cost. Note that depending on what
+your proxy does may impact performance so you should measure yourself.
+
+Memory wise, ProxyKit maintained a steady ~20MB of RAM after processing millions
+of requests for simple forwarding. Again, it depends on what your proxy does so
+you should analyse and measure yourself.
 
 ## 12. Note about Serverless
 
