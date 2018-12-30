@@ -377,8 +377,8 @@ between API Gateways and general Reverse Proxies is that the former tend to be
 **message** based whereas a reverse proxy is **stream** based. That is, an API
 gateway will typically buffer the every request and response message to be able
 to perform transformations. This is fine for an API gateway but not suitable for
-a reverse proxy performance wise nor for responses that are chunked-encoded. See
-[Not Supported Ocelot docs][ocelot not supported].
+a general reverse proxy performance wise nor for responses that are
+chunked-encoded. See [Not Supported Ocelot docs][ocelot not supported].
 
 Combining ProxyKit with Ocelot would give some nice options for a variety of
 scenarios.
