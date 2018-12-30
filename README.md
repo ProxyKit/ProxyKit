@@ -14,8 +14,9 @@ customization of headers and (optionally) request / response bodies. It also
 uses [`HttpClientFactory`] internally that will mitigate against dns caching
 issues making it suitable for microservice / container environments.
 
+<!-- TOC depthFrom:2 -->
 
-
+- [ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]](#proxykit-build-statustravis-buildproject-nugetnuget-badgenuget-package)
   - [1. Quick Start](#1-quick-start)
   - [2. Customising the upstream request](#2-customising-the-upstream-request)
   - [3. Customising the upstream response](#3-customising-the-upstream-response)
@@ -32,7 +33,7 @@ issues making it suitable for microservice / container environments.
   - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
   - [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
 
-
+<!-- /TOC -->
 
 ## 1. Quick Start
 
@@ -371,13 +372,13 @@ quick'n'dirty purposes.)
 
 ## 13. Comparison with Ocelot
 
-[Ocelot] is an API Gateway also on ASP.NET Core, and  A key difference between API
-Gateways and general Reverse Proxies is that the former tend to be **message**
-based whereas a reverse proxy is **stream** based. That is, an API gateway will
-typically buffer the every request and response message to be able to perform
-transformations. This is fine for an API gateway but not suitable for a reverse
-proxy performance wise nor for responses that are chunked-encoded. See [Not
-Supported Ocelot docs][ocelot not supported].
+[Ocelot] is an API Gateway that also runs on ASP.NET Core. A key difference
+between API Gateways and general Reverse Proxies is that the former tend to be
+**message** based whereas a reverse proxy is **stream** based. That is, an API
+gateway will typically buffer the every request and response message to be able
+to perform transformations. This is fine for an API gateway but not suitable for
+a reverse proxy performance wise nor for responses that are chunked-encoded. See
+[Not Supported Ocelot docs][ocelot not supported].
 
 Combining ProxyKit with Ocelot would give some nice options for a variety of
 scenarios.
