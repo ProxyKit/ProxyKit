@@ -16,22 +16,21 @@ issues making it suitable for microservice / container environments.
 
 <!-- TOC depthFrom:2 -->
 
-- [ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]](#proxykit-build-statustravis-buildproject-nugetnuget-badgenuget-package)
-  - [1. Quick Start](#1-quick-start)
-  - [2. Customising the upstream request](#2-customising-the-upstream-request)
-  - [3. Customising the upstream response](#3-customising-the-upstream-response)
-  - [4. X-Forwarded Headers](#4-x-forwarded-headers)
-  - [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
-  - [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
-  - [7. Error handling](#7-error-handling)
-  - [8. Testing](#8-testing)
-  - [9. Load Balancing](#9-load-balancing)
+- [1. Quick Start](#1-quick-start)
+- [2. Customising the upstream request](#2-customising-the-upstream-request)
+- [3. Customising the upstream response](#3-customising-the-upstream-response)
+- [4. X-Forwarded Headers](#4-x-forwarded-headers)
+- [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
+- [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
+- [7. Error handling](#7-error-handling)
+- [8. Testing](#8-testing)
+- [9. Load Balancing](#9-load-balancing)
     - [9.1. Weighted Round Robin](#91-weighted-round-robin)
-  - [10. Further examples](#10-further-examples)
-  - [11. Performance considerations](#11-performance-considerations)
-  - [12. Note about Serverless](#12-note-about-serverless)
-  - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
-  - [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
+- [10. Further examples](#10-further-examples)
+- [11. Performance considerations](#11-performance-considerations)
+- [12. Note about Serverless](#12-note-about-serverless)
+- [13. Comparison with Ocelot](#13-comparison-with-ocelot)
+- [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
 
 <!-- /TOC -->
 
@@ -351,10 +350,17 @@ According to TechEmpower's Web Framework Benchmarks, ASP.NET Core [is up there
 with the fastest for plain text](https://www.techempower.com/benchmarks/#section=data-r17&hw=ph&test=plaintext).
 
 Stress testing shows that ProxyKit is approximately 8% slower than nginx for
-simple forwarding. If absolute raw throughput is a concern for you then consider
-nginx or alternatives. For me being able to create flexible proxies using C# is a
-reasonable tradeoff for the (small) performance cost. Note that depending on what
-your proxy does may impact performance so you should measure yourself.
+simple forwarding on linux. If absolute raw throughput is a concern for you then
+consider nginx or alternatives. For me being able to create flexible proxies
+using C# is a reasonable tradeoff for the (small) performance cost. Note that
+depending on what your proxy does may impact performance so you should measure
+yourself.
+
+On windows, ProxyKit is ~3x faster than nginx. However, nginx has clearly
+documented that [it has known
+performance](https://nginx.org/en/docs/windows.html) issues on windows. Since
+one wouldn't be running production nginx on windows this comparison is
+academic.
 
 Memory wise, ProxyKit maintained a steady ~20MB of RAM after processing millions
 of requests for simple forwarding. Again, it depends on what your proxy does so
