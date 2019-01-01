@@ -43,7 +43,11 @@ namespace build
 
                 foreach (var packageToPush in packagesToPush)
                 {
-                    Run("dotnet", $"nuget push {packageToPush} -s https://www.myget.org/F/dh/api/v3/index.json -k {apiKey}", noEcho: true);
+                    try
+                    {
+                        Run("dotnet", $"nuget push {packageToPush} -s https://www.myget.org/F/dh/api/v3/index.json -k {apiKey}", noEcho: true);
+                    }
+                    catch(SimpleExec.NonZeroExitCodeException){} //can get 1 if try to push package that differs only in build metadata
                 }
             });
 
