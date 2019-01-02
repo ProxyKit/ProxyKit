@@ -28,8 +28,9 @@ issues making it suitable for microservice / container environments.
     - [9.1. Weighted Round Robin](#91-weighted-round-robin)
 - [10. Further examples](#10-further-examples)
 - [11. Performance considerations](#11-performance-considerations)
-- [12. Note about Serverless](#12-note-about-serverless)
+- [12. Note about serverless](#12-note-about-serverless)
 - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
+- [15. How to build](#15-how-to-build)
 - [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
 
 <!-- /TOC -->
@@ -366,7 +367,7 @@ Memory wise, ProxyKit maintained a steady ~20MB of RAM after processing millions
 of requests for simple forwarding. Again, it depends on what your proxy does so
 you should analyse and measure yourself.
 
-## 12. Note about Serverless
+## 12. Note about serverless
 
 Whilst is it is possible to run full ASP.NET Core web application in [AWS
 Lambda] and [Azure Functions] it should be noted that Serverless systems are
@@ -389,10 +390,25 @@ chunked-encoded. See [Not Supported Ocelot docs][ocelot not supported].
 Combining ProxyKit with Ocelot would give some nice options for a variety of
 scenarios.
 
+## 15. How to build
+
+Requirements: .NET Core SDK 2.2.100 or later
+
+On Windows: 
+
+```bash
+.\build.cmd
+```
+
+On Linux: 
+```bash
+./build.sh
+```
+
 ## 14. Contributing / Feedback / Questions
 
 Any ideas for features, bugs or questions, please create an issue. Pull requests 
-gratefully accepted but please create an issue first.
+gratefully accepted but please create an issue for discussion first.
 
 [travis build]: https://travis-ci.org/damianh/ProxyKit.svg?branch=master
 [project]: https://travis-ci.org/damianh/ProxyKit
