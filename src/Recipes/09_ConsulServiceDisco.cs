@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
