@@ -362,9 +362,11 @@ promoted to an out-of-the-box feature in a future version of ProxyKit.
 6. [In-memory Testing](src/Recipes/06_Testing.cs) - Testing behaviour or your
    ASP.NET Core application by running two instances behind round robin proxy.
    Really useful if your application has eventually consistent aspects.
-8. [Customise Upstream Requests](src/Recipes/07_CustomiseUpstreamRequest.cs) -
+7. [Customise Upstream Requests](src/Recipes/07_CustomiseUpstreamRequest.cs) -
    Customise the upstream request by adding a header.
-9. [Customise Upstream Responses](src/Recipes/07_CustomiseUpstreamResponse.cs) -  Customise the upstream response by removing a header.
+8. [Customise Upstream Responses](src/Recipes/08_CustomiseUpstreamResponse.cs) -  Customise the upstream response by removing a header.
+9. [Consul Service Discovery](src/Recipes/09_ConsulServiceDisco.cs) - Service
+   discovery for an upstream host using [Consul](https://www.consul.io/).
 
 ## 11. Performance considerations
 
