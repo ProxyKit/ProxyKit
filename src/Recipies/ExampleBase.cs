@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace ProxyKit.Examples
+namespace ProxyKit.Recipies
 {
     public abstract class ExampleBase<T> where T : class
     {
