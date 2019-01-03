@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ProxyKit.Examples
+namespace ProxyKit.Recipies
 {
     public class RoundRobinLoadBalancer : ExampleBase<RoundRobinLoadBalancer.Startup>
     {

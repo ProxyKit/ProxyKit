@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyName>ProxyKit.Examples</AssemblyName>
-    <RootNamespace>ProxyKit.Examples</RootNamespace>
+    <AssemblyName>Recipies</AssemblyName>
+    <RootNamespace>ProxyKit.Recipies</RootNamespace>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

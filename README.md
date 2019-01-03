@@ -26,7 +26,7 @@ issues making it suitable for microservice / container environments.
 - [8. Testing](#8-testing)
 - [9. Load Balancing](#9-load-balancing)
     - [9.1. Weighted Round Robin](#91-weighted-round-robin)
-- [10. Further examples](#10-further-examples)
+- [10. Recipies](#10-recipies)
 - [11. Performance considerations](#11-performance-considerations)
 - [12. Note about serverless](#12-note-about-serverless)
 - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
@@ -341,14 +341,38 @@ public void Configure(IApplicationBuilder app)
 }
 ```
 
-## 10. Further examples
+## 10. Recipies
 
-Browse [Examples](src/Examples) for further inspiration.
+Recipies are code samples that help you create proxy solutions for your needs.
+If you have any ideas for a recipie, or can spot any improvements to the ones
+below, please send a pull request! Recipies that stand test of time may be
+promoted to an out-of-the-box feature in a future version of ProxyKit.
+
+1. [Simple Forwarding](src/Recipies/01_Simple.cs) - Forward request to a single
+   upstream host. 
+2. [Proxy Pathing](src/Recipies/02_Pathscs) - Hosting multiple proxys on
+   seperate paths.
+3. [Tenant Routing](src/Recipies/03_TenantRouting) - Routing to a specific
+   upstream host based on a `TenantId` claim for an authenticated user.
+4. [Authentication offloading](src/Recipies/04_IdSrv.cs) - Using
+   [IdentityServer](https://identityserver.io/) to handle authentication before
+   forwarding to upstream host.
+5. [Round Roblin Load Balancing](src/Recipies/05_RoundRobin.cs) - Weighed Round
+   Robin load balancing to two upstream hosts.
+6. [In-memory Testing](src/Recipies/06_Testing.cs) - Testing behaviour or your
+   ASP.NET Core application by running two instances behind round robin proxy.
+   Really useful if your application has eventually consistent aspects.
+8. [Customise Upstream Requests](src/Recipies/07_CustomiseUpstreamRequest.cs) -
+   Customise the upstream request by adding a header.
+9. [Customise Upstream Responses](src/Recipies/07_CustomiseUpstreamResponse.cs) -  Customise the upstream response by removing a header.
 
 ## 11. Performance considerations
 
 According to TechEmpower's Web Framework Benchmarks, ASP.NET Core [is up there
-with the fastest for plain text](https://www.techempower.com/benchmarks/#section=data-r17&hw=ph&test=plaintext).
+with the fastest for plain
+text](https://www.techempower.com/benchmarks/#section=data-r17&hw=ph&test=plaintext).
+As ProxyKit simply captures headers and async copies request and response body
+streams, it will fast enough for most scenarios.
 
 Stress testing shows that ProxyKit is approximately 8% slower than nginx for
 simple forwarding on linux. If absolute raw throughput is a concern for you then

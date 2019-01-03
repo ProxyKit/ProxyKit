@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ProxyKit.Examples
+namespace ProxyKit.Recipies
 {
     public class CustomiseUpstreamResponse : ExampleBase<Simple.Startup>
     {

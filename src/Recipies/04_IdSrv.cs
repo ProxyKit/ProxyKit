@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ProxyKit.Examples
+namespace ProxyKit.Recipies
 {
     public class IdSrv : ExampleBase<IdSrv.Startup>
     {
