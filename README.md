@@ -317,7 +317,7 @@ load balancing - Weighted Round Robin. Other types are planned.
 ### 9.1. Weighted Round Robin
 
 Round Robin simply distributes requests as they arrive to the next host in a
-distribution list. With optional weighting, more reqeusts are send to host with
+distribution list. With optional weighting, more requests are send to host with
 greater weights.
 
 ```csharp
