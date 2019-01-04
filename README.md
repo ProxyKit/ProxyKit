@@ -350,9 +350,9 @@ promoted to an out-of-the-box feature in a future version of ProxyKit.
 
 1. [Simple Forwarding](src/Recipes/01_Simple.cs) - Forward request to a single
    upstream host. 
-2. [Proxy Pathing](src/Recipes/02_Pathscs) - Hosting multiple proxys on
+2. [Proxy Pathing](src/Recipes/02_Paths.cs) - Hosting multiple proxys on
    seperate paths.
-3. [Tenant Routing](src/Recipes/03_TenantRouting) - Routing to a specific
+3. [Tenant Routing](src/Recipes/03_TenantRouting.cs) - Routing to a specific
    upstream host based on a `TenantId` claim for an authenticated user.
 4. [Authentication offloading](src/Recipes/04_IdSrv.cs) - Using
    [IdentityServer](https://identityserver.io/) to handle authentication before
