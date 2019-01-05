@@ -436,6 +436,8 @@ On Linux:
 Any ideas for features, bugs or questions, please create an issue. Pull requests 
 gratefully accepted but please create an issue for discussion first.
 
+I can be reached on twitter at [@randompunter](https://twitter.com/randompunter)
+
 [travis build]: https://travis-ci.org/damianh/ProxyKit.svg?branch=master
 [project]: https://travis-ci.org/damianh/ProxyKit
 [nuget badge]: https://img.shields.io/nuget/v/ProxyKit.svg
