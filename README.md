@@ -219,7 +219,7 @@ app.Use((context, next) =>
 });
 ```
 
-Alternatively you can use ProxKit's `UseXForwardedHeaders` extension that
+Alternatively you can use ProxyKit's `UseXForwardedHeaders` extension that
 perform the same as the above (including calling `UseForwardedHeaders`):
 
 ```csharp
