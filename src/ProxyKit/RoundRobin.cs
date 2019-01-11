@@ -11,7 +11,7 @@ namespace ProxyKit
     {
         private readonly HashSet<UpstreamHost> _hosts = new HashSet<UpstreamHost>();
         private UpstreamHost[] _distribution;
-        private readonly ReaderWriterLockSlim _lockSlim = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private int _position;
 
         /// <summary>
