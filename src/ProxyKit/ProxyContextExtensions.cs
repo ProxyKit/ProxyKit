@@ -7,24 +7,24 @@ namespace ProxyKit
 {
     public static class ProxyContextExtensions
     {
-        public static ForwardContext ForwardTo(this HttpContext conext, UpstreamHost upstreamHost)
+        public static ForwardContext ForwardTo(this HttpContext context, UpstreamHost upstreamHost)
         {
             var uri = new Uri(UriHelper.BuildAbsolute(
                 upstreamHost.Scheme,
                 upstreamHost.Host,
                 upstreamHost.PathBase,
-                conext.Request.Path,
-                conext.Request.QueryString));
+                context.Request.Path,
+                context.Request.QueryString));
 
-            var request = conext.Request.CreateProxyHttpRequest();
+            var request = context.Request.CreateProxyHttpRequest();
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            var proxyKitClient = conext
+            var proxyKitClient = context
                 .RequestServices
                 .GetRequiredService<ProxyKitClient>();
 
-            return new ForwardContext(conext, request, proxyKitClient.Client);
+            return new ForwardContext(context, request, proxyKitClient.Client);
         }
 
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext)
