@@ -43,9 +43,9 @@ namespace ProxyKit
         /// </summary>
         /// <param name="forwardContext">The forward context.</param>
         /// <returns>The forward context.</returns>
-        [Obsolete("Use AddXForwardHeaders() instead. This will be removed in a future version", false)]
+        [Obsolete("Use AddXForwardedHeaders() instead. This will be removed in a future version", false)]
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext) =>
-            forwardContext.AddXForwardHeaders();
+            forwardContext.AddXForwardedHeaders();
 
         /// <summary>
         ///     Adds X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto and
@@ -55,7 +55,7 @@ namespace ProxyKit
         /// </summary>
         /// <param name="forwardContext">The forward context.</param>
         /// <returns>The forward context.</returns>
-        public static ForwardContext AddXForwardHeaders(this ForwardContext forwardContext)
+        public static ForwardContext AddXForwardedHeaders(this ForwardContext forwardContext)
         {
             var headers = forwardContext.UpstreamRequest.Headers;
             var protocol = forwardContext.HttpContext.Request.Scheme;

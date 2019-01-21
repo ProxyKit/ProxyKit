@@ -16,7 +16,7 @@ namespace ProxyKit.Recipes
             {
                 app.RunProxy(context => context
                     .ForwardTo("http://localhost:5001")
-                    .ApplyXForwardedHeaders()
+                    .AddXForwardedHeaders()
                     .Send());
             }
         }
