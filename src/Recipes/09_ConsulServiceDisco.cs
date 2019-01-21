@@ -25,7 +25,7 @@ namespace ProxyKit.Recipes
                     return await context
                         .ForwardTo(upstreamHost)
                         .ApplyXForwardedHeaders()
-                        .Execute();
+                        .Send();
                 });
 
                 app.RunProxy("api/bar", async context =>
@@ -36,7 +36,7 @@ namespace ProxyKit.Recipes
                     return await context
                         .ForwardTo(upstreamHost)
                         .ApplyXForwardedHeaders()
-                        .Execute();
+                        .Send();
                 });
             }
         }

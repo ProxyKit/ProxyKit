@@ -51,7 +51,7 @@ namespace ProxyKit
             _builder.Configure(app => app.RunProxy((context)=>
             {
                 var forwardContext = context.ForwardTo($"http://localhost:{port}");
-                return forwardContext.Execute();
+                return forwardContext.Send();
             }));
             var server = new TestServer(_builder);
 
@@ -87,7 +87,7 @@ namespace ProxyKit
                 context => context
                     .ForwardTo($"http://localhost:{port}/foo/")
                     .ApplyXForwardedHeaders()
-                    .Execute()));
+                    .Send()));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
@@ -117,7 +117,7 @@ namespace ProxyKit
                 context => context
                     .ForwardTo("http://localhost:5000/bar/")
                     .ApplyXForwardedHeaders()
-                    .Execute()));
+                    .Send()));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 

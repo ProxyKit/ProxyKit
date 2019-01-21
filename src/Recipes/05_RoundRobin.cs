@@ -32,7 +32,7 @@ namespace ProxyKit.Recipes
                         var response = await context
                             .ForwardTo(host)
                             .ApplyXForwardedHeaders()
-                            .Execute();
+                            .Send();
 
                         // failover
                         if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
@@ -40,7 +40,7 @@ namespace ProxyKit.Recipes
                             return await context
                                 .ForwardTo(host)
                                 .ApplyXForwardedHeaders()
-                                .Execute();
+                                .Send();
                         }
 
                         return response;

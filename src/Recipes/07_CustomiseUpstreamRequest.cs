@@ -25,7 +25,7 @@ namespace ProxyKit.Recipes
                     {
                         forwardContext.UpstreamRequest.Headers.Add("X-Correlation-ID", Guid.NewGuid().ToString());
                     }
-                    return forwardContext.Execute();
+                    return forwardContext.Send();
                 });
 
                 // Extension Method
@@ -33,7 +33,7 @@ namespace ProxyKit.Recipes
                     .ForwardTo("http://localhost:5001")
                     .ApplyXForwardedHeaders()
                     .ApplyCorrelationId()
-                    .Execute());
+                    .Send());
             }
         }
     }

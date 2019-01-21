@@ -84,7 +84,7 @@ namespace ProxyKit.Recipes
                         return context
                             .ForwardTo(host)
                             .ApplyXForwardedHeaders()
-                            .Execute();
+                            .Send();
                     });
             }
         }

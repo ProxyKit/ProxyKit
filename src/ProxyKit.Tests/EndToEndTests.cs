@@ -219,7 +219,7 @@ namespace ProxyKit
                 app.Map("/realServer", appInner =>
                     appInner.RunProxy(context => context
                         .ForwardTo("http://localhost:" + port + "/")
-                        .Execute()));
+                        .Send()));
             }
         }
     }

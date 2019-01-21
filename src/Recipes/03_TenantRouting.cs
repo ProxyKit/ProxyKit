@@ -34,7 +34,7 @@ namespace ProxyKit.Recipes
 
                         return context
                             .ForwardTo($"http://{tenantId}.internal:5001")
-                            .Execute();
+                            .Send();
                     });
             }
         }
