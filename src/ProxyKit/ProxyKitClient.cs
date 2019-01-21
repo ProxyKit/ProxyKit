@@ -2,7 +2,7 @@
 
 namespace ProxyKit
 {
-    internal class ProxyKitClient
+    public class ProxyKitClient
     {
         internal HttpClient Client { get; }
 
