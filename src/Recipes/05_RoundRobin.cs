@@ -31,16 +31,16 @@ namespace ProxyKit.Recipes
 
                         var response = await context
                             .ForwardTo(host)
-                            .ApplyXForwardedHeaders()
-                            .Execute();
+                            .AddXForwardedHeaders()
+                            .Send();
 
                         // failover
                         if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                         {
                             return await context
                                 .ForwardTo(host)
-                                .ApplyXForwardedHeaders()
-                                .Execute();
+                                .AddXForwardedHeaders()
+                                .Send();
                         }
 
                         return response;

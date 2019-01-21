@@ -18,8 +18,8 @@ namespace ProxyKit.Recipes
                 {
                     var response = await context
                         .ForwardTo("http://localhost:5001")
-                        .ApplyXForwardedHeaders()
-                        .Execute();
+                        .AddXForwardedHeaders()
+                        .Send();
 
                     response.Headers.Remove("MachineID");
 

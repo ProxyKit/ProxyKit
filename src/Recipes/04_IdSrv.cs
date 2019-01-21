@@ -78,8 +78,8 @@ namespace ProxyKit.Recipes
                 app.RunProxy(
                     context => context
                         .ForwardTo(_appConfiguration.ForwardUrl)
-                        .ApplyXForwardedHeaders()
-                        .Execute());
+                        .AddXForwardedHeaders()
+                        .Send());
             }
         }
 

@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 
@@ -59,6 +61,32 @@ namespace ProxyKit
             var pathBaseValue = _headers.GetValues(XForwardedExtensions.XForwardedPathBase).ToArray();
 
             pathBaseValue.ShouldBe(new[] { "/foo/" });
+        }
+
+        [Fact]
+        public void Can_copy_x_forwarded_headers()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Headers.TryAdd(XForwardedExtensions.XForwardedFor, "127.0.0.1");
+            httpContext.Request.Headers.TryAdd(XForwardedExtensions.XForwardedHost, "localhost");
+            httpContext.Request.Headers.TryAdd(XForwardedExtensions.XForwardedProto, "http");
+            httpContext.Request.Headers.TryAdd(XForwardedExtensions.XForwardedPathBase, "127.0.0.1");
+
+            var services = new ServiceCollection();
+            services.AddTransient<ProxyKitClient>();
+            services.AddTransient(sp => new HttpClient());
+            var serviceProvider = services.BuildServiceProvider();
+            httpContext.RequestServices = serviceProvider;
+
+            var forwardContext = httpContext
+                .ForwardTo(new UpstreamHost("http://localhost"))
+                .CopyXForwardedHeaders();
+
+            forwardContext.UpstreamRequest.Headers.Contains(XForwardedExtensions.XForwardedFor).ShouldBeTrue();
+            forwardContext.UpstreamRequest.Headers.Contains(XForwardedExtensions.XForwardedHost).ShouldBeTrue();
+            forwardContext.UpstreamRequest.Headers.Contains(XForwardedExtensions.XForwardedProto).ShouldBeTrue();
+            forwardContext.UpstreamRequest.Headers.Contains(XForwardedExtensions.XForwardedPathBase).ShouldBeTrue();
         }
     }
 }

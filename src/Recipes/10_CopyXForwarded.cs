@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class Simple : ExampleBase<Simple.Startup>
+    public class CopyXForwarded : ExampleBase<CopyXForwarded.Startup>
     {
         public class Startup
         {
@@ -16,7 +16,8 @@ namespace ProxyKit.Recipes
             {
                 app.RunProxy(context => context
                     .ForwardTo("http://localhost:5001")
-                    .AddXForwardedHeaders()
+                    .CopyXForwardedHeaders() // copies the headers from the incoming requests
+                    .AddXForwardedHeaders() // adds the current proxy proto/host/for/pathbase to the X-Forwarded headers
                     .Send());
             }
         }

@@ -51,7 +51,7 @@ namespace ProxyKit
             _builder.Configure(app => app.RunProxy((context)=>
             {
                 var forwardContext = context.ForwardTo($"http://localhost:{port}");
-                return forwardContext.Execute();
+                return forwardContext.Send();
             }));
             var server = new TestServer(_builder);
 
@@ -86,8 +86,8 @@ namespace ProxyKit
             _builder.Configure(app => app.RunProxy(
                 context => context
                     .ForwardTo($"http://localhost:{port}/foo/")
-                    .ApplyXForwardedHeaders()
-                    .Execute()));
+                    .AddXForwardedHeaders()
+                    .Send()));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
@@ -116,8 +116,8 @@ namespace ProxyKit
             _builder.Configure(app => app.RunProxy(
                 context => context
                     .ForwardTo("http://localhost:5000/bar/")
-                    .ApplyXForwardedHeaders()
-                    .Execute()));
+                    .AddXForwardedHeaders()
+                    .Send()));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
@@ -147,6 +147,35 @@ namespace ProxyKit
             var response = await client.SendAsync(requestMessage);
 
             response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        }
+
+        [Fact]
+        public async Task X_Forwarded_Headers_should_be_removed_by_default()
+        {
+            ForwardContext forwardContext = null;
+            _builder.Configure(app => app.RunProxy(
+                context => context
+                    .ForwardTo("http://localhost:5000/bar/")
+                    .Send()));
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://mydomain.example")
+            {
+                Content = new StringContent("Request Body")
+            };
+            requestMessage.Headers.TryAddWithoutValidation(XForwardedExtensions.XForwardedFor, "127.0.0.1");
+            requestMessage.Headers.TryAddWithoutValidation(XForwardedExtensions.XForwardedProto, "http");
+            requestMessage.Headers.TryAddWithoutValidation(XForwardedExtensions.XForwardedHost, "localhost");
+            requestMessage.Headers.TryAddWithoutValidation(XForwardedExtensions.XForwardedPathBase, "bar");
+            await client.SendAsync(requestMessage);
+
+            var sentRequest = _testMessageHandler.SentRequestMessages.Single();
+
+            sentRequest.Headers.Contains(XForwardedExtensions.XForwardedHost).ShouldBeFalse();
+            sentRequest.Headers.Contains(XForwardedExtensions.XForwardedProto).ShouldBeFalse();
+            sentRequest.Headers.Contains(XForwardedExtensions.XForwardedFor).ShouldBeFalse();
+            sentRequest.Headers.Contains(XForwardedExtensions.XForwardedPathBase).ShouldBeFalse();
         }
     }
 

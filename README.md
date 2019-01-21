@@ -16,22 +16,26 @@ issues making it suitable for microservice / container environments.
 
 <!-- TOC depthFrom:2 -->
 
-- [1. Quick Start](#1-quick-start)
-- [2. Customising the upstream request](#2-customising-the-upstream-request)
-- [3. Customising the upstream response](#3-customising-the-upstream-response)
-- [4. X-Forwarded Headers](#4-x-forwarded-headers)
-- [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
-- [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
-- [7. Error handling](#7-error-handling)
-- [8. Testing](#8-testing)
-- [9. Load Balancing](#9-load-balancing)
+- [ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]](#proxykit-build-statustravis-buildproject-nugetnuget-badgenuget-package)
+  - [1. Quick Start](#1-quick-start)
+  - [2. Customising the upstream request](#2-customising-the-upstream-request)
+  - [3. Customising the upstream response](#3-customising-the-upstream-response)
+  - [4. X-Forwarded Headers](#4-x-forwarded-headers)
+    - [4.1. Client Sent X-Forwarded-Headers](#41-client-sent-x-forwarded-headers)
+    - [4.2. Adding X-Forwarded-Headers](#42-adding-x-forwarded-headers)
+    - [4.3. Copying X-Forwarded-Headers](#43-copying-x-forwarded-headers)
+  - [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
+  - [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
+  - [7. Error handling](#7-error-handling)
+  - [8. Testing](#8-testing)
+  - [9. Load Balancing](#9-load-balancing)
     - [9.1. Weighted Round Robin](#91-weighted-round-robin)
-- [10. Recipes](#10-recipes)
-- [11. Performance considerations](#11-performance-considerations)
-- [12. Note about serverless](#12-note-about-serverless)
-- [13. Comparison with Ocelot](#13-comparison-with-ocelot)
-- [15. How to build](#15-how-to-build)
-- [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
+  - [10. Recipes](#10-recipes)
+  - [11. Performance considerations](#11-performance-considerations)
+  - [12. Note about serverless](#12-note-about-serverless)
+  - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
+  - [15. How to build](#15-how-to-build)
+  - [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
 
 <!-- /TOC -->
 
@@ -61,7 +65,7 @@ public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
         .ForwardTo("http://upstream-server:5001")
-        .Execute());
+        .Send());
 }
 ```
 
@@ -70,7 +74,7 @@ What is happening here?
  1. `context.ForwardTo(upstreamHost)` is an extension method over the
     `HttpContext` that creates and initializes an `HttpRequestMessage` with
     the original request headers copied over and returns a `ForwardContext`.
- 2. `Execute` forwards the request to the upstream server and returns an
+ 2. `Send` Sends the forward request to the upstream server and returns an
     `HttpResponseMessage`.
  3. The proxy middleware then takes the response and applies it to
     `HttpContext.Response`.
@@ -98,7 +102,7 @@ public void Configure(IApplicationBuilder app)
         {
             forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
         }
-        return forwardContext.Execute();
+        return forwardContext.Send();
     });
 }
 ```
@@ -127,7 +131,7 @@ public void Configure(IApplicationBuilder app)
     app.RunProxy(context => context
         .ForwardTo("http://localhost:5001")
         .ApplyCorrelationId()
-        .Execute());
+        .Send());
 }
 ```
 
@@ -143,7 +147,7 @@ client. In this example we are removing a header:
     {
         var response = await context
             .ForwardTo("http://localhost:5001")
-            .Execute();
+            .Send();
 
         response.Headers.Remove("MachineID");
 
@@ -154,6 +158,15 @@ client. In this example we are removing a header:
 
 ## 4. X-Forwarded Headers
 
+### 4.1. Client Sent X-Forwarded-Headers 
+
+:information: To mitigate against spoofing attacks and misconfiguration ProxyKit
+does not copy `X-Forward-*` headers from the incoming request to the upstream
+request by default. To copy these headers requries opting in. See 4.3. Copying
+X-Forwarded-Headers below.
+
+### 4.2. Adding X-Forwarded-Headers
+
 Many applications will need to know what their "outside" host / url is in order
 to generate correct values. This is achieved using `X-Forwarded-*` and
 `Forwarded` headers. ProxyKit supports applying `X-Forward-*` headers out of the
@@ -161,22 +174,53 @@ box (applying `Forwarded` headers support is on backlog). At time of writing,
 `Forwarded` is [not supported](https://github.com/aspnet/AspNetCore/issues/5978)
 in ASP.NET Core.
 
-To apply `X-Forwarded-Headers` to the request to the upstream server:
+To add `X-Forwarded-Headers` to the request to the upstream server:
 
 ```csharp
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
         .ForwardTo("http://upstream-server:5001")
-        .ApplyXForwardedHeaders()
-        .Execute());
+        .AddXForwardedHeaders()
+        .Send());
 }
 ```
 
-This will add `X-Forward-For`, `X-Forwarded-Host` and `X-Forwarded-Proto`
+This will add `X-Forwarded-For`, `X-Forwarded-Host` and `X-Forwarded-Proto`
 headers to the upstream request using values from `HttpContext`. If the proxy
 middleware is hosted on a path and a `PathBase` exists on the request, then an
 `X-Forwarded-PathBase` is also added.
+
+### 4.3. Copying X-Forwarded-Headers
+
+Chaining proxies is a common pattern in more complex setups. In this case, if
+the proxy is an "internal" proxy, you will want to copy the "X-Forwarded-*"
+headers from previous proxy. To do so, use `CopyXForwardedHeaders()`:
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context => context
+        .ForwardTo("http://upstream-server:5001")
+        .CopyXForwardedHeaders()
+        .Send());
+}
+```
+
+You may optionally also add the "internal" proxy details to the `X-Forwarded-*`
+header values by combinging `CopyXForwardedHeaders()` and
+`AddXForwardedHeaders()` (note the order is important):
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context => context
+        .ForwardTo("http://upstream-server:5001")
+        .CopyXForwardedHeaders()
+        .AddXForwardedHeaders()
+        .Send());
+}
+```
 
 ## 5. Making upstream servers reverse proxy friendly
 
@@ -336,7 +380,7 @@ public void Configure(IApplicationBuilder app)
 
             return await context
                 .ForwardTo(host)
-                .Execute();
+                .Send();
         });
 }
 ```
@@ -364,9 +408,13 @@ promoted to an out-of-the-box feature in a future version of ProxyKit.
    Really useful if your application has eventually consistent aspects.
 7. [Customise Upstream Requests](src/Recipes/07_CustomiseUpstreamRequest.cs) -
    Customise the upstream request by adding a header.
-8. [Customise Upstream Responses](src/Recipes/08_CustomiseUpstreamResponse.cs) -  Customise the upstream response by removing a header.
+8. [Customise Upstream Responses](src/Recipes/08_CustomiseUpstreamResponse.cs) -
+   Customise the upstream response by removing a header.
 9. [Consul Service Discovery](src/Recipes/09_ConsulServiceDisco.cs) - Service
    discovery for an upstream host using [Consul](https://www.consul.io/).
+10. [Copy X-Forward Headers](src/Recipes/10_CopyXForward.cs) - Copies
+    `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
+    `X-Forwarded-PathBase` headers from the incoming request.
 
 ## 11. Performance considerations
 
