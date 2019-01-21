@@ -22,10 +22,20 @@ namespace ProxyKit
             UpstreamRequest = upstreamRequest;
         }
 
+        /// <summary>
+        /// The incoming HttpContext
+        /// </summary>
         public HttpContext HttpContext { get; }
 
+        /// <summary>
+        /// The upstream request message.
+        /// </summary>
         public HttpRequestMessage UpstreamRequest { get; }
 
+        /// <summary>
+        /// Executes the forward request.
+        /// </summary>
+        /// <returns></returns>
         public async Task<HttpResponseMessage> Execute()
         {
             try

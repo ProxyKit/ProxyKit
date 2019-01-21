@@ -7,6 +7,12 @@ namespace ProxyKit
 {
     public static class ProxyContextExtensions
     {
+        /// <summary>
+        /// Forward the request to the specified upstream host.
+        /// </summary>
+        /// <param name="context">The HttpContext</param>
+        /// <param name="upstreamHost">The upstream host to forward the requests to.</param>
+        /// <returns>A <see cref="ForwardContext"/> that represents the forwarding request context.</returns>
         public static ForwardContext ForwardTo(this HttpContext context, UpstreamHost upstreamHost)
         {
             var uri = new Uri(UriHelper.BuildAbsolute(
@@ -26,7 +32,13 @@ namespace ProxyKit
 
             return new ForwardContext(context, request, proxyKitClient.Client);
         }
-
+        
+        /// <summary>
+        /// Applies X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-PathBase headers
+        /// to the forward request context.
+        /// </summary>
+        /// <param name="forwardContext">The forward context.</param>
+        /// <returns>The forward context.</returns>
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext)
         {
             var headers = forwardContext.UpstreamRequest.Headers;
