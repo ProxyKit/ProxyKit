@@ -31,7 +31,7 @@ namespace ProxyKit.Recipes
 
                         var response = await context
                             .ForwardTo(host)
-                            .ApplyXForwardedHeaders()
+                            .AddXForwardedHeaders()
                             .Send();
 
                         // failover
@@ -39,7 +39,7 @@ namespace ProxyKit.Recipes
                         {
                             return await context
                                 .ForwardTo(host)
-                                .ApplyXForwardedHeaders()
+                                .AddXForwardedHeaders()
                                 .Send();
                         }
 

@@ -18,14 +18,14 @@ namespace ProxyKit.Recipes
                     "/app1",
                     context => context
                         .ForwardTo("http://localhost:5001/foo/")
-                        .ApplyXForwardedHeaders()
+                        .AddXForwardedHeaders()
                         .Send());
 
                 app.RunProxy(
                     "/app2",
                     context => context
                         .ForwardTo("http://localhost:5002/bar/")
-                        .ApplyXForwardedHeaders()
+                        .AddXForwardedHeaders()
                         .Send());
             }
         }

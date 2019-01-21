@@ -31,7 +31,7 @@ namespace ProxyKit.Recipes
                 // Extension Method
                 app.RunProxy(context => context
                     .ForwardTo("http://localhost:5001")
-                    .ApplyXForwardedHeaders()
+                    .AddXForwardedHeaders()
                     .ApplyCorrelationId()
                     .Send());
             }

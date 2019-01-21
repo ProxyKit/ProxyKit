@@ -365,9 +365,13 @@ promoted to an out-of-the-box feature in a future version of ProxyKit.
    Really useful if your application has eventually consistent aspects.
 7. [Customise Upstream Requests](src/Recipes/07_CustomiseUpstreamRequest.cs) -
    Customise the upstream request by adding a header.
-8. [Customise Upstream Responses](src/Recipes/08_CustomiseUpstreamResponse.cs) -  Customise the upstream response by removing a header.
+8. [Customise Upstream Responses](src/Recipes/08_CustomiseUpstreamResponse.cs) -
+   Customise the upstream response by removing a header.
 9. [Consul Service Discovery](src/Recipes/09_ConsulServiceDisco.cs) - Service
    discovery for an upstream host using [Consul](https://www.consul.io/).
+10. [Copy X-Forward Headers](src/Recipes/10_CopyXForward.cs) - Copies
+    `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
+    `X-Forwarded-PathBase` headers from the incoming request.
 
 ## 11. Performance considerations
 

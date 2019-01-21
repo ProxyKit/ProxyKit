@@ -24,7 +24,7 @@ namespace ProxyKit.Recipes
                     var upstreamHost = new Uri($"https://{service.Response[0].Address}:{service.Response[0].ServicePort}");
                     return await context
                         .ForwardTo(upstreamHost)
-                        .ApplyXForwardedHeaders()
+                        .AddXForwardedHeaders()
                         .Send();
                 });
 
@@ -35,7 +35,7 @@ namespace ProxyKit.Recipes
                     var upstreamHost = new Uri($"https://{service.Response[0].Address}:{service.Response[0].ServicePort}");
                     return await context
                         .ForwardTo(upstreamHost)
-                        .ApplyXForwardedHeaders()
+                        .AddXForwardedHeaders()
                         .Send();
                 });
             }
