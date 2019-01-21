@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 
@@ -18,9 +19,13 @@ namespace ProxyKit
                 requestMessage.Content = streamContent;
             }
 
-            // Copy the request headers
+            // Copy the request headers *except* x-forwarded-* headers.
             foreach (var header in request.Headers)
             {
+                if(header.Key.StartsWith("X-Forwarded-", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
                 if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
                 {
                     requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
