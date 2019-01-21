@@ -21,6 +21,9 @@ issues making it suitable for microservice / container environments.
   - [2. Customising the upstream request](#2-customising-the-upstream-request)
   - [3. Customising the upstream response](#3-customising-the-upstream-response)
   - [4. X-Forwarded Headers](#4-x-forwarded-headers)
+    - [4.1. Client Sent X-Forwarded-Headers](#41-client-sent-x-forwarded-headers)
+    - [4.2. Adding X-Forwarded-Headers](#42-adding-x-forwarded-headers)
+    - [4.3. Copying X-Forwarded-Headers](#43-copying-x-forwarded-headers)
   - [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
   - [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
   - [7. Error handling](#7-error-handling)
@@ -155,6 +158,15 @@ client. In this example we are removing a header:
 
 ## 4. X-Forwarded Headers
 
+### 4.1. Client Sent X-Forwarded-Headers 
+
+:information: To mitigate against spoofing attacks and misconfiguration ProxyKit
+does not copy `X-Forward-*` headers from the incoming request to the upstream
+request by default. To copy these headers requries opting in. See 4.3. Copying
+X-Forwarded-Headers below.
+
+### 4.2. Adding X-Forwarded-Headers
+
 Many applications will need to know what their "outside" host / url is in order
 to generate correct values. This is achieved using `X-Forwarded-*` and
 `Forwarded` headers. ProxyKit supports applying `X-Forward-*` headers out of the
@@ -162,22 +174,53 @@ box (applying `Forwarded` headers support is on backlog). At time of writing,
 `Forwarded` is [not supported](https://github.com/aspnet/AspNetCore/issues/5978)
 in ASP.NET Core.
 
-To apply `X-Forwarded-Headers` to the request to the upstream server:
+To add `X-Forwarded-Headers` to the request to the upstream server:
 
 ```csharp
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
         .ForwardTo("http://upstream-server:5001")
-        .ApplyXForwardedHeaders()
+        .AddXForwardedHeaders()
         .Send());
 }
 ```
 
-This will add `X-Forward-For`, `X-Forwarded-Host` and `X-Forwarded-Proto`
+This will add `X-Forwarded-For`, `X-Forwarded-Host` and `X-Forwarded-Proto`
 headers to the upstream request using values from `HttpContext`. If the proxy
 middleware is hosted on a path and a `PathBase` exists on the request, then an
 `X-Forwarded-PathBase` is also added.
+
+### 4.3. Copying X-Forwarded-Headers
+
+Chaining proxies is a common pattern in more complex setups. In this case, if
+the proxy is an "internal" proxy, you will want to copy the "X-Forwarded-*"
+headers from previous proxy. To do so, use `CopyXForwardedHeaders()`:
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context => context
+        .ForwardTo("http://upstream-server:5001")
+        .CopyXForwardedHeaders()
+        .Send());
+}
+```
+
+You may optionally also add the "internal" proxy details to the `X-Forwarded-*`
+header values by combinging `CopyXForwardedHeaders()` and
+`AddXForwardedHeaders()` (note the order is important):
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.RunProxy(context => context
+        .ForwardTo("http://upstream-server:5001")
+        .CopyXForwardedHeaders()
+        .AddXForwardedHeaders()
+        .Send());
+}
+```
 
 ## 5. Making upstream servers reverse proxy friendly
 
