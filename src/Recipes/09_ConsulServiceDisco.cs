@@ -3,7 +3,7 @@ using Consul;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ProxyKit.Recipies
+namespace ProxyKit.Recipes
 {
     public class ConsulServiceDiscovery : ExampleBase<ConsulServiceDiscovery.Startup>
     {

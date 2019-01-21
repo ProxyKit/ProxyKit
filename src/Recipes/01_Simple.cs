@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ProxyKit.Recipies
+namespace ProxyKit.Recipes
 {
     public class Simple : ExampleBase<Simple.Startup>
     {

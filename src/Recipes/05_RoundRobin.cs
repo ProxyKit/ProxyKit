@@ -3,7 +3,7 @@ using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ProxyKit.Recipies
+namespace ProxyKit.Recipes
 {
     public class RoundRobinLoadBalancer : ExampleBase<RoundRobinLoadBalancer.Startup>
     {

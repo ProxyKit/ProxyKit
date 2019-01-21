@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ProxyKit.Recipies
+namespace ProxyKit.Recipes
 {
     internal class Program
     {

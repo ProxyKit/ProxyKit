@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using ProxyKit.Testing;
 
-namespace ProxyKit.Recipies
+namespace ProxyKit.Recipes
 {
     public class Testing
     {
