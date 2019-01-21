@@ -1,3 +1,5 @@
+![Image](logo.png)
+
 # ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]
 
 A toolkit to create **HTTP proxies** hosted in ASP.NET Core as middleware. This
@@ -485,6 +487,10 @@ Any ideas for features, bugs or questions, please create an issue. Pull requests
 gratefully accepted but please create an issue for discussion first.
 
 I can be reached on twitter at [@randompunter](https://twitter.com/randompunter)
+
+---
+
+<sub>[distribute](https://thenounproject.com/term/target/345443) by [ChangHoon Baek](https://thenounproject.com/changhoon.baek.50/) from [the Noun Project](https://thenounproject.com/).</sub>
 
 [travis build]: https://travis-ci.org/damianh/ProxyKit.svg?branch=master
 [project]: https://travis-ci.org/damianh/ProxyKit
