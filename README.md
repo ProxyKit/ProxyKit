@@ -162,7 +162,7 @@ client. In this example we are removing a header:
 
 ### 4.1. Client Sent X-Forwarded-Headers 
 
-:information: To mitigate against spoofing attacks and misconfiguration ProxyKit
+:warning: To mitigate against spoofing attacks and misconfiguration ProxyKit
 does not copy `X-Forward-*` headers from the incoming request to the upstream
 request by default. To copy these headers requries opting in. See 4.3. Copying
 X-Forwarded-Headers below.
