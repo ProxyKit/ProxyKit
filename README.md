@@ -18,26 +18,25 @@ issues making it suitable for microservice / container environments.
 
 <!-- TOC depthFrom:2 -->
 
-- [ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]](#proxykit-build-statustravis-buildproject-nugetnuget-badgenuget-package)
-  - [1. Quick Start](#1-quick-start)
-  - [2. Customising the upstream request](#2-customising-the-upstream-request)
-  - [3. Customising the upstream response](#3-customising-the-upstream-response)
-  - [4. X-Forwarded Headers](#4-x-forwarded-headers)
-    - [4.1. Client Sent X-Forwarded-Headers](#41-client-sent-x-forwarded-headers)
-    - [4.2. Adding X-Forwarded-Headers](#42-adding-x-forwarded-headers)
-    - [4.3. Copying X-Forwarded-Headers](#43-copying-x-forwarded-headers)
-  - [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
-  - [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
-  - [7. Error handling](#7-error-handling)
-  - [8. Testing](#8-testing)
-  - [9. Load Balancing](#9-load-balancing)
-    - [9.1. Weighted Round Robin](#91-weighted-round-robin)
-  - [10. Recipes](#10-recipes)
-  - [11. Performance considerations](#11-performance-considerations)
-  - [12. Note about serverless](#12-note-about-serverless)
-  - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
-  - [15. How to build](#15-how-to-build)
-  - [14. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
+ - [1. Quick Start](#1-quick-start)
+ - [2. Customising the upstream request](#2-customising-the-upstream-request)
+ - [3. Customising the upstream response](#3-customising-the-upstream-response)
+ - [4. X-Forwarded Headers](#4-x-forwarded-headers)
+   - [4.1. Client Sent X-Forwarded-Headers](#41-client-sent-x-forwarded-headers)
+   - [4.2. Adding X-Forwarded-Headers](#42-adding-x-forwarded-headers)
+   - [4.3. Copying X-Forwarded-Headers](#43-copying-x-forwarded-headers)
+ - [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
+ - [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
+ - [7. Error handling](#7-error-handling)
+ - [8. Testing](#8-testing)
+ - [9. Load Balancing](#9-load-balancing)
+   - [9.1. Weighted Round Robin](#91-weighted-round-robin)
+ - [10. Recipes](#10-recipes)
+ - [11. Performance considerations](#11-performance-considerations)
+ - [12. Note about serverless](#12-note-about-serverless)
+ - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
+ - [14. How to build](#15-how-to-build)
+ - [15. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
 
 <!-- /TOC -->
 
@@ -466,7 +465,7 @@ chunked-encoded. See [Not Supported Ocelot docs][ocelot not supported].
 Combining ProxyKit with Ocelot would give some nice options for a variety of
 scenarios.
 
-## 15. How to build
+## 14. How to build
 
 Requirements: .NET Core SDK 2.2.100 or later.
 
@@ -481,7 +480,7 @@ On Linux:
 ./build.sh
 ```
 
-## 14. Contributing / Feedback / Questions
+## 15. Contributing / Feedback / Questions
 
 Any ideas for features, bugs or questions, please create an issue. Pull requests 
 gratefully accepted but please create an issue for discussion first.
