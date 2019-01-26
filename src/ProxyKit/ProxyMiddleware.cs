@@ -14,15 +14,11 @@ namespace ProxyKit
     public class ProxyMiddleware
     {
         private readonly ProxyOptions _proxyOptions;
-        private readonly IHttpClientFactory _httpClientFactory;
         private const int StreamCopyBufferSize = 81920;
 
-        public ProxyMiddleware(RequestDelegate _,
-            ProxyOptions proxyOptions,
-            IHttpClientFactory httpClientFactory)
+        public ProxyMiddleware(RequestDelegate _, ProxyOptions proxyOptions)
         {
             _proxyOptions = proxyOptions;
-            _httpClientFactory = httpClientFactory;
         }
 
         public async Task Invoke(HttpContext context)
