@@ -196,9 +196,8 @@ namespace ProxyKit
         public void ConfigureServices(IServiceCollection services)
         {
             var timeout = _config.GetValue("timeout", 60);
-            services.AddProxy(options =>
-                options.ConfigureHttpClient = 
-                    (serviceProvider, client) => client.Timeout = TimeSpan.FromSeconds(timeout));
+            services.AddProxy(httpClientBuilder =>
+                httpClientBuilder.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(timeout)));
         }
 
         public void Configure(IApplicationBuilder app, IServiceProvider sp)

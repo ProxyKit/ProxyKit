@@ -64,8 +64,8 @@ namespace ProxyKit.Recipes
             {
                 // Register the handler in the ProxyOptions
                 // Note: this is a 
-                services.AddProxy(options 
-                    => options.GetMessageHandler = _createHandler);
+                services.AddProxy(httpClientBuilder 
+                    => httpClientBuilder.ConfigurePrimaryHttpMessageHandler(_createHandler));
             }
 
             public void Configure(IApplicationBuilder app)

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 
@@ -34,9 +35,9 @@ namespace ProxyKit
             };
 
             _builder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddProxy(options =>
+                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
                 {
-                    options.GetMessageHandler = () => _testMessageHandler;
+                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
                 }));
         }
 
