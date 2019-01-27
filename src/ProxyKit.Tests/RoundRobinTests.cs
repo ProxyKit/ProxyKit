@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using Shouldly;
 using Xunit;
 
@@ -47,6 +48,23 @@ namespace ProxyKit
 
             upstreamHost = roundRobin.Next();
             upstreamHost.ToString().ShouldBe("http://localhost:5001/");
+        }
+
+        [Fact]
+        public void Given_one_host_then_ensure_lock_is_released()
+        {
+            var roundRobin = new RoundRobin
+            {
+                new UpstreamHost("http://localhost:5001/")
+            };
+            var upstreamHost = roundRobin.Next();
+            upstreamHost.ToString().ShouldBe("http://localhost:5001/");
+            var thread = new Thread(() =>
+            {
+                roundRobin.Add(new UpstreamHost("http://localhost:5002/"));
+            });
+            thread.Start();
+            thread.Join(TimeSpan.FromSeconds(1)).ShouldBe(true);
         }
     }
 }
