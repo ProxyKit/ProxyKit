@@ -56,7 +56,7 @@ namespace ProxyKit
 
             if (host.HasValue)
             {
-                outgoingHeaders.Add(XForwardedHost, host.Host);
+                outgoingHeaders.Add(XForwardedHost, host.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(proto))

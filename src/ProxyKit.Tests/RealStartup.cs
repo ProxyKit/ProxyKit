@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit
@@ -11,6 +12,11 @@ namespace ProxyKit
 
         public void Configure(IApplicationBuilder app)
         {
+            var options = new ForwardedHeadersOptions();
+            options.AllowedHosts.Add("*");
+            options.ForwardedHeaders = ForwardedHeaders.All;
+            app.UseXForwardedHeaders(options);
+
             app.Map("/normal", a => a.Run(async ctx =>
             {
                 ctx.Response.StatusCode = 200;
