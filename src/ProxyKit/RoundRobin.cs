@@ -43,7 +43,9 @@ namespace ProxyKit
 
             if (_distribution.Length == 1)
             {
-                return _distribution[0];
+                var singleHost = _distribution[0];
+                _lockSlim.ExitReadLock();
+                return singleHost;
             }
             var mod = _position % _distribution.Length;
             var upstreamHost = _distribution[mod];
