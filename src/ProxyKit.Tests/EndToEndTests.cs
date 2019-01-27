@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
 
@@ -151,75 +146,6 @@ namespace ProxyKit
             }
 
             return port;
-        }
-    }
-
-    public class RealStartup
-    {
-        public void ConfigureServices(IServiceCollection services) { }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.Map("/normal", a => a.Run(async ctx =>
-            {
-                ctx.Response.StatusCode = 200;
-                await ctx.Response.WriteAsync("Ok");
-            }));
-
-            app.Map("/badrequest", a => a.Run(async ctx =>
-            {
-                ctx.Response.StatusCode = 400;
-                await ctx.Response.WriteAsync("Nah..");
-            }));
-
-            app.Map("/slow", a => a.Run(async ctx =>
-            {
-                await Task.Delay(5000);
-                ctx.Response.StatusCode = 200;
-                await ctx.Response.WriteAsync("Ok... i guess");
-            }));
-
-            app.Map("/error", a => a.Run(async ctx =>
-            {
-                ctx.Response.StatusCode = 500;
-                await ctx.Response.WriteAsync("cute..... BUT IT'S WRONG!");
-            }));
-        }
-    }
-
-    public class TestStartup
-    {
-        private readonly IConfiguration _config;
-
-        public TestStartup(IConfiguration config) { _config = config; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var timeout = _config.GetValue("timeout", 60);
-            services.AddProxy(httpClientBuilder =>
-                httpClientBuilder.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(timeout)));
-        }
-
-        public void Configure(IApplicationBuilder app, IServiceProvider sp)
-        {
-            app.UseXForwardedHeaders();
-
-            app.Map("/accepted", appInner => 
-                appInner.RunProxy(async context 
-                    => new HttpResponseMessage(HttpStatusCode.Accepted)));
-
-            app.Map("/forbidden", appInner => 
-                appInner.RunProxy(async context 
-                    => new HttpResponseMessage(HttpStatusCode.Forbidden)));
-
-            var port = _config.GetValue("Port", 0);
-            if (port != 0)
-            {
-                app.Map("/realServer", appInner =>
-                    appInner.RunProxy(context => context
-                        .ForwardTo("http://localhost:" + port + "/")
-                        .Send()));
-            }
         }
     }
 }
