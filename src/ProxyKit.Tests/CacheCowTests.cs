@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using CacheCow.Client;
+using CacheCow.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -63,16 +63,16 @@ namespace ProxyKit
 
             public void ConfigureServices(IServiceCollection services)
             {
-                var timeout = _config.GetValue("timeout", 60);
-                var cacheStore = new InMemoryCacheStore(TimeSpan.FromMinutes(1));
-                services.AddProxy(options =>
+                // Add the CacheCow services and types to the service collection
+                // Note: using in-memory implementations here for brevity.
+                // See https://github.com/aliostad/CacheCow for full documentation.
+                services.AddSingleton<ICacheStore>(new InMemoryCacheStore(TimeSpan.FromMinutes(1)));
+                services.AddSingleton<IVaryHeaderStore>(new InMemoryVaryHeaderStore());
+                services.AddTransient<CachingHandler>();
+
+                services.AddProxy(httpClientBuilder =>
                 {
-                    options.ConfigureHttpClient =
-                        (serviceProvider, client) => client.Timeout = TimeSpan.FromSeconds(timeout);
-                    options.CreateMessageHandler = () => new CachingHandler(cacheStore)
-                    {
-                        InnerHandler = new HttpClientHandler {AllowAutoRedirect = false, UseCookies = false}
-                    };
+                    httpClientBuilder.AddHttpMessageHandler<CachingHandler>();
                 });
             }
 
