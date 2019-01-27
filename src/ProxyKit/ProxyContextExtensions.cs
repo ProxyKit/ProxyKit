@@ -35,15 +35,7 @@ namespace ProxyKit
             return new ForwardContext(context, request, proxyKitClient.Client);
         }
 
-        /// <summary>
-        ///     Applies X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto and
-        ///     X-Forwarded-PathBase headers to the forward request context. If
-        ///     the headers already exist, they will be appended, otherwise they
-        ///     will be added.
-        /// </summary>
-        /// <param name="forwardContext">The forward context.</param>
-        /// <returns>The forward context.</returns>
-        [Obsolete("Use AddXForwardedHeaders() instead. This will be removed in a future version", false)]
+        [Obsolete("Use AddXForwardedHeaders() instead.", true)]
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext) =>
             forwardContext.AddXForwardedHeaders();
 
