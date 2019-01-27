@@ -49,6 +49,7 @@ issues making it suitable for microservice / container environments.
 - [7. Comparison with Ocelot](#7-comparison-with-ocelot)
 - [8. How to build](#8-how-to-build)
 - [9. Contributing / Feedback / Questions](#9-contributing--feedback--questions)
+- [10. Articles, blogs and other external links](#10-articles-blogs-and-other-external-links)
 
 <!-- /TOC -->
 
@@ -552,9 +553,13 @@ gratefully accepted but please create an issue for discussion first.
 
 I can be reached on twitter at [@randompunter](https://twitter.com/randompunter)
 
+## 10. Articles, blogs and other external links
+
+- [An alternative way to secure SPAs (with ASP.NET Core, OpenID Connect, OAuth 2.0 and ProxyKit)](https://leastprivilege.com/2019/01/18/an-alternative-way-to-secure-spas-with-asp-net-core-openid-connect-oauth-2-0-and-proxykit/)
+
 ---
 
-<sub>[distribute](https://thenounproject.com/term/target/345443) by [ChangHoon Baek](https://thenounproject.com/changhoon.baek.50/) from [the Noun Project](https://thenounproject.com/).</sub>
+<sub>login is [distribute](https://thenounproject.com/term/target/345443) by [ChangHoon Baek](https://thenounproject.com/changhoon.baek.50/) from [the Noun Project](https://thenounproject.com/).</sub>
 
 [travis build]: https://travis-ci.org/damianh/ProxyKit.svg?branch=master
 [project]: https://travis-ci.org/damianh/ProxyKit
