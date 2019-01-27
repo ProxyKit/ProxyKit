@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.TestHost;
 using Shouldly;
 using Xunit;
@@ -45,6 +42,7 @@ namespace ProxyKit
                     .UseStartup<TestStartup>()))
                 {
                     var client = testServer.CreateClient();
+                    client.BaseAddress = new Uri("http://example.com:8080");
 
                     // When server is running, response code should be 'ok'
                     var result = await client.GetAsync("/realServer/normal");
@@ -120,23 +118,6 @@ namespace ProxyKit
                     Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
                 }
             }
-        }
-    }
-
-    internal static class WebHostExtensions
-    {
-        internal static int GetServerPort(this IWebHost server)
-        {
-            var address = server.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First();
-            var match = Regex.Match(address, @"^.+:(\d+)$");
-            var port = 0;
-
-            if (match.Success)
-            {
-                port = int.Parse(match.Groups[1].Value);
-            }
-
-            return port;
         }
     }
 }
