@@ -12,7 +12,7 @@ namespace ProxyKit
         private readonly HashSet<UpstreamHost> _hosts = new HashSet<UpstreamHost>();
         private UpstreamHost[] _distribution;
         private readonly ReaderWriterLockSlim _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-        private int _position;
+        private long _position = -1;
 
         /// <summary>
         ///     Initializes a new instance of <see cref="RoundRobin"/>
@@ -47,9 +47,9 @@ namespace ProxyKit
                 _lockSlim.ExitReadLock();
                 return singleHost;
             }
-            var mod = _position % _distribution.Length;
+            var position = Interlocked.Increment(ref _position);
+            var mod =  position % _distribution.Length;
             var upstreamHost = _distribution[mod];
-            Interlocked.Increment(ref _position);
 
             _lockSlim.ExitReadLock();
 
