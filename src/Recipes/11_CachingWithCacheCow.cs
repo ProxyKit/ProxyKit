@@ -25,7 +25,7 @@ namespace ProxyKit.Recipes
 
                 services.AddProxy(httpClientBuilder =>
                 {
-                    // Tell ProxyKit to use the CachingHandler in it's HttpClient.
+                    // Tell ProxyKit to use the CachingHandler in its HttpClient.
                     httpClientBuilder.AddHttpMessageHandler<CachingHandler>();
                 });
             }
