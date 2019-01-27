@@ -23,14 +23,14 @@ namespace ProxyKit
         [Fact]
         public void Can_append_x_forwarded_headers()
         {
-            _headers.ApplyXForwardedHeaders(IPAddress.Parse("1.2.3.4"), new HostString("example.com"), "https");
+            _headers.ApplyXForwardedHeaders(IPAddress.Parse("1.2.3.4"), new HostString("example.com:8080"), "https");
 
             var forValue = _headers.GetValues(XForwardedExtensions.XForwardedFor).ToArray();
             var hostValue = _headers.GetValues(XForwardedExtensions.XForwardedHost).ToArray();
             var protoValue = _headers.GetValues(XForwardedExtensions.XForwardedProto).ToArray();
 
             forValue.ShouldBe(new [] { "1.2.3.4"} );
-            hostValue.ShouldBe(new [] { "example.com" });
+            hostValue.ShouldBe(new [] { "example.com:8080" });
             protoValue.ShouldBe(new [] { "https" });
         }
 
