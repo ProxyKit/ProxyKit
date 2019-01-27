@@ -42,7 +42,7 @@ issues making it suitable for microservice / container environments.
     - [3.8. Customise Upstream Responses](#38-customise-upstream-responses)
     - [3.9. Consul Service Discovery](#39-consul-service-discovery)
     - [3.10. Copy X-Forward Headers](#310-copy-x-forward-headers)
-    - [3.11. Caching Upstream Responses](#311-caching-upstream-responses)
+    - [3.11. Caching Upstream Responses with CacheCow](#311-caching-upstream-responses-with-cachecow)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
 - [5. Performance considerations](#5-performance-considerations)
 - [6. Note about serverless](#6-note-about-serverless)
@@ -423,7 +423,7 @@ blindly accept these headers from the public internet.
 
 [src/Recipes/10_CopyXForward.cs](src/Recipes/10_CopyXForward.cs)
 
-### 3.11. Caching Upstream Responses
+### 3.11. Caching Upstream Responses with CacheCow
 
 Using [CacheCow.Client](https://github.com/aliostad/CacheCow) to cache responses
 from upstream servers using standard HTTP caching headers.
