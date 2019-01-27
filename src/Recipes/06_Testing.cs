@@ -62,10 +62,10 @@ namespace ProxyKit.Recipes
 
             public void ConfigureServices(IServiceCollection services)
             {
-                // Register the handler in the ProxyOptions
-                // Note: this is a 
-                services.AddProxy(options 
-                    => options.GetMessageHandler = _createHandler);
+                // Set the primary handler to the injected handler 
+                // so upstream requests are sent to the router
+                services.AddProxy(httpClientBuilder 
+                    => httpClientBuilder.ConfigurePrimaryHttpMessageHandler(_createHandler));
             }
 
             public void Configure(IApplicationBuilder app)

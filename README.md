@@ -18,25 +18,25 @@ issues making it suitable for microservice / container environments.
 
 <!-- TOC depthFrom:2 -->
 
- - [1. Quick Start](#1-quick-start)
- - [2. Customising the upstream request](#2-customising-the-upstream-request)
- - [3. Customising the upstream response](#3-customising-the-upstream-response)
- - [4. X-Forwarded Headers](#4-x-forwarded-headers)
-   - [4.1. Client Sent X-Forwarded-Headers](#41-client-sent-x-forwarded-headers)
-   - [4.2. Adding X-Forwarded-Headers](#42-adding-x-forwarded-headers)
-   - [4.3. Copying X-Forwarded-Headers](#43-copying-x-forwarded-headers)
- - [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
- - [6. Configuring ProxyOptions](#6-configuring-proxyoptions)
- - [7. Error handling](#7-error-handling)
- - [8. Testing](#8-testing)
- - [9. Load Balancing](#9-load-balancing)
-   - [9.1. Weighted Round Robin](#91-weighted-round-robin)
- - [10. Recipes](#10-recipes)
- - [11. Performance considerations](#11-performance-considerations)
- - [12. Note about serverless](#12-note-about-serverless)
- - [13. Comparison with Ocelot](#13-comparison-with-ocelot)
- - [14. How to build](#15-how-to-build)
- - [15. Contributing / Feedback / Questions](#14-contributing--feedback--questions)
+- [1. Quick Start](#1-quick-start)
+- [2. Customising the upstream request](#2-customising-the-upstream-request)
+- [3. Customising the upstream response](#3-customising-the-upstream-response)
+- [4. X-Forwarded Headers](#4-x-forwarded-headers)
+    - [4.1. Client Sent X-Forwarded-Headers](#41-client-sent-x-forwarded-headers)
+    - [4.2. Adding X-Forwarded-Headers](#42-adding-x-forwarded-headers)
+    - [4.3. Copying X-Forwarded-Headers](#43-copying-x-forwarded-headers)
+- [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
+- [6. Configuring ProxyKit's HttpClient](#6-configuring-proxykits-httpclient)
+- [7. Error handling](#7-error-handling)
+- [8. Testing](#8-testing)
+- [9. Load Balancing](#9-load-balancing)
+    - [9.1. Weighted Round Robin](#91-weighted-round-robin)
+- [10. Recipes](#10-recipes)
+- [11. Performance considerations](#11-performance-considerations)
+- [12. Note about serverless](#12-note-about-serverless)
+- [13. Comparison with Ocelot](#13-comparison-with-ocelot)
+- [14. How to build](#14-how-to-build)
+- [15. Contributing / Feedback / Questions](#15-contributing--feedback--questions)
 
 <!-- /TOC -->
 
@@ -275,33 +275,34 @@ var options = new ForwardedHeadersOptions
 app.UseXForwardedHeaders(options);
 ```
 
-## 6. Configuring ProxyOptions
+## 6. Configuring ProxyKit's HttpClient
 
-When adding the Proxy to the service collection there are a couple of options 
-available to configure the proxy behavior:
+When adding the Proxy to your application's service collection there is an
+opportunity of to configure the internal HttpClient. As
+[`HttpClientFactory`](https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests)
+is used, it's builder is exposed for you to configure:
 
 ```csharp
-services.AddProxy(options => /* configure options here */);
+services.AddProxy(httpClientBuilder => /* configure http client builder */);
 ```
 
-There are two options :
+Below are two examples of what you might want to do:
 
-1. `options.ConfigureHttpClient`: an `Action<HttpClient>` to configure the HTTP
-   Client on each request e.g. configuring a timeout:
+1. Configure the HTTP Client's timeout to 5 seconds:
+
     ```csharp
-    services.AddProxy(options 
-        => options.ConfigureHttpClient =
-            (serviceProvider, client) => client.Timeout = TimeSpan.FromSeconds(5));
+    services.AddProxy(httpClientBuilder =>
+        httpClientBuilder.ConfigureHttpClient =
+            (client) => client.Timeout = TimeSpan.FromSeconds(5));
     ```
 
-2. Configure the primary `HttpMessageHandler` factory. This is typically used in
-   testing to inject a test handler (see Testing below). This is a factory
-   method as, internally, `HttpClientFactory` recreates the HttpHandler pipeline 
-   disposing previously created handlers.
+2. Configure the primary `HttpMessageHandler`. This is typically used in testing
+   to inject a test handler (see Testing below). 
 
     ```csharp
-    services.AddProxy(options =>
-        options.GetMessageHandler = () => _httpMessageHandler);
+    services.AddProxy(httpClientBuilder =>
+        httpClientBuilder.ConfigurePrimaryHttpMessageHandler = 
+            () => _testMessageHandler);
     ```
 
 ## 7. Error handling
@@ -496,7 +497,7 @@ I can be reached on twitter at [@randompunter](https://twitter.com/randompunter)
 [nuget badge]: https://img.shields.io/nuget/v/ProxyKit.svg
 [nuget package]: https://www.nuget.org/packages/ProxyKit
 [aspnet labs]: https://github.com/aspnet/AspLabs
-[`httpclientfactory`]:  https://github.com/aspnet/Extensions/tree/master/src/HttpClientFactory
+[`httpclientfactory`]:  https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests
 [terminal]: https://docs.microsoft.com/en-ie/dotnet/api/microsoft.aspnetcore.builder.runextensions.run?view=aspnetcore-2.1
 [forwarded headers middleware]: https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-2.2
 [aws lambda]: https://aws.amazon.com/blogs/developer/running-serverless-asp-net-core-web-apis-with-amazon-lambda/

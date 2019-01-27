@@ -11,9 +11,10 @@ namespace ProxyKit.Recipes
         {
             public void ConfigureServices(IServiceCollection services)
             {
+                //Client timeouts if upstream host doesn't respond in 5 seconds
                 services.AddProxy(
-                    options => options.ConfigureHttpClient = (_, client) 
-                        => client.Timeout = TimeSpan.FromSeconds(5));
+                    httpClientBuilder => httpClientBuilder
+                        .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(5))); 
             }
 
             public void Configure(IApplicationBuilder app)

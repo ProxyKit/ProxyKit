@@ -32,11 +32,7 @@ namespace ProxyKit
         /// </summary>
         public HttpRequestMessage UpstreamRequest { get; }
 
-        /// <summary>
-        /// Executes the forward request. [Obsolete. Use Send() instead. This will be removed in a future version].
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete("Use Send() instead. This will be removed in a future version", false)]
+        [Obsolete("Use Send() instead.", true)]
         public Task<HttpResponseMessage> Execute() => Send();
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace ProxyKit
 {
@@ -9,34 +8,20 @@ namespace ProxyKit
     {
         public static IServiceCollection AddProxy(
             this IServiceCollection services,
-            Action<SharedProxyOptions> configureOptions)
+            Action<IHttpClientBuilder> configureHttpClientBuilder = null)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
 
-            services.Configure(configureOptions);
+            var httpClientBuilder = services
+                .AddHttpClient<ProxyKitClient>()
+                .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
 
-            services.AddHttpClient<ProxyKitClient>()
-                .ConfigureHttpClient((sp, c) => sp.GetRequiredService<IOptions<SharedProxyOptions>>().Value.ConfigureHttpClient?.Invoke(sp, c))
-                .ConfigurePrimaryHttpMessageHandler(sp =>
-                    // Get the message handler from the options
-                    sp.GetRequiredService<IOptions<SharedProxyOptions>>().Value.GetMessageHandler?.Invoke() 
-                    // Or construct one with default settings
-                    ?? new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
+            configureHttpClientBuilder?.Invoke(httpClientBuilder);
 
             return services;
-        }
-
-        public static IServiceCollection AddProxy(
-            this IServiceCollection services)
-        {
-            return AddProxy(services, _ => { });
         }
     }
 }
