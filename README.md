@@ -130,7 +130,7 @@ public static class CorrelationIdExtensions
 {
     public static ForwardContext ApplyCorrelationId(this ForwardContext forwardContext)
     {
-        if (forwardContext.UpstreamRequest.Headers.Contains("X-Correlation-ID"))
+        if (!forwardContext.UpstreamRequest.Headers.Contains("X-Correlation-ID"))
         {
             forwardContext.UpstreamRequest.Headers.Add("X-Correlation-ID", Guid.NewGuid().ToString());
         }
