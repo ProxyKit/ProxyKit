@@ -17,6 +17,13 @@ namespace ProxyKit
                 await ctx.Response.WriteAsync("Ok");
             }));
 
+            app.Map("/cachable", a => a.Run(async ctx =>
+            {
+                ctx.Response.StatusCode = 200;
+                ctx.Response.Headers.Add("Cache-Control", "max-age=60");
+                await ctx.Response.WriteAsync("Ok");
+            }));
+
             app.Map("/badrequest", a => a.Run(async ctx =>
             {
                 ctx.Response.StatusCode = 400;

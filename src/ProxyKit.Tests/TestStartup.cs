@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,6 +41,15 @@ namespace ProxyKit
                         .ForwardTo("http://localhost:" + port + "/")
                         .Send()));
             }
+        }
+
+        public static IWebHost BuildKestrelBasedServerOnRandomPort()
+        {
+            return new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls("http://*:0")
+                .UseStartup<RealStartup>()
+                .Build();
         }
     }
 }

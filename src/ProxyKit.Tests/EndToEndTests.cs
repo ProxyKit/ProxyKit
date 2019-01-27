@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,8 +14,6 @@ namespace ProxyKit
 {
     public class EndToEndTests
     {
-        public EndToEndTests() { }
-
         [Fact]
         public async Task Can_get_proxied_route()
         {
@@ -37,10 +34,10 @@ namespace ProxyKit
         [Fact]
         public async Task Responses_from_real_server_are_handled_correctly()
         {
-            using (var server = BuildKestrelBasedServerOnRandomPort())
+            using (var server = TestStartup.BuildKestrelBasedServerOnRandomPort())
             {
                 await server.StartAsync();
-                var port = GetServerPort(server);
+                var port = server.GetServerPort();
 
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
@@ -82,10 +79,10 @@ namespace ProxyKit
         [Fact]
         public async Task When_upstream_host_is_not_running_then_should_get_service_unavailable()
         {
-            using (var server = BuildKestrelBasedServerOnRandomPort())
+            using (var server = TestStartup.BuildKestrelBasedServerOnRandomPort())
             {
                 await server.StartAsync();
-                var port = GetServerPort(server);
+                var port = server.GetServerPort();
 
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
@@ -107,10 +104,10 @@ namespace ProxyKit
         [Fact]
         public async Task When_upstream_host_is_not_running_and_timeout_is_small_then_operation_cancelled_is_service_unavailable()
         {
-            using (var server = BuildKestrelBasedServerOnRandomPort())
+            using (var server = TestStartup.BuildKestrelBasedServerOnRandomPort())
             {
                 await server.StartAsync();
-                var port = GetServerPort(server);
+                var port = server.GetServerPort();
 
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
@@ -124,21 +121,15 @@ namespace ProxyKit
                 }
             }
         }
+    }
 
-        private static IWebHost BuildKestrelBasedServerOnRandomPort()
-        {
-            return new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://*:0")
-                .UseStartup<RealStartup>()
-                .Build();
-        }
-
-        private static int GetServerPort(IWebHost server)
+    internal static class WebHostExtensions
+    {
+        internal static int GetServerPort(this IWebHost server)
         {
             var address = server.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First();
             var match = Regex.Match(address, @"^.+:(\d+)$");
-            int port = 0;
+            var port = 0;
 
             if (match.Success)
             {
