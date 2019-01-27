@@ -19,24 +19,36 @@ issues making it suitable for microservice / container environments.
 <!-- TOC depthFrom:2 -->
 
 - [1. Quick Start](#1-quick-start)
-- [2. Customising the upstream request](#2-customising-the-upstream-request)
-- [3. Customising the upstream response](#3-customising-the-upstream-response)
-- [4. X-Forwarded Headers](#4-x-forwarded-headers)
-    - [4.1. Client Sent X-Forwarded-Headers](#41-client-sent-x-forwarded-headers)
-    - [4.2. Adding X-Forwarded-Headers](#42-adding-x-forwarded-headers)
-    - [4.3. Copying X-Forwarded-Headers](#43-copying-x-forwarded-headers)
-- [5. Making upstream servers reverse proxy friendly](#5-making-upstream-servers-reverse-proxy-friendly)
-- [6. Configuring ProxyKit's HttpClient](#6-configuring-proxykits-httpclient)
-- [7. Error handling](#7-error-handling)
-- [8. Testing](#8-testing)
-- [9. Load Balancing](#9-load-balancing)
-    - [9.1. Weighted Round Robin](#91-weighted-round-robin)
-- [10. Recipes](#10-recipes)
-- [11. Performance considerations](#11-performance-considerations)
-- [12. Note about serverless](#12-note-about-serverless)
-- [13. Comparison with Ocelot](#13-comparison-with-ocelot)
-- [14. How to build](#14-how-to-build)
-- [15. Contributing / Feedback / Questions](#15-contributing--feedback--questions)
+- [2. Core Features](#2-core-features)
+    - [2.1. Customising the upstream request](#21-customising-the-upstream-request)
+    - [2.2. Customising the upstream response](#22-customising-the-upstream-response)
+    - [2.3. X-Forwarded Headers](#23-x-forwarded-headers)
+        - [2.3.1. Client Sent X-Forwarded-Headers](#231-client-sent-x-forwarded-headers)
+        - [2.3.2. Adding X-Forwarded-Headers](#232-adding-x-forwarded-headers)
+        - [2.3.3. Copying X-Forwarded-Headers](#233-copying-x-forwarded-headers)
+    - [2.4. Configuring ProxyKit's HttpClient](#24-configuring-proxykits-httpclient)
+    - [2.5. Error handling](#25-error-handling)
+    - [2.6. Testing](#26-testing)
+    - [2.7. Load Balancing](#27-load-balancing)
+        - [2.7.1. Weighted Round Robin](#271-weighted-round-robin)
+- [3. Recipes](#3-recipes)
+    - [3.1. Simple Forwarding](#31-simple-forwarding)
+    - [3.2. Proxy Paths](#32-proxy-paths)
+    - [3.3. Claims Based Tenant Routing](#33-claims-based-tenant-routing)
+    - [3.4. Authentication offloading with Identity Server](#34-authentication-offloading-with-identity-server)
+    - [3.5. Weighted Round Roblin Load Balancing](#35-weighted-round-roblin-load-balancing)
+    - [3.6. In-memory Testing](#36-in-memory-testing)
+    - [3.7. Customise Upstream Requests](#37-customise-upstream-requests)
+    - [3.8. Customise Upstream Responses](#38-customise-upstream-responses)
+    - [3.9. Consul Service Discovery](#39-consul-service-discovery)
+    - [3.10. Copy X-Forward Headers](#310-copy-x-forward-headers)
+    - [3.11. Caching Upstream Responses](#311-caching-upstream-responses)
+- [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
+- [5. Performance considerations](#5-performance-considerations)
+- [6. Note about serverless](#6-note-about-serverless)
+- [7. Comparison with Ocelot](#7-comparison-with-ocelot)
+- [8. How to build](#8-how-to-build)
+- [9. Contributing / Feedback / Questions](#9-contributing--feedback--questions)
 
 <!-- /TOC -->
 
@@ -83,7 +95,9 @@ What is happening here?
 Note: `RunProxy` is [terminal] - anything added to the pipeline after `RunProxy`
 will never be executed.
 
-## 2. Customising the upstream request
+## 2. Core Features
+
+### 2.1. Customising the upstream request
 
 One can modify the upstream request headers prior to sending them to suit
 customisation needs. ProxyKit doesn't add, remove nor modify any headers by
@@ -136,7 +150,7 @@ public void Configure(IApplicationBuilder app)
 }
 ```
 
-## 3. Customising the upstream response
+### 2.2. Customising the upstream response
 
 Response from an upstream server can be modified before it is sent to the
 client. In this example we are removing a header:
@@ -157,16 +171,16 @@ client. In this example we are removing a header:
 }
 ```
 
-## 4. X-Forwarded Headers
+### 2.3. X-Forwarded Headers
 
-### 4.1. Client Sent X-Forwarded-Headers 
+#### 2.3.1. Client Sent X-Forwarded-Headers 
 
 :warning: To mitigate against spoofing attacks and misconfiguration ProxyKit
 does not copy `X-Forward-*` headers from the incoming request to the upstream
 request by default. To copy these headers requries opting in. See 4.3. Copying
 X-Forwarded-Headers below.
 
-### 4.2. Adding X-Forwarded-Headers
+#### 2.3.2. Adding X-Forwarded-Headers
 
 Many applications will need to know what their "outside" host / url is in order
 to generate correct values. This is achieved using `X-Forwarded-*` and
@@ -192,7 +206,7 @@ headers to the upstream request using values from `HttpContext`. If the proxy
 middleware is hosted on a path and a `PathBase` exists on the request, then an
 `X-Forwarded-PathBase` is also added.
 
-### 4.3. Copying X-Forwarded-Headers
+#### 2.3.3. Copying X-Forwarded-Headers
 
 Chaining proxies is a common pattern in more complex setups. In this case, if
 the proxy is an "internal" proxy, you will want to copy the "X-Forwarded-*"
@@ -223,7 +237,200 @@ public void Configure(IApplicationBuilder app)
 }
 ```
 
-## 5. Making upstream servers reverse proxy friendly
+### 2.4. Configuring ProxyKit's HttpClient
+
+When adding the Proxy to your application's service collection there is an
+opportunity of to configure the internal HttpClient. As
+[`HttpClientFactory`](https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests)
+is used, it's builder is exposed for you to configure:
+
+```csharp
+services.AddProxy(httpClientBuilder => /* configure http client builder */);
+```
+
+Below are two examples of what you might want to do:
+
+1. Configure the HTTP Client's timeout to 5 seconds:
+
+    ```csharp
+    services.AddProxy(httpClientBuilder =>
+        httpClientBuilder.ConfigureHttpClient =
+            (client) => client.Timeout = TimeSpan.FromSeconds(5));
+    ```
+
+2. Configure the primary `HttpMessageHandler`. This is typically used in testing
+   to inject a test handler (see Testing below). 
+
+    ```csharp
+    services.AddProxy(httpClientBuilder =>
+        httpClientBuilder.ConfigurePrimaryHttpMessageHandler = 
+            () => _testMessageHandler);
+    ```
+
+### 2.5. Error handling
+
+When `HttpClient` throws the following logic applies:
+
+1. When upstream server is not reachable then `ServiceUnavailable` is returned.
+2. When upstream server is slow and client timeouts then `GatewayTimeout` is
+   returned.
+
+Not all exception scenarios and variations are caught which may result in a
+`InternalServerError` being returned to your clients. Please create an issue if
+a scenario is missing.
+
+### 2.6. Testing
+
+As ProxyKit is standard ASP.NET Core middleware, it can be tested using the
+standard in-memory `TestServer` mechanism.
+
+Often you will want to test ProxyKit with your application and perhaps test the
+behaviour of your application when load balanced with two or more instances as
+indicated below.
+
+```
+                               +----------+
+                               |"Outside" |
+                               |HttpClient|
+                               +-----+----+
+                                     |
+                                     |
+                                     |
+                         +-----------+---------+
+    +-------------------->RoutingMessageHandler|
+    |                    +-----------+---------+
+    |                                |
+    |                                |
+    |           +--------------------+-------------------------+
+    |           |                    |                         |
++---+-----------v----+      +--------v---------+     +---------v--------+
+|Proxy TestServer    |      |Host1 TestServer  |     |Host2 TestServer  |
+|with Routing Handler|      |HttpMessageHandler|     |HttpMessageHandler|
++--------------------+      +------------------+     +------------------+
+```
+
+`RoutingMessageHandler` is an `HttpMessageHandler` that will route requests to
+to specific host based on on the origin it is configured with. For ProyKit
+to forward requests (in memory) to the upstream hosts, it needs to be configured
+to use the `RoutingMessageHandler` as it's primary `HttpMessageHandler`.
+
+Full example can been viewed [here](src/Recipes/06_Testing.cs).
+
+### 2.7. Load Balancing
+
+Load balancing is mechanism to decide which upstream server to forward the
+request to. Out of the box, ProxyKit currently supports one type of
+load balancing - Weighted Round Robin. Other types are planned.
+
+#### 2.7.1. Weighted Round Robin
+
+Round Robin simply distributes requests as they arrive to the next host in a
+distribution list. With optional weighting, more requests are send to host with
+greater weights.
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    var roundRobin = new RoundRobin
+    {
+        new UpstreamHost("http://localhost:5001", weight: 1),
+        new UpstreamHost("http://localhost:5002", weight: 2)
+    };
+
+    app.RunProxy(
+        async context =>
+        {
+            var host = roundRobin.Next();
+
+            return await context
+                .ForwardTo(host)
+                .Send();
+        });
+}
+```
+
+## 3. Recipes
+
+Recipes are code samples that help you create proxy solutions for your needs.
+If you have any ideas for a recipie, or can spot any improvements to the ones
+below, please send a pull request! Recipes that stand test of time may be
+promoted to an out-of-the-box feature in a future version of ProxyKit.
+
+### 3.1. Simple Forwarding
+
+Forward request to a single upstream host.
+
+[src/Recipes/01_Simple.cs](src/Recipes/01_Simple.cs)
+
+### 3.2. Proxy Paths
+
+Hosting multiple proxys on seperate paths.
+
+[src/Recipes/02_Paths.cs](src/Recipes/02_Paths.cs)
+
+### 3.3. Claims Based Tenant Routing
+
+Routing to a specific upstream host based on a `TenantId` claim for an
+authenticated user.
+
+[src/Recipes/03_TenantRouting.cs](src/Recipes/03_TenantRouting.cs)
+
+### 3.4. Authentication offloading with Identity Server
+
+Using [IdentityServer](https://identityserver.io/) to handle authentication
+before forwarding to upstream host.
+
+[src/Recipes/04_IdSrv.cs](src/Recipes/04_IdSrv.cs)
+
+### 3.5. Weighted Round Roblin Load Balancing
+
+Weighed Round Robin load balancing to two upstream hosts.
+
+[src/Recipes/05_RoundRobin.cs](src/Recipes/05_RoundRobin.cs)
+
+### 3.6. In-memory Testing
+
+Testing behaviour or your ASP.NET Core application by running two instances
+behind round robin proxy. Really useful if your application has eventually
+consistent aspects.
+
+[src/Recipes/06_Testing.cs](src/Recipes/06_Testing.cs)
+
+### 3.7. Customise Upstream Requests
+
+Customise the upstream request by adding a header.
+
+[src/Recipes/07_CustomiseUpstreamRequest.cs](src/Recipes/07_CustomiseUpstreamRequest.cs)
+
+### 3.8. Customise Upstream Responses
+
+Customise the upstream response by removing a header.
+
+[src/Recipes/08_CustomiseUpstreamResponse.cs](src/Recipes/08_CustomiseUpstreamResponse.cs)
+
+### 3.9. Consul Service Discovery
+
+Service discovery for an upstream host using [Consul](https://www.consul.io/).
+
+[src/Recipes/09_ConsulServiceDisco.cs](src/Recipes/09_ConsulServiceDisco.cs)
+
+### 3.10. Copy X-Forward Headers
+
+Copies `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
+`X-Forwarded-PathBase` headers from the incoming request. Typically only done
+when the proxy is in a chain of known proxies. Is it NOT recommended that you
+blindly accept these headers from the public internet.
+
+[src/Recipes/10_CopyXForward.cs](src/Recipes/10_CopyXForward.cs)
+
+### 3.11. Caching Upstream Responses
+
+Using [CacheCow.Client](https://github.com/aliostad/CacheCow) to cache responses
+from upstream servers using standard HTTP caching headers.
+
+[src/Recipes/11_CachingWithCacheCow.cs](src/Recipes/11_CachingWithCacheCow.cs)
+
+## 4. Making upstream servers reverse proxy friendly
 
 Applications that are deployed behind a reverse proxy typically need to be
 somewhat aware of that so they can generate correct URLs and paths when
@@ -275,150 +482,7 @@ var options = new ForwardedHeadersOptions
 app.UseXForwardedHeaders(options);
 ```
 
-## 6. Configuring ProxyKit's HttpClient
-
-When adding the Proxy to your application's service collection there is an
-opportunity of to configure the internal HttpClient. As
-[`HttpClientFactory`](https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests)
-is used, it's builder is exposed for you to configure:
-
-```csharp
-services.AddProxy(httpClientBuilder => /* configure http client builder */);
-```
-
-Below are two examples of what you might want to do:
-
-1. Configure the HTTP Client's timeout to 5 seconds:
-
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigureHttpClient =
-            (client) => client.Timeout = TimeSpan.FromSeconds(5));
-    ```
-
-2. Configure the primary `HttpMessageHandler`. This is typically used in testing
-   to inject a test handler (see Testing below). 
-
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigurePrimaryHttpMessageHandler = 
-            () => _testMessageHandler);
-    ```
-
-## 7. Error handling
-
-When `HttpClient` throws the following logic applies:
-
-1. When upstream server is not reachable then `ServiceUnavailable` is returned.
-2. When upstream server is slow and client timeouts then `GatewayTimeout` is
-   returned.
-
-Not all exception scenarios and variations are caught which may result in a
-`InternalServerError` being returned to your clients. Please create an issue if
-a scenario is missing.
-
-## 8. Testing
-
-As ProxyKit is standard ASP.NET Core middleware, it can be tested using the
-standard in-memory `TestServer` mechanism.
-
-Often you will want to test ProxyKit with your application and perhaps test the
-behaviour of your application when load balanced with two or more instances as
-indicated below.
-
-```
-                               +----------+
-                               |"Outside" |
-                               |HttpClient|
-                               +-----+----+
-                                     |
-                                     |
-                                     |
-                         +-----------+---------+
-    +-------------------->RoutingMessageHandler|
-    |                    +-----------+---------+
-    |                                |
-    |                                |
-    |           +--------------------+-------------------------+
-    |           |                    |                         |
-+---+-----------v----+      +--------v---------+     +---------v--------+
-|Proxy TestServer    |      |Host1 TestServer  |     |Host2 TestServer  |
-|with Routing Handler|      |HttpMessageHandler|     |HttpMessageHandler|
-+--------------------+      +------------------+     +------------------+
-```
-
-`RoutingMessageHandler` is an `HttpMessageHandler` that will route requests to
-to specific host based on on the origin it is configured with. For ProyKit
-to forward requests (in memory) to the upstream hosts, it needs to be configured
-to use the `RoutingMessageHandler` as it's primary `HttpMessageHandler`.
-
-Full example can been viewed [here](src/Recipes/06_Testing.cs).
-
-## 9. Load Balancing
-
-Load balancing is mechanism to decide which upstream server to forward the
-request to. Out of the box, ProxyKit currently supports one type of
-load balancing - Weighted Round Robin. Other types are planned.
-
-### 9.1. Weighted Round Robin
-
-Round Robin simply distributes requests as they arrive to the next host in a
-distribution list. With optional weighting, more requests are send to host with
-greater weights.
-
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    var roundRobin = new RoundRobin
-    {
-        new UpstreamHost("http://localhost:5001", weight: 1),
-        new UpstreamHost("http://localhost:5002", weight: 2)
-    };
-
-    app.RunProxy(
-        async context =>
-        {
-            var host = roundRobin.Next();
-
-            return await context
-                .ForwardTo(host)
-                .Send();
-        });
-}
-```
-
-## 10. Recipes
-
-Recipes are code samples that help you create proxy solutions for your needs.
-If you have any ideas for a recipie, or can spot any improvements to the ones
-below, please send a pull request! Recipes that stand test of time may be
-promoted to an out-of-the-box feature in a future version of ProxyKit.
-
-1. [Simple Forwarding](src/Recipes/01_Simple.cs) - Forward request to a single
-   upstream host. 
-2. [Proxy Pathing](src/Recipes/02_Paths.cs) - Hosting multiple proxys on
-   seperate paths.
-3. [Tenant Routing](src/Recipes/03_TenantRouting.cs) - Routing to a specific
-   upstream host based on a `TenantId` claim for an authenticated user.
-4. [Authentication offloading](src/Recipes/04_IdSrv.cs) - Using
-   [IdentityServer](https://identityserver.io/) to handle authentication before
-   forwarding to upstream host.
-5. [Round Roblin Load Balancing](src/Recipes/05_RoundRobin.cs) - Weighed Round
-   Robin load balancing to two upstream hosts.
-6. [In-memory Testing](src/Recipes/06_Testing.cs) - Testing behaviour or your
-   ASP.NET Core application by running two instances behind round robin proxy.
-   Really useful if your application has eventually consistent aspects.
-7. [Customise Upstream Requests](src/Recipes/07_CustomiseUpstreamRequest.cs) -
-   Customise the upstream request by adding a header.
-8. [Customise Upstream Responses](src/Recipes/08_CustomiseUpstreamResponse.cs) -
-   Customise the upstream response by removing a header.
-9. [Consul Service Discovery](src/Recipes/09_ConsulServiceDisco.cs) - Service
-   discovery for an upstream host using [Consul](https://www.consul.io/).
-10. [Copy X-Forward Headers](src/Recipes/10_CopyXForward.cs) - Copies
-    `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
-    `X-Forwarded-PathBase` headers from the incoming request.
-
-## 11. Performance considerations
+## 5. Performance considerations
 
 According to TechEmpower's Web Framework Benchmarks, ASP.NET Core [is up there
 with the fastest for plain
@@ -443,7 +507,7 @@ Memory wise, ProxyKit maintained a steady ~20MB of RAM after processing millions
 of requests for simple forwarding. Again, it depends on what your proxy does so
 you should analyse and measure yourself.
 
-## 12. Note about serverless
+## 6. Note about serverless
 
 Whilst is it is possible to run full ASP.NET Core web application in [AWS
 Lambda] and [Azure Functions] it should be noted that Serverless systems are
@@ -453,7 +517,7 @@ means ProxyKit should only be used for API (json) proxying in production on
 Serverless. (Though proxing other payloads is fine for dev / exploration /
 quick'n'dirty purposes.)
 
-## 13. Comparison with Ocelot
+## 7. Comparison with Ocelot
 
 [Ocelot] is an API Gateway that also runs on ASP.NET Core. A key difference
 between API Gateways and general Reverse Proxies is that the former tend to be
@@ -466,7 +530,7 @@ chunked-encoded. See [Not Supported Ocelot docs][ocelot not supported].
 Combining ProxyKit with Ocelot would give some nice options for a variety of
 scenarios.
 
-## 14. How to build
+## 8. How to build
 
 Requirements: .NET Core SDK 2.2.100 or later.
 
@@ -481,7 +545,7 @@ On Linux:
 ./build.sh
 ```
 
-## 15. Contributing / Feedback / Questions
+## 9. Contributing / Feedback / Questions
 
 Any ideas for features, bugs or questions, please create an issue. Pull requests 
 gratefully accepted but please create an issue for discussion first.
