@@ -15,8 +15,6 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.Configure(configureHttpClientBuilder);
-
             var httpClientBuilder = services
                 .AddHttpClient<ProxyKitClient>()
                 .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
