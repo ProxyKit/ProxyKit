@@ -8,12 +8,12 @@ applications or deployed as a standalone server. Deployable anywhere ASP.NET
 Core is deployable such as Windows, Linux, Containers and Serverless (with
 caveats).
 
-Having built proxies many times before, I felt it is time make a package. Forked
+Having built proxies many times before, I felt it is time to make a package. Forked
 from [ASP.NET labs][aspnet labs], it has been heavily modified with a different
 API, to facilitate a wider variety of proxying scenarios (i.e. routing based on
 a JWT claim) and interception of the proxy requests / responses for
 customization of headers and (optionally) request / response bodies. It also
-uses [`HttpClientFactory`] internally that will mitigate against dns caching
+uses [`HttpClientFactory`] internally that will mitigate against DNS caching
 issues making it suitable for microservice / container environments.
 
 <!-- TOC depthFrom:2 -->
@@ -101,7 +101,7 @@ will never be executed.
 ### 2.1. Customising the upstream request
 
 One can modify the upstream request headers prior to sending them to suit
-customisation needs. ProxyKit doesn't add, remove nor modify any headers by
+customisation needs. ProxyKit doesn't add, nor remove, nor modify any headers by
 default; one must opt in any behaviours explicitly.
 
 In this example we will add a `X-Correlation-Id` header if it does not exist:
@@ -178,15 +178,15 @@ client. In this example we are removing a header:
 
 :warning: To mitigate against spoofing attacks and misconfiguration ProxyKit
 does not copy `X-Forward-*` headers from the incoming request to the upstream
-request by default. To copy these headers requries opting in. See 4.3. Copying
+request by default. To copy these headers requires opting in. See 4.3. Copying
 X-Forwarded-Headers below.
 
 #### 2.3.2. Adding X-Forwarded-Headers
 
-Many applications will need to know what their "outside" host / url is in order
+Many applications will need to know what their "outside" host / URL is in order
 to generate correct values. This is achieved using `X-Forwarded-*` and
 `Forwarded` headers. ProxyKit supports applying `X-Forward-*` headers out of the
-box (applying `Forwarded` headers support is on backlog). At time of writing,
+box (applying `Forwarded` headers support is on backlog). At the time of writing,
 `Forwarded` is [not supported](https://github.com/aspnet/AspNetCore/issues/5978)
 in ASP.NET Core.
 
@@ -224,7 +224,7 @@ public void Configure(IApplicationBuilder app)
 ```
 
 You may optionally also add the "internal" proxy details to the `X-Forwarded-*`
-header values by combinging `CopyXForwardedHeaders()` and
+header values by combining `CopyXForwardedHeaders()` and
 `AddXForwardedHeaders()` (note the order is important):
 
 ```csharp
@@ -240,10 +240,10 @@ public void Configure(IApplicationBuilder app)
 
 ### 2.4. Configuring ProxyKit's HttpClient
 
-When adding the Proxy to your application's service collection there is an
-opportunity of to configure the internal HttpClient. As
+When adding the Proxy to your application's service collection, there is an
+opportunity to configure the internal HttpClient. As
 [`HttpClientFactory`](https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests)
-is used, it's builder is exposed for you to configure:
+is used, its builder is exposed for you to configure:
 
 ```csharp
 services.AddProxy(httpClientBuilder => /* configure http client builder */);
@@ -270,10 +270,10 @@ Below are two examples of what you might want to do:
 
 ### 2.5. Error handling
 
-When `HttpClient` throws the following logic applies:
+When `HttpClient` throws, the following logic applies:
 
-1. When upstream server is not reachable then `ServiceUnavailable` is returned.
-2. When upstream server is slow and client timeouts then `GatewayTimeout` is
+1. When upstream server is not reachable, then `ServiceUnavailable` is returned.
+2. When upstream server is slow and client timeouts, then `GatewayTimeout` is
    returned.
 
 Not all exception scenarios and variations are caught which may result in a
@@ -282,7 +282,7 @@ a scenario is missing.
 
 ### 2.6. Testing
 
-As ProxyKit is standard ASP.NET Core middleware, it can be tested using the
+As ProxyKit is a standard ASP.NET Core middleware, it can be tested using the
 standard in-memory `TestServer` mechanism.
 
 Often you will want to test ProxyKit with your application and perhaps test the
@@ -311,23 +311,23 @@ indicated below.
 ```
 
 `RoutingMessageHandler` is an `HttpMessageHandler` that will route requests to
-to specific host based on on the origin it is configured with. For ProyKit
+to specific host based on the origin it is configured with. For ProxyKit
 to forward requests (in memory) to the upstream hosts, it needs to be configured
-to use the `RoutingMessageHandler` as it's primary `HttpMessageHandler`.
+to use the `RoutingMessageHandler` as its primary `HttpMessageHandler`.
 
 Full example can been viewed [here](src/Recipes/06_Testing.cs).
 
 ### 2.7. Load Balancing
 
-Load balancing is mechanism to decide which upstream server to forward the
+Load balancing is a mechanism to decide which upstream server to forward the
 request to. Out of the box, ProxyKit currently supports one type of
 load balancing - Weighted Round Robin. Other types are planned.
 
 #### 2.7.1. Weighted Round Robin
 
 Round Robin simply distributes requests as they arrive to the next host in a
-distribution list. With optional weighting, more requests are send to host with
-greater weights.
+distribution list. With optional weighting, more requests are sent to the host with
+the greater weight.
 
 ```csharp
 public void Configure(IApplicationBuilder app)
@@ -353,7 +353,7 @@ public void Configure(IApplicationBuilder app)
 ## 3. Recipes
 
 Recipes are code samples that help you create proxy solutions for your needs.
-If you have any ideas for a recipie, or can spot any improvements to the ones
+If you have any ideas for a recipe, or can spot any improvements to the ones
 below, please send a pull request! Recipes that stand test of time may be
 promoted to an out-of-the-box feature in a future version of ProxyKit.
 
@@ -365,7 +365,7 @@ Forward request to a single upstream host.
 
 ### 3.2. Proxy Paths
 
-Hosting multiple proxys on seperate paths.
+Hosting multiple proxies on separate paths.
 
 [src/Recipes/02_Paths.cs](src/Recipes/02_Paths.cs)
 
@@ -385,7 +385,7 @@ before forwarding to upstream host.
 
 ### 3.5. Weighted Round Roblin Load Balancing
 
-Weighed Round Robin load balancing to two upstream hosts.
+Weighted Round Robin load balancing to two upstream hosts.
 
 [src/Recipes/05_RoundRobin.cs](src/Recipes/05_RoundRobin.cs)
 
@@ -420,7 +420,7 @@ Service discovery for an upstream host using [Consul](https://www.consul.io/).
 Copies `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
 `X-Forwarded-PathBase` headers from the incoming request. Typically only done
 when the proxy is in a chain of known proxies. Is it NOT recommended that you
-blindly accept these headers from the public internet.
+blindly accept these headers from the public Internet.
 
 [src/Recipes/10_CopyXForward.cs](src/Recipes/10_CopyXForward.cs)
 
@@ -436,7 +436,7 @@ from upstream servers using standard HTTP caching headers.
 Applications that are deployed behind a reverse proxy typically need to be
 somewhat aware of that so they can generate correct URLs and paths when
 responding to a browser. That is, they look at `X-Forward-*` \ `Forwarded`
-headers and use their values .
+headers and use their values.
 
 In ASP.NET Core, this means using the Forwarded Headers middleware in your
 application. Please refer to the [documentation][forwarded headers middleware]
@@ -473,7 +473,7 @@ app.Use((context, next) =>
 ```
 
 Alternatively you can use ProxyKit's `UseXForwardedHeaders` extension that
-perform the same as the above (including calling `UseForwardedHeaders`):
+performs the same as the above (including calling `UseForwardedHeaders`):
 
 ```csharp
 var options = new ForwardedHeadersOptions
@@ -489,19 +489,19 @@ According to TechEmpower's Web Framework Benchmarks, ASP.NET Core [is up there
 with the fastest for plain
 text](https://www.techempower.com/benchmarks/#section=data-r17&hw=ph&test=plaintext).
 As ProxyKit simply captures headers and async copies request and response body
-streams, it will fast enough for most scenarios.
+streams, it will be fast enough for most scenarios.
 
 Stress testing shows that ProxyKit is approximately 8% slower than nginx for
-simple forwarding on linux. If absolute raw throughput is a concern for you then
+simple forwarding on linux. If absolute raw throughput is a concern for you, then
 consider nginx or alternatives. For me being able to create flexible proxies
 using C# is a reasonable tradeoff for the (small) performance cost. Note that
 depending on what your proxy does may impact performance so you should measure
 yourself.
 
-On windows, ProxyKit is ~3x faster than nginx. However, nginx has clearly
+On Windows, ProxyKit is ~3x faster than nginx. However, nginx has clearly
 documented that [it has known
-performance](https://nginx.org/en/docs/windows.html) issues on windows. Since
-one wouldn't be running production nginx on windows this comparison is
+performance issues on Windows](https://nginx.org/en/docs/windows.html). Since
+one wouldn't be running production nginx on Windows, this comparison is
 academic.
 
 Memory wise, ProxyKit maintained a steady ~20MB of RAM after processing millions
@@ -510,12 +510,12 @@ you should analyse and measure yourself.
 
 ## 6. Note about serverless
 
-Whilst is it is possible to run full ASP.NET Core web application in [AWS
+Whilst it is possible to run full ASP.NET Core web application in [AWS
 Lambda] and [Azure Functions] it should be noted that Serverless systems are
 message based and not stream based. Incoming and outgoing HTTP request messages
 will be buffered and potentially encoded as Base64 if binary (so larger). This
 means ProxyKit should only be used for API (json) proxying in production on
-Serverless. (Though proxing other payloads is fine for dev / exploration /
+Serverless. (Though proxying other payloads is fine for dev / exploration /
 quick'n'dirty purposes.)
 
 ## 7. Comparison with Ocelot
@@ -523,8 +523,8 @@ quick'n'dirty purposes.)
 [Ocelot] is an API Gateway that also runs on ASP.NET Core. A key difference
 between API Gateways and general Reverse Proxies is that the former tend to be
 **message** based whereas a reverse proxy is **stream** based. That is, an API
-gateway will typically buffer the every request and response message to be able
-to perform transformations. This is fine for an API gateway but not suitable for
+Gateway will typically buffer every request and response message to be able
+to perform transformations. This is fine for an API Gateway but not suitable for
 a general reverse proxy performance wise nor for responses that are
 chunked-encoded. See [Not Supported Ocelot docs][ocelot not supported].
 
