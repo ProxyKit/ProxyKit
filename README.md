@@ -36,7 +36,7 @@ issues making it suitable for microservice / container environments.
     - [3.2. Proxy Paths](#32-proxy-paths)
     - [3.3. Claims Based Tenant Routing](#33-claims-based-tenant-routing)
     - [3.4. Authentication offloading with Identity Server](#34-authentication-offloading-with-identity-server)
-    - [3.5. Weighted Round Roblin Load Balancing](#35-weighted-round-roblin-load-balancing)
+    - [3.5. Weighted Round Robin Load Balancing](#35-weighted-round-robin-load-balancing)
     - [3.6. In-memory Testing](#36-in-memory-testing)
     - [3.7. Customise Upstream Requests](#37-customise-upstream-requests)
     - [3.8. Customise Upstream Responses](#38-customise-upstream-responses)
@@ -383,7 +383,7 @@ before forwarding to upstream host.
 
 [src/Recipes/04_IdSrv.cs](src/Recipes/04_IdSrv.cs)
 
-### 3.5. Weighted Round Roblin Load Balancing
+### 3.5. Weighted Round Robin Load Balancing
 
 Weighted Round Robin load balancing to two upstream hosts.
 
