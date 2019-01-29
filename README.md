@@ -415,14 +415,14 @@ Service discovery for an upstream host using [Consul](https://www.consul.io/).
 
 [src/Recipes/09_ConsulServiceDisco.cs](src/Recipes/09_ConsulServiceDisco.cs)
 
-### 3.10. Copy X-Forward Headers
+### 3.10. Copy X-Forwarded Headers
 
 Copies `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
 `X-Forwarded-PathBase` headers from the incoming request. Typically only done
 when the proxy is in a chain of known proxies. Is it NOT recommended that you
 blindly accept these headers from the public Internet.
 
-[src/Recipes/10_CopyXForward.cs](src/Recipes/10_CopyXForward.cs)
+[src/Recipes/10_CopyXForwarded.cs](src/Recipes/10_CopyXForwarded.cs)
 
 ### 3.11. Caching Upstream Responses with CacheCow
 
