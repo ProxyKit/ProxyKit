@@ -111,6 +111,40 @@ namespace ProxyKit
             sentRequest.Method.ShouldBe(new HttpMethod(methodType));
         }
 
+        [Theory]
+        [InlineData("GET", 3001)]
+        public async Task PassthroughRequestsWithMalformedUserAgent(string methodType, int port)
+        {
+            _builder.Configure(app => app.RunProxy(
+                context => context
+                    .ForwardTo($"http://localhost:{port}/foo/")
+                    .AddXForwardedHeaders()
+                    .Send()));
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(new HttpMethod(methodType), "http://mydomain.example")
+            {
+                Content = new StringContent("Request Body")
+            };
+
+            request.Headers.Add("User-Agent", "Mozilla/4.0 (compatible (compatible; MSIE 8.0; Windows NT 6.1; Trident/7.0)");
+
+            var response = await client.SendAsync(request);
+
+            // Assert response
+            var responseContent = await response.Content.ReadAsStringAsync();
+            responseContent.ShouldBe("Response Body");
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+            // Assert sent message
+            var sentRequest = _testMessageHandler.SentRequestMessages.Single();
+            sentRequest.Headers.TryGetValues("Host", out var hostValue);
+            hostValue.SingleOrDefault().ShouldBe("localhost:" + port);
+            sentRequest.RequestUri.ToString().ShouldBe("http://localhost:" + port + "/foo/");
+            sentRequest.Method.ShouldBe(new HttpMethod(methodType));
+        }
+
         [Fact]
         public async Task ApplyXForwardedHeaders()
         {
@@ -136,7 +170,7 @@ namespace ProxyKit
         [Fact]
         public async Task ReturnsStatusCode()
         {
-            _builder.Configure(app => 
+            _builder.Configure(app =>
                 app.RunProxy(context => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable))));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
