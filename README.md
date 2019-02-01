@@ -72,7 +72,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-Forward requests to `localhost:5001`:
+Forward requests to `upstream-server:5001`:
 
 ```csharp
 public void Configure(IApplicationBuilder app)
@@ -85,9 +85,9 @@ public void Configure(IApplicationBuilder app)
 
 What is happening here?
 
- 1. `context.ForwardTo(upstreamHost)` is an extension method over the
+ 1. `context.ForwardTo(upstreamHost)` is an extension method on
     `HttpContext` that creates and initializes an `HttpRequestMessage` with
-    the original request headers copied over and returns a `ForwardContext`.
+    the original request headers copied over, yielding a `ForwardContext`.
  2. `Send` Sends the forward request to the upstream server and returns an
     `HttpResponseMessage`.
  3. The proxy middleware then takes the response and applies it to
@@ -101,10 +101,10 @@ will never be executed.
 ### 2.1. Customising the upstream request
 
 One can modify the upstream request headers prior to sending them to suit
-customisation needs. ProxyKit doesn't add, nor remove, nor modify any headers by
+customisation needs. ProxyKit doesn't add, remove, nor modify any headers by
 default; one must opt in any behaviours explicitly.
 
-In this example we will add a `X-Correlation-Id` header if it does not exist:
+In this example we will add a `X-Correlation-ID` header if the incoming request does not bear one:
 
 ```csharp
 public const string XCorrelationId = "X-Correlation-ID";
@@ -113,7 +113,7 @@ public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context =>
     {
-        var forwardContext = context.ForwardTo("http://localhost:5001");
+        var forwardContext = context.ForwardTo("http://upstream-server:5001");
         if (!forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
         {
             forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
@@ -128,11 +128,13 @@ This can be encapsulated as an extension method:
 ```csharp
 public static class CorrelationIdExtensions
 {
+    public const string XCorrelationId = "X-Correlation-ID";
+    
     public static ForwardContext ApplyCorrelationId(this ForwardContext forwardContext)
     {
-        if (!forwardContext.UpstreamRequest.Headers.Contains("X-Correlation-ID"))
+        if (!forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
         {
-            forwardContext.UpstreamRequest.Headers.Add("X-Correlation-ID", Guid.NewGuid().ToString());
+            forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
         }
         return forwardContext;
     }
@@ -145,7 +147,7 @@ public static class CorrelationIdExtensions
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
-        .ForwardTo("http://localhost:5001")
+        .ForwardTo("http://upstream-server:5001")
         .ApplyCorrelationId()
         .Send());
 }
@@ -153,11 +155,11 @@ public void Configure(IApplicationBuilder app)
 
 ### 2.2. Customising the upstream response
 
-Response from an upstream server can be modified before it is sent to the
+The response from an upstream server can be modified before it is sent to the
 client. In this example we are removing a header:
 
 ```csharp
- public void Configure(IApplicationBuilder app)
+public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(async context =>
     {
@@ -178,10 +180,10 @@ client. In this example we are removing a header:
 
 :warning: To mitigate against spoofing attacks and misconfiguration ProxyKit
 does not copy `X-Forward-*` headers from the incoming request to the upstream
-request by default. To copy these headers requires opting in. See 4.3. Copying
-X-Forwarded-Headers below.
+request by default. Copying them requires opting in; see _2.3.3 Copying
+X-Forwarded headers_ below.
 
-#### 2.3.2. Adding X-Forwarded-Headers
+#### 2.3.2. Adding `X-Forwarded-*` Headers
 
 Many applications will need to know what their "outside" host / URL is in order
 to generate correct values. This is achieved using `X-Forwarded-*` and
@@ -190,7 +192,7 @@ box (applying `Forwarded` headers support is on backlog). At the time of writing
 `Forwarded` is [not supported](https://github.com/aspnet/AspNetCore/issues/5978)
 in ASP.NET Core.
 
-To add `X-Forwarded-Headers` to the request to the upstream server:
+To add `X-Forwarded-*` headers to the request to the upstream server:
 
 ```csharp
 public void Configure(IApplicationBuilder app)
@@ -207,7 +209,7 @@ headers to the upstream request using values from `HttpContext`. If the proxy
 middleware is hosted on a path and a `PathBase` exists on the request, then an
 `X-Forwarded-PathBase` is also added.
 
-#### 2.3.3. Copying X-Forwarded-Headers
+#### 2.3.3. Copying `X-Forwarded` headers
 
 Chaining proxies is a common pattern in more complex setups. In this case, if
 the proxy is an "internal" proxy, you will want to copy the "X-Forwarded-*"
@@ -225,7 +227,7 @@ public void Configure(IApplicationBuilder app)
 
 You may optionally also add the "internal" proxy details to the `X-Forwarded-*`
 header values by combining `CopyXForwardedHeaders()` and
-`AddXForwardedHeaders()` (note the order is important):
+`AddXForwardedHeaders()` (*note the order is important*):
 
 ```csharp
 public void Configure(IApplicationBuilder app)
@@ -256,11 +258,11 @@ Below are two examples of what you might want to do:
     ```csharp
     services.AddProxy(httpClientBuilder =>
         httpClientBuilder.ConfigureHttpClient =
-            (client) => client.Timeout = TimeSpan.FromSeconds(5));
+            client => client.Timeout = TimeSpan.FromSeconds(5));
     ```
 
 2. Configure the primary `HttpMessageHandler`. This is typically used in testing
-   to inject a test handler (see Testing below). 
+   to inject a test handler (see _Testing_ below). 
 
     ```csharp
     services.AddProxy(httpClientBuilder =>
@@ -272,11 +274,11 @@ Below are two examples of what you might want to do:
 
 When `HttpClient` throws, the following logic applies:
 
-1. When upstream server is not reachable, then `ServiceUnavailable` is returned.
-2. When upstream server is slow and client timeouts, then `GatewayTimeout` is
+1. When upstream server is not reachable, then `503 ServiceUnavailable` is returned.
+2. When upstream server is slow and client timeouts, then `504 GatewayTimeout` is
    returned.
 
-Not all exception scenarios and variations are caught which may result in a
+Not all exception scenarios and variations are caught, which may result in a
 `InternalServerError` being returned to your clients. Please create an issue if
 a scenario is missing.
 
@@ -310,12 +312,12 @@ indicated below.
 +--------------------+      +------------------+     +------------------+
 ```
 
-`RoutingMessageHandler` is an `HttpMessageHandler` that will route requests to
-to specific host based on the origin it is configured with. For ProxyKit
+`RoutingMessageHandler` is an `HttpMessageHandler` that will route requests
+to specific hosts based on the origin it is configured with. For ProxyKit
 to forward requests (in memory) to the upstream hosts, it needs to be configured
 to use the `RoutingMessageHandler` as its primary `HttpMessageHandler`.
 
-Full example can been viewed [here](src/Recipes/06_Testing.cs).
+Full example can been viewed in [Recipe 6](src/Recipes/06_Testing.cs).
 
 ### 2.7. Load Balancing
 
@@ -435,23 +437,22 @@ from upstream servers using standard HTTP caching headers.
 
 Applications that are deployed behind a reverse proxy typically need to be
 somewhat aware of that so they can generate correct URLs and paths when
-responding to a browser. That is, they look at `X-Forward-*` \ `Forwarded`
+responding to a browser. That is, they look at `X-Forward-*` / `Forwarded`
 headers and use their values.
 
-In ASP.NET Core, this means using the Forwarded Headers middleware in your
+In ASP.NET Core, this means using the `ForwardedHeaders` middleware in your
 application. Please refer to the [documentation][forwarded headers middleware]
 for correct usage (and note the security advisory!).
 
 **Note:** the Forwarded Headers middleware does not support
 `X-Forwarded-PathBase`. This means if you proxy `http://example.com/foo/` to
 `http://upstream-host/` the `/foo/` part is lost and absolute URLs cannot be
-generated unless you configure your applications PathBase directly.
+generated unless you configure your application's `PathBase` directly.
 
 Related issues and discussions:
 
 - https://github.com/aspnet/AspNetCore/issues/5978
 - https://github.com/aspnet/AspNetCore/issues/5898
-
 
 To support PathBase dynamically in your application with `X-Forwarded-PathBase`,
 examine the header early in your pipeline and set the `PathBase` accordingly:
@@ -495,8 +496,8 @@ Stress testing shows that ProxyKit is approximately 8% slower than nginx for
 simple forwarding on linux. If absolute raw throughput is a concern for you, then
 consider nginx or alternatives. For me being able to create flexible proxies
 using C# is a reasonable tradeoff for the (small) performance cost. Note that
-depending on what your proxy does may impact performance so you should measure
-yourself.
+what your specific proxy (and its specific configuration) does will impact performance
+so you should measure for yourself in your context.
 
 On Windows, ProxyKit is ~3x faster than nginx. However, nginx has clearly
 documented that [it has known
@@ -559,7 +560,7 @@ I can be reached on twitter at [@randompunter](https://twitter.com/randompunter)
 
 ---
 
-<sub>login is [distribute](https://thenounproject.com/term/target/345443) by [ChangHoon Baek](https://thenounproject.com/changhoon.baek.50/) from [the Noun Project](https://thenounproject.com/).</sub>
+<sub>logo is [distribute](https://thenounproject.com/term/target/345443) by [ChangHoon Baek](https://thenounproject.com/changhoon.baek.50/) from [the Noun Project](https://thenounproject.com/).</sub>
 
 [travis build]: https://travis-ci.org/damianh/ProxyKit.svg?branch=master
 [project]: https://travis-ci.org/damianh/ProxyKit
