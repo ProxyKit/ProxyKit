@@ -32,6 +32,19 @@ namespace ProxyKit
                 }
             }
 
+            // HACK: Attempting to send a malformed User-Agent will throw from with HttpClient
+            // Remove when .net core 3 is released. Consider supporting netcoreapp2.x with #ifdef
+            // https://github.com/damianh/ProxyKit/issues/53
+            // https://github.com/dotnet/corefx/issues/34933
+            try
+            {
+                requestMessage.Headers.TryGetValues("User-Agent", out var _);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                requestMessage.Headers.Remove("User-Agent");
+            }
+
             requestMessage.Method = new HttpMethod(request.Method);
 
             return requestMessage;
