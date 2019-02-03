@@ -57,6 +57,18 @@ namespace ProxyKit
             });
         }
 
+
+        /// <summary>
+        ///     Adds WebSocket proxy that forwards websocket connections
+        ///     to destination Uri.
+        /// </summary>
+        /// <param name="app">
+        ///     The application builder.
+        /// </param>
+        /// <param name="destinationUri">
+        ///     The uri to forward the websocket connection to. Must start with
+        ///     ws:// or wss://
+        /// </param>
         public static void UseWebSocketProxy(
             this IApplicationBuilder app,
             Uri destinationUri)
