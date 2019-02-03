@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +11,10 @@ namespace ProxyKit
     {
         private readonly IConfiguration _config;
 
-        public TestStartup(IConfiguration config) { _config = config; }
+        public TestStartup(IConfiguration config)
+        {
+            _config = config;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -41,6 +43,11 @@ namespace ProxyKit
                         .ForwardTo("http://localhost:" + port + "/")
                         .AddXForwardedHeaders()
                         .Send()));
+
+                app.Map("/ws", appInner =>
+                {
+                    appInner.UseWebSocketProxy(new Uri($"ws://localhost:{port}/ws/"));
+                });
             }
         }
     }

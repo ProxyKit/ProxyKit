@@ -1,7 +1,11 @@
+using System;
+
 namespace ProxyKit
 {
     public class ProxyOptions
     {
-        public HandleProxyRequest HandleProxyRequest { get; set; }
+        public TimeSpan? WebSocketKeepAliveInterval { get; set; }
+
+        public int? WebSocketBufferSize { get; set; }
     }
 }

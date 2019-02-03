@@ -24,12 +24,7 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var proxyOptions = new ProxyOptions
-            {
-                HandleProxyRequest = handleProxyRequest,
-            };
-
-            app.UseMiddleware<ProxyMiddleware>(proxyOptions);
+            app.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
         }
 
         /// <summary>
@@ -56,15 +51,27 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var proxyOptions = new ProxyOptions
-            {
-                HandleProxyRequest = handleProxyRequest,
-            };
-
             app.Map(pathMatch, appInner =>
             {
-                appInner.UseMiddleware<ProxyMiddleware>(proxyOptions);
+                appInner.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
             });
+        }
+
+        public static void UseWebSocketProxy(
+            this IApplicationBuilder app,
+            Uri destinationUri)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (destinationUri == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            app.UseMiddleware<WebSocketProxyMiddleware>(destinationUri);
         }
     }
 }

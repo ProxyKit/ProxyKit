@@ -8,7 +8,8 @@ namespace ProxyKit
     {
         public static IServiceCollection AddProxy(
             this IServiceCollection services,
-            Action<IHttpClientBuilder> configureHttpClientBuilder = null)
+            Action<IHttpClientBuilder> configureHttpClientBuilder = null,
+            Action<ProxyOptions> configureOptions = null)
         {
             if (services == null)
             {
@@ -17,10 +18,17 @@ namespace ProxyKit
 
             var httpClientBuilder = services
                 .AddHttpClient<ProxyKitClient>()
-                .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
+                .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
+                {
+                    AllowAutoRedirect = false,
+                    UseCookies = false
+                });
 
             configureHttpClientBuilder?.Invoke(httpClientBuilder);
 
+            configureOptions = configureOptions ?? (_ => { });
+            services.Configure(configureOptions);
+            services.AddTransient<ProxyOptions>();
             return services;
         }
     }

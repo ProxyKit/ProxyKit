@@ -80,7 +80,7 @@ namespace ProxyKit
                 .Build();
         }
 
-        private async Task Echo(HttpContext context, WebSocket webSocket)
+        private async Task Echo(HttpContext _, WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
             var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
