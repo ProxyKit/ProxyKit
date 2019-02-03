@@ -36,7 +36,7 @@ namespace ProxyKit
             var port = _config.GetValue("Port", 0);
             if (port != 0)
             {
-                app.Map("/realServer", appInner =>
+                app.Map("/realserver", appInner =>
                     appInner.RunProxy(context => context
                         .ForwardTo("http://localhost:" + port + "/")
                         .AddXForwardedHeaders()

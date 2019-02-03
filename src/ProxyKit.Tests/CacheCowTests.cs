@@ -18,7 +18,7 @@ namespace ProxyKit
         [Fact]
         public async Task Should_return_cached_item()
         {
-            using (var server = TestStartup.BuildKestrelBasedServerOnRandomPort())
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
             {
                 await server.StartAsync();
                 var port = server.GetServerPort();
@@ -30,19 +30,19 @@ namespace ProxyKit
                 {
                     var client = testServer.CreateClient();
 
-                    var response = await client.GetAsync("/realServer/normal");
+                    var response = await client.GetAsync("/realserver/normal");
                     response.Headers
                         .GetValues("x-cachecow-client")
                         .Single()
                         .ShouldContain("not-cacheable=true;did-not-exist=true");
 
-                    response = await client.GetAsync("/realServer/cachable");
+                    response = await client.GetAsync("/realserver/cachable");
                     response.Headers
                         .GetValues("x-cachecow-client")
                         .Single()
                         .ShouldContain("did-not-exist=true");
 
-                    response = await client.GetAsync("/realServer/cachable");
+                    response = await client.GetAsync("/realserver/cachable");
                     response.Headers
                         .GetValues("x-cachecow-client")
                         .Single()
@@ -83,7 +83,7 @@ namespace ProxyKit
                 var port = _config.GetValue("Port", 0);
                 if (port != 0)
                 {
-                    app.Map("/realServer", appInner =>
+                    app.Map("/realserver", appInner =>
                         appInner.RunProxy(context => context
                             .ForwardTo("http://localhost:" + port + "/")
                             .Send()));
