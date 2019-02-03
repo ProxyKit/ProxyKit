@@ -43,14 +43,5 @@ namespace ProxyKit
                         .Send()));
             }
         }
-
-        public static IWebHost BuildKestrelBasedServerOnRandomPort()
-        {
-            return new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://*:0")
-                .UseStartup<RealStartup>()
-                .Build();
-        }
     }
 }
