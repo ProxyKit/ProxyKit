@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +11,10 @@ namespace ProxyKit
     {
         private readonly IConfiguration _config;
 
-        public TestStartup(IConfiguration config) { _config = config; }
+        public TestStartup(IConfiguration config)
+        {
+            _config = config;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -36,21 +38,17 @@ namespace ProxyKit
             var port = _config.GetValue("Port", 0);
             if (port != 0)
             {
-                app.Map("/realServer", appInner =>
+                app.Map("/realserver", appInner =>
                     appInner.RunProxy(context => context
                         .ForwardTo("http://localhost:" + port + "/")
                         .AddXForwardedHeaders()
                         .Send()));
-            }
-        }
 
-        public static IWebHost BuildKestrelBasedServerOnRandomPort()
-        {
-            return new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://*:0")
-                .UseStartup<RealStartup>()
-                .Build();
+                app.Map("/ws", appInner =>
+                {
+                    appInner.UseWebSocketProxy(new Uri($"ws://localhost:{port}/ws/"));
+                });
+            }
         }
     }
 }

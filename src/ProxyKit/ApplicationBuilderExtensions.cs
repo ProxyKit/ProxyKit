@@ -24,12 +24,7 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var proxyOptions = new ProxyOptions
-            {
-                HandleProxyRequest = handleProxyRequest,
-            };
-
-            app.UseMiddleware<ProxyMiddleware>(proxyOptions);
+            app.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
         }
 
         /// <summary>
@@ -56,15 +51,39 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var proxyOptions = new ProxyOptions
-            {
-                HandleProxyRequest = handleProxyRequest,
-            };
-
             app.Map(pathMatch, appInner =>
             {
-                appInner.UseMiddleware<ProxyMiddleware>(proxyOptions);
+                appInner.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
             });
+        }
+
+
+        /// <summary>
+        ///     Adds WebSocket proxy that forwards websocket connections
+        ///     to destination Uri.
+        /// </summary>
+        /// <param name="app">
+        ///     The application builder.
+        /// </param>
+        /// <param name="destinationUri">
+        ///     The uri to forward the websocket connection to. Must start with
+        ///     ws:// or wss://
+        /// </param>
+        public static void UseWebSocketProxy(
+            this IApplicationBuilder app,
+            Uri destinationUri)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (destinationUri == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            app.UseMiddleware<WebSocketProxyMiddleware>(destinationUri);
         }
     }
 }
