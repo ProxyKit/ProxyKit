@@ -2,7 +2,7 @@
 
 # ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]
 
-A toolkit to create **HTTP proxies** hosted in ASP.NET Core as middleware. This
+A toolkit to create code-first **HTTP proxies** hosted in ASP.NET Core as middleware. This
 allows focused code-first proxies that can be embedded in existing ASP.NET Core
 applications or deployed as a standalone server. Deployable anywhere ASP.NET
 Core is deployable such as Windows, Linux, Containers and Serverless (with
