@@ -24,8 +24,8 @@ issues making it suitable for microservice / container environments.
     - [2.2. Customising the upstream response](#22-customising-the-upstream-response)
     - [2.3. X-Forwarded Headers](#23-x-forwarded-headers)
         - [2.3.1. Client Sent X-Forwarded-Headers](#231-client-sent-x-forwarded-headers)
-        - [2.3.2. Adding X-Forwarded-Headers](#232-adding-x-forwarded-headers)
-        - [2.3.3. Copying X-Forwarded-Headers](#233-copying-x-forwarded-headers)
+        - [2.3.2. Adding `X-Forwarded-*` Headers](#232-adding-x-forwarded--headers)
+        - [2.3.3. Copying `X-Forwarded` headers](#233-copying-x-forwarded-headers)
     - [2.4. Configuring ProxyKit's HttpClient](#24-configuring-proxykits-httpclient)
     - [2.5. Error handling](#25-error-handling)
     - [2.6. Testing](#26-testing)
@@ -41,8 +41,9 @@ issues making it suitable for microservice / container environments.
     - [3.7. Customise Upstream Requests](#37-customise-upstream-requests)
     - [3.8. Customise Upstream Responses](#38-customise-upstream-responses)
     - [3.9. Consul Service Discovery](#39-consul-service-discovery)
-    - [3.10. Copy X-Forward Headers](#310-copy-x-forward-headers)
+    - [3.10. Copy X-Forwarded Headers](#310-copy-x-forwarded-headers)
     - [3.11. Caching Upstream Responses with CacheCow](#311-caching-upstream-responses-with-cachecow)
+    - [3.12. Conditional Proxying](#312-conditional-proxying)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
 - [5. Performance considerations](#5-performance-considerations)
 - [6. Note about serverless](#6-note-about-serverless)
@@ -432,6 +433,13 @@ Using [CacheCow.Client](https://github.com/aliostad/CacheCow) to cache responses
 from upstream servers using standard HTTP caching headers.
 
 [src/Recipes/11_CachingWithCacheCow.cs](src/Recipes/11_CachingWithCacheCow.cs)
+
+### 3.12. Conditional Proxying
+
+Using `app.UseWhen()` to conditionally forward the request based on asserting a
+value on `HttpContext`.
+
+[src/Recipes/12_ConditionalProxying.cs](src/Recipes/12_ConditionalProxying.cs)
 
 ## 4. Making upstream servers reverse proxy friendly
 
