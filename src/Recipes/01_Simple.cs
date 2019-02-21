@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class Simple : ExampleBase<Simple.Startup>
+    public class Simple : Recipe<Simple.Startup>
     {
         public class Startup
         {

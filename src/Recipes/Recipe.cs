@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace ProxyKit.Recipes
 {
-    public abstract class ExampleBase<T> where T : class
+    public abstract class Recipe<T> where T : class
     {
         public Task Run(CancellationToken cancellationToken)
         {

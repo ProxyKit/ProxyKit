@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class CachingWithCacheCow : ExampleBase<CachingWithCacheCow.Startup>
+    public class CachingWithCacheCow : Recipe<CachingWithCacheCow.Startup>
     {
         public class Startup
         {

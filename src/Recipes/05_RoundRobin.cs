@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class RoundRobinLoadBalancer : ExampleBase<RoundRobinLoadBalancer.Startup>
+    public class RoundRobinLoadBalancer : Recipe<RoundRobinLoadBalancer.Startup>
     {
         public class Startup
         {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class ConditionalProxying : ExampleBase<ConditionalProxying.Startup>
+    public class ConditionalProxying : Recipe<ConditionalProxying.Startup>
     {
         public class Startup
         {

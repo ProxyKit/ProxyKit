@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class ConsulServiceDiscovery : ExampleBase<ConsulServiceDiscovery.Startup>
+    public class ConsulServiceDiscovery : Recipe<ConsulServiceDiscovery.Startup>
     {
         public class Startup
         {
