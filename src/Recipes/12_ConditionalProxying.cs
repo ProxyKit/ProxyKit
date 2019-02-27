@@ -14,6 +14,7 @@ namespace ProxyKit.Recipes
 
             public void Configure(IApplicationBuilder app)
             {
+                // Forwards the request only when the host is set to the specified value
                 app.UseWhen(
                     context => context.Request.Host.Host.Equals("api.example.com"),
                     appInner => appInner.RunProxy(context => context
