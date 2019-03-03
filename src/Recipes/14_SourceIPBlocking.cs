@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class SourceIPFiltering : Recipe<ConditionalProxying.Startup>
+    public class SourceIPBlocking : Recipe<SourceIPBlocking.Startup>
     {
         public class Startup
         {
@@ -21,11 +21,11 @@ namespace ProxyKit.Recipes
 
                 app.RunProxy(context =>
                 {
-                    // If the source IP is outside the specified range then return unauthorized.
+                    // If the source IP is outside the specified range then return Forbidden.
                     // This uses the IPNetwork2 package from https://github.com/lduchosal/ipnetwork
                     if (!ipNetwork.Contains(context.Connection.RemoteIpAddress))
                     {
-                        var response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                        var response = new HttpResponseMessage(HttpStatusCode.Forbidden);
                         return Task.FromResult(response);
                     }
 
