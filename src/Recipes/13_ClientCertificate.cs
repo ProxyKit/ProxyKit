@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class ClientCertificate : ExampleBase<ConditionalProxying.Startup>
+    public class ClientCertificate : ExampleBase<ClientCertificate.Startup>
     {
         public class Startup
         {
@@ -17,16 +17,15 @@ namespace ProxyKit.Recipes
                 var certBytes = File.ReadAllBytes("./badssl.com-client.p12");
                 var clientCertificate = new X509Certificate2(certBytes, "badssl.com");
 
-                Func<HttpMessageHandler> createPrimaryHandler = () =>
+                HttpMessageHandler CreatePrimaryHandler()
                 {
-                    var _clientHandler = new HttpClientHandler();
-                    _clientHandler.ClientCertificates.Add(clientCertificate);
-                    _clientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                    return _clientHandler;
-                };
+                    var clientHandler = new HttpClientHandler();
+                    clientHandler.ClientCertificates.Add(clientCertificate);
+                    clientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                    return clientHandler;
+                }
 
-                services.AddProxy(httpClientBuilder => httpClientBuilder.ConfigurePrimaryHttpMessageHandler(createPrimaryHandler));
-
+                services.AddProxy(httpClientBuilder => httpClientBuilder.ConfigurePrimaryHttpMessageHandler((Func<HttpMessageHandler>) CreatePrimaryHandler));
             }
 
             public void Configure(IApplicationBuilder app)
