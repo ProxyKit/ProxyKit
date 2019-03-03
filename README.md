@@ -45,6 +45,7 @@ issues making it suitable for microservice / container environments.
     - [3.11. Caching Upstream Responses with CacheCow](#311-caching-upstream-responses-with-cachecow)
     - [3.12. Conditional Proxying](#312-conditional-proxying)
     - [3.13 Client Certificate](#313-client-certificate)
+    - [3.14 Source IP Blocking](#314-source-ip-blocking)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
 - [5. Performance considerations](#5-performance-considerations)
 - [6. Note about serverless](#6-note-about-serverless)
@@ -447,6 +448,12 @@ value on `HttpContext`.
 Using a client certificate in requests to upstream hosts.
 
 [src/Recipes/13_ClientCertificate.cs](src/Recipes/13_ClientCertificate.cs)
+
+### 3.14 Source IP Blocking
+
+Block requests from sources whose IP addresses is not allowed.
+
+[src/Recipes/14_SourceIPBlocking.cs](src/Recipes/14_SourceIPBlocking.cs)
 
 ## 4. Making upstream servers reverse proxy friendly
 
