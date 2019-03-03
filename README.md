@@ -44,6 +44,7 @@ issues making it suitable for microservice / container environments.
     - [3.10. Copy X-Forwarded Headers](#310-copy-x-forwarded-headers)
     - [3.11. Caching Upstream Responses with CacheCow](#311-caching-upstream-responses-with-cachecow)
     - [3.12. Conditional Proxying](#312-conditional-proxying)
+    - [3.13 Client Certificate](#313-client-certificate)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
 - [5. Performance considerations](#5-performance-considerations)
 - [6. Note about serverless](#6-note-about-serverless)
@@ -440,6 +441,12 @@ Using `app.UseWhen()` to conditionally forward the request based on asserting a
 value on `HttpContext`.
 
 [src/Recipes/12_ConditionalProxying.cs](src/Recipes/12_ConditionalProxying.cs)
+
+### 3.13 Client Certificate
+
+Using a client certificate in requests to upstream hosts.
+
+[src/Recipes/13_ClientCertificate.cs](src/Recipes/13_ClientCertificate.cs)
 
 ## 4. Making upstream servers reverse proxy friendly
 
