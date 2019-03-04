@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ProxyKit
 {
@@ -24,12 +25,12 @@ namespace ProxyKit
 
         public WebSocketProxyMiddleware(
             RequestDelegate next,
-            ProxyOptions options,
+            IOptionsMonitor<ProxyOptions> options,
             Uri destinationUri,
             ILogger<WebSocketProxyMiddleware> logger)
         {
             _next = next;
-            _options = options;
+            _options = options.CurrentValue;
             _destinationUri = destinationUri;
             _logger = logger;
         }

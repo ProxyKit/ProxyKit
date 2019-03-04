@@ -27,8 +27,9 @@ namespace ProxyKit
             configureHttpClientBuilder?.Invoke(httpClientBuilder);
 
             configureOptions = configureOptions ?? (_ => { });
-            services.Configure(configureOptions);
-            services.AddTransient<ProxyOptions>();
+            services
+                .Configure(configureOptions)
+                .AddOptions<ProxyOptions>();
             return services;
         }
     }
