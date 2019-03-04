@@ -76,6 +76,7 @@ namespace ProxyKit
             var services = new ServiceCollection();
             services.AddTransient<ProxyKitClient>();
             services.AddTransient(sp => new HttpClient());
+            services.AddOptions<ProxyOptions>();
             var serviceProvider = services.BuildServiceProvider();
             httpContext.RequestServices = serviceProvider;
 
