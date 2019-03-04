@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace ProxyKit
 {
@@ -31,8 +32,11 @@ namespace ProxyKit
             var proxyKitClient = context
                 .RequestServices
                 .GetRequiredService<ProxyKitClient>();
+            var proxyOptions = context
+                .RequestServices
+                .GetRequiredService<IOptionsMonitor<ProxyOptions>>();
 
-            return new ForwardContext(context, request, proxyKitClient.Client);
+            return new ForwardContext(context, request, proxyKitClient.Client, proxyOptions);
         }
 
         [Obsolete("Use AddXForwardedHeaders() instead.", true)]

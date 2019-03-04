@@ -9,5 +9,7 @@ namespace ProxyKit
         public int? WebSocketBufferSize { get; set; }
 
         public bool IgnoreSSLCertificate { get; set; } = false;
+
+        public bool RewriteResponseLocationHeader { get; set; } = false;
     }
 }
