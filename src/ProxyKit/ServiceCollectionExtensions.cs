@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace ProxyKit
 {
@@ -18,10 +19,21 @@ namespace ProxyKit
 
             var httpClientBuilder = services
                 .AddHttpClient<ProxyKitClient>()
-                .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
+                .ConfigurePrimaryHttpMessageHandler(sp =>
                 {
-                    AllowAutoRedirect = false,
-                    UseCookies = false
+                    var result = new HttpClientHandler
+                    {
+                        AllowAutoRedirect = false,
+                        UseCookies = false
+                    };
+
+                    var proxyOptions = sp.GetService<IOptionsMonitor<ProxyOptions>>().CurrentValue;
+                    if (proxyOptions.IgnoreSSLCertificate)
+                    {
+                        result.ServerCertificateCustomValidationCallback = (_1, _2, _3, _4) => true;
+                    }
+
+                    return result;
                 });
 
             configureHttpClientBuilder?.Invoke(httpClientBuilder);
