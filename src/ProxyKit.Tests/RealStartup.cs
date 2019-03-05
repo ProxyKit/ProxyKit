@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -51,6 +52,12 @@ namespace ProxyKit
             {
                 ctx.Response.StatusCode = 500;
                 await ctx.Response.WriteAsync("cute..... BUT IT'S WRONG!");
+            }));
+
+            app.Map("/redirect", a => a.Run(async ctx =>
+            {
+                ctx.Response.StatusCode = 302;
+                ctx.Response.Headers.Add("Location", ctx.Request.GetEncodedUrl());
             }));
 
             app.Map("/ws", a =>

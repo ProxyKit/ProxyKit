@@ -67,6 +67,11 @@ namespace ProxyKit
                         result.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
                     }
 
+                    // redirect location header should have correct host
+                    result = await client.GetAsync("/realserver/redirect");
+                    result.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+                    result.Headers.Location.ShouldBe(new Uri("http://example.com:8080/realserver/redirect"));
+
                     // When server is stopped, should return 
                     await server.StopAsync();
                     result = await client.GetAsync("/realserver/normal");
