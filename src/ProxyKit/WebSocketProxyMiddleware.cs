@@ -39,11 +39,11 @@ namespace ProxyKit
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                await AcceptProxyWebSocketRequest(context, _destinationUri);
+                await AcceptProxyWebSocketRequest(context, _destinationUri).ConfigureAwait(false);
             }
             else
             {
-                await _next(context);
+                await _next(context).ConfigureAwait(false);
             }
         }
 
@@ -71,7 +71,7 @@ namespace ProxyKit
 
                 try
                 {
-                    await client.ConnectAsync(destinationUri, context.RequestAborted);
+                    await client.ConnectAsync(destinationUri, context.RequestAborted).ConfigureAwait(false);
                 }
                 catch (WebSocketException ex)
                 {
@@ -80,12 +80,12 @@ namespace ProxyKit
                     return;
                 }
 
-                using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol))
+                using (var server = await context.WebSockets.AcceptWebSocketAsync(client.SubProtocol).ConfigureAwait(false))
                 {
                     var bufferSize = _options.WebSocketBufferSize ?? DefaultWebSocketBufferSize;
                     await Task.WhenAll(
                         PumpWebSocket(client, server, bufferSize, context.RequestAborted),
-                        PumpWebSocket(server, client, bufferSize, context.RequestAborted));
+                        PumpWebSocket(server, client, bufferSize, context.RequestAborted)).ConfigureAwait(false);
                 }
             }
         }
@@ -103,26 +103,31 @@ namespace ProxyKit
                 WebSocketReceiveResult result;
                 try
                 {
-                    result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                    result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
                     await destination.CloseOutputAsync(
                         WebSocketCloseStatus.EndpointUnavailable,
                         "Endpoind unavailable",
-                        cancellationToken);
+                        cancellationToken)
+                        .ConfigureAwait(false);
                     return;
                 }
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await destination.CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken);
+                    await destination
+                        .CloseOutputAsync(source.CloseStatus.Value, source.CloseStatusDescription, cancellationToken)
+                        .ConfigureAwait(false);
                     return;
                 }
                 await destination.SendAsync(
                     new ArraySegment<byte>(buffer, 0, result.Count),
                     result.MessageType,
                     result.EndOfMessage,
-                    cancellationToken);
+                    cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
     }

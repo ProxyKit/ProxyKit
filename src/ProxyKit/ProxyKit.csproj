@@ -22,6 +22,10 @@
     <PackageIconUrl>https://raw.githubusercontent.com/damianh/ProxyKit/master/logo.png</PackageIconUrl>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="ConfigureAwaitChecker.Analyzer" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />

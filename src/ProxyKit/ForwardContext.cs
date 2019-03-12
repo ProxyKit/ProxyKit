@@ -46,7 +46,8 @@ namespace ProxyKit
                 return await _httpClient.SendAsync(
                     UpstreamRequest,
                     HttpCompletionOption.ResponseHeadersRead,
-                    HttpContext.RequestAborted);
+                    HttpContext.RequestAborted)
+                    .ConfigureAwait(false);
             }
             catch (TaskCanceledException ex) when (ex.InnerException is IOException)
             {

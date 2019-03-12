@@ -4,6 +4,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+#pragma warning disable 1998
 
 namespace ProxyKit
 {

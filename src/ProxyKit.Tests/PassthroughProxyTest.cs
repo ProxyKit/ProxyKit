@@ -153,7 +153,6 @@ namespace ProxyKit
         [Fact]
         public async Task X_Forwarded_Headers_should_be_removed_by_default()
         {
-            ForwardContext forwardContext = null;
             _builder.Configure(app => app.RunProxy(
                 context => context
                     .ForwardTo("http://localhost:5000/bar/")
