@@ -53,6 +53,7 @@ namespace ProxyKit
                 using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
                 {
                     await responseStream.CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted);
+                    await responseStream.FlushAsync(context.RequestAborted);
                 }
             }
         }
