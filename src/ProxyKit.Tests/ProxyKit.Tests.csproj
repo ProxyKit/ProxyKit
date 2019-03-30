@@ -9,6 +9,8 @@
     <PackageReference Include="CacheCow.Client" Version="2.4.3" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.3" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Shouldly" Version="3.0.2" />
@@ -22,10 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ProxyKit\ProxyKit.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-
   </ItemGroup>
 
 </Project>
