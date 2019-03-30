@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProxyKit.Infra;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,49 +25,61 @@ namespace ProxyKit
         [Fact]
         public async Task Can_connect_via_proxy()
         {
-            using (var signalRServer = BuildSignalRServerOnRandomPort())
+            using (var signalRServer = BuildSignalRServerOnRandomPort(_outputHelper))
             {
                 await signalRServer.StartAsync();
                 var signalRPort = signalRServer.GetServerPort();
 
-                using (var proxyServer = BuildWebSocketProxyServerOnRandomPort(signalRPort))
+                using (var proxyServer = BuildWebSocketProxyServerOnRandomPort(signalRPort, _outputHelper))
                 {
                     await proxyServer.StartAsync();
                     var proxyPort = proxyServer.GetServerPort();
 
                     var directConnection = new HubConnectionBuilder()
                         .WithUrl($"http://localhost:{signalRPort}/ping")
+                        .ConfigureLogging(logging => logging
+                            .AddDebug()
+                            .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-direct")))
                         .Build();
                     directConnection.Closed += async error =>
                     {
-                        //await connection.StartAsync();
+                        _outputHelper.WriteLine("connection-direct error: " + error.ToString());
                     };
                     await directConnection.StartAsync();
 
                     var proxyConnection = new HubConnectionBuilder()
                         .WithUrl($"http://localhost:{proxyPort}/ping")
+                        .ConfigureLogging(logging => logging
+                            .AddDebug()
+                            .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-proxy")))
                         .Build();
                     proxyConnection.Closed += async error =>
                     {
-                        //await connection.StartAsync();
+                        _outputHelper.WriteLine(error.ToString());
                     };
                     await proxyConnection.StartAsync();
                 }
             }
         }
 
-        public static IWebHost BuildSignalRServerOnRandomPort() =>
+        public static IWebHost BuildSignalRServerOnRandomPort(ITestOutputHelper outputHelper) =>
             new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://*:0")
+                .ConfigureLogging(logging => logging
+                    .AddDebug()
+                    .AddProvider(new XunitLoggerProvider(outputHelper, "Upstream")))
                 .UseStartup<SignalRServerStartup>()
                 .Build();
 
-        public static IWebHost BuildWebSocketProxyServerOnRandomPort(int port) =>
+        public static IWebHost BuildWebSocketProxyServerOnRandomPort(int port, ITestOutputHelper outputHelper) =>
             new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://*:0")
                 .UseSetting("port", port.ToString())
+                .ConfigureLogging(logging => logging
+                    .AddDebug()
+                    .AddProvider(new XunitLoggerProvider(outputHelper, "Proxy")))
                 .UseStartup<WebSocketProxyStartup>()
                 .Build();
 
@@ -89,7 +103,7 @@ namespace ProxyKit
             {
                 app.UseCors("all");
                 app.UseXForwardedHeaders();
-
+                app.UseWebSockets();
                 app.UseSignalR(routes =>
                 {
                     routes.MapHub<Ping>("/ping");
@@ -122,6 +136,8 @@ namespace ProxyKit
             public void Configure(IApplicationBuilder app, IServiceProvider sp)
             {
                 var port = _config.GetValue("port", 0);
+
+                app.UseWebSockets();
                 app.UseWebSocketProxy(new Uri($"ws://localhost:{port}"));
                 app.RunProxy(context => context
                     .ForwardTo(new Uri($"http://localhost:{port}"))
