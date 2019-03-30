@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ProxyKit.Infra;
+using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,6 +37,7 @@ namespace ProxyKit
                     await proxyServer.StartAsync();
                     var proxyPort = proxyServer.GetServerPort();
 
+                    // Connection directly to SignalR Server
                     var directConnection = new HubConnectionBuilder()
                         .WithUrl($"http://localhost:{signalRPort}/ping")
                         .ConfigureLogging(logging => logging
@@ -47,6 +50,14 @@ namespace ProxyKit
                     };
                     await directConnection.StartAsync();
 
+                    // Callback when On
+                    var messageRecieved = new TaskCompletionSource<bool>();
+                    directConnection.On("OnPing", () =>
+                    {
+                        messageRecieved.SetResult(true);
+                    });
+
+                    // Connect to SignalR Server via proxy
                     var proxyConnection = new HubConnectionBuilder()
                         .WithUrl($"http://localhost:{proxyPort}/ping")
                         .ConfigureLogging(logging => logging
@@ -58,6 +69,12 @@ namespace ProxyKit
                         _outputHelper.WriteLine(error.ToString());
                     };
                     await proxyConnection.StartAsync();
+
+                    // Send message to all clients
+                    await proxyConnection.InvokeAsync("PingAll");
+
+                    messageRecieved.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue();
+                    messageRecieved.Task.Result.ShouldBeTrue();
                 }
             }
         }
