@@ -35,6 +35,28 @@ namespace ProxyKit
             return new ForwardContext(context, request, proxyKitClient.Client);
         }
 
+        public static Uri ForwardWebSocketTo(this HttpContext context, UpstreamHost upstreamHost)
+        {
+            var uri = new Uri(UriHelper.BuildAbsolute(
+                upstreamHost.Scheme,
+                upstreamHost.Host,
+                upstreamHost.PathBase,
+                context.Request.Path,
+                context.Request.QueryString));
+
+            return uri;
+
+            var request = context.Request.CreateProxyHttpRequest();
+            request.Headers.Host = uri.Authority;
+            request.RequestUri = uri;
+
+            var proxyKitClient = context
+                .RequestServices
+                .GetRequiredService<ProxyKitClient>();
+
+            return new ForwardContext(context, request, proxyKitClient.Client);
+        }
+
         [Obsolete("Use AddXForwardedHeaders() instead.", true)]
         public static ForwardContext ApplyXForwardedHeaders(this ForwardContext forwardContext) =>
             forwardContext.AddXForwardedHeaders();

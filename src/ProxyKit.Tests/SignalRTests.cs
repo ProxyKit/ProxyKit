@@ -155,7 +155,7 @@ namespace ProxyKit
                 var port = _config.GetValue("port", 0);
 
                 app.UseWebSockets();
-                app.UseWebSocketProxy(new Uri($"ws://localhost:{port}"));
+                app.UseWebSocketProxy(_ => new Uri($"ws://localhost:{port}"));
                 app.RunProxy(context => context
                     .ForwardTo(new Uri($"http://localhost:{port}"))
                     .AddXForwardedHeaders()

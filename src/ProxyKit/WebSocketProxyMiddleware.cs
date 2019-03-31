@@ -19,19 +19,19 @@ namespace ProxyKit
         };
         private const int DefaultWebSocketBufferSize = 4096;
         private readonly RequestDelegate _next;
+        private readonly HandleWebSocketProxyRequest _handleWebSocketProxyRequest;
         private readonly ProxyOptions _options;
-        private readonly Uri _destinationUri;
         private readonly ILogger<WebSocketProxyMiddleware> _logger;
 
         public WebSocketProxyMiddleware(
             RequestDelegate next,
             IOptionsMonitor<ProxyOptions> options,
-            Uri destinationUri,
+            HandleWebSocketProxyRequest handleWebSocketProxyRequest,
             ILogger<WebSocketProxyMiddleware> logger)
         {
             _next = next;
+            _handleWebSocketProxyRequest = handleWebSocketProxyRequest;
             _options = options.CurrentValue;
-            _destinationUri = destinationUri;
             _logger = logger;
         }
 
@@ -39,7 +39,7 @@ namespace ProxyKit
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                await AcceptProxyWebSocketRequest(context, _destinationUri).ConfigureAwait(false);
+                await AcceptProxyWebSocketRequest(context).ConfigureAwait(false);
             }
             else
             {
@@ -47,8 +47,10 @@ namespace ProxyKit
             }
         }
 
-        private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri)
+        private async Task AcceptProxyWebSocketRequest(HttpContext context)
         {
+            var upstreamUri = await _handleWebSocketProxyRequest(context).ConfigureAwait(false);
+
             using (var client = new ClientWebSocket())
             {
                 foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
@@ -71,7 +73,7 @@ namespace ProxyKit
 
                 try
                 {
-                    await client.ConnectAsync(destinationUri, context.RequestAborted).ConfigureAwait(false);
+                    await client.ConnectAsync(upstreamUri, context.RequestAborted).ConfigureAwait(false);
                 }
                 catch (WebSocketException ex)
                 {

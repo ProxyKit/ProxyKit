@@ -65,25 +65,25 @@ namespace ProxyKit
         /// <param name="app">
         ///     The application builder.
         /// </param>
-        /// <param name="destinationUri">
-        ///     The uri to forward the websocket connection to. Must start with
+        /// <param name="handleWebSocketProxyRequest">
+        ///     A function to get the URI to forward the websocket connection to. Must start with
         ///     ws:// or wss://
         /// </param>
         public static void UseWebSocketProxy(
             this IApplicationBuilder app,
-            Uri destinationUri)
+            HandleWebSocketProxyRequest handleWebSocketProxyRequest)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (destinationUri == null)
+            if (handleWebSocketProxyRequest == null)
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentNullException(nameof(handleWebSocketProxyRequest));
             }
 
-            app.UseMiddleware<WebSocketProxyMiddleware>(destinationUri);
+            app.UseMiddleware<WebSocketProxyMiddleware>(handleWebSocketProxyRequest);
         }
     }
 }
