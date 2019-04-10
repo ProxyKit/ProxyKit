@@ -73,7 +73,8 @@ namespace ProxyKit
 
                 try
                 {
-                    await client.ConnectAsync(upstreamUri, context.RequestAborted).ConfigureAwait(false);
+                    var uriBuilder = new UriBuilder(upstreamUri.Scheme, upstreamUri.Host, upstreamUri.Port, context.Request.Path, context.Request.QueryString.Value);
+                    await client.ConnectAsync(uriBuilder.Uri, context.RequestAborted).ConfigureAwait(false);
                 }
                 catch (WebSocketException ex)
                 {
