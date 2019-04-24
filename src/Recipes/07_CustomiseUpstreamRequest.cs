@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class CustomiseUpstreamRequest : Recipe<CustomiseUpstreamRequest.Startup>
+    public class CustomiseUpstreamRequest
     {
         public class Startup
         {

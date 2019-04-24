@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class SourceIPBlocking : Recipe<SourceIPBlocking.Startup>
+    public class SourceIPBlocking
     {
         public class Startup
         {

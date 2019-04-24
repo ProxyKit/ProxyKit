@@ -49,7 +49,7 @@ namespace ProxyKit
         [InlineData("DELETE", 3004)]
         public async Task PassthroughRequestsWithoutBodyWithResponseHeaders(string methodType, int port)
         {
-            _builder.Configure(app => app.RunProxy((context)=>
+            _builder.Configure(app => app.RunProxy(context=>
             {
                 var forwardContext = context.ForwardTo($"http://localhost:{port}");
                 return forwardContext.Send();

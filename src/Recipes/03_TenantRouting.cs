@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class MultiTenantJwt : Recipe<MultiTenantJwt.Startup>
+    public class MultiTenantJwt
     {
         public class Startup
         {

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class ClientCertificate : Recipe<ClientCertificate.Startup>
+    public class ClientCertificate
     {
         public class Startup
         {

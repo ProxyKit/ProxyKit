@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class CopyXForwarded : Recipe<CopyXForwarded.Startup>
+    public class CopyXForwarded
     {
         public class Startup
         {

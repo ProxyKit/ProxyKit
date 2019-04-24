@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class IdSrv : Recipe<IdSrv.Startup>
+    public class IdSrv
     {
         public class Startup
         {

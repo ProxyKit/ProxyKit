@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProxyKit.Testing;
 
@@ -30,7 +35,7 @@ namespace ProxyKit.Recipes
 
             // Build Host1 TestServer
             var host1WebHostBuilder = new WebHostBuilder()
-                .UseStartup<Program.HostStartup>()
+                .UseStartup<HostStartup>()
                 .UseSetting("hostname", "HOST 1")
                 .UseUrls("http://localhost:5001");
             var host1TestServer = new TestServer(host1WebHostBuilder);
@@ -38,7 +43,7 @@ namespace ProxyKit.Recipes
 
             // Build Host2 TestServer
             var host2WebHostBuilder = new WebHostBuilder()
-                .UseStartup<Program.HostStartup>()
+                .UseStartup<HostStartup>()
                 .UseSetting("hostname", "HOST 2")
                 .UseUrls("http://localhost:5002");
             var host2TestServer = new TestServer(host2WebHostBuilder);
@@ -86,6 +91,34 @@ namespace ProxyKit.Recipes
                             .AddXForwardedHeaders()
                             .Send();
                     });
+            }
+        }
+
+        public class HostStartup
+        {
+            public void ConfigureServices(IServiceCollection services)
+            { }
+
+            public void Configure(IApplicationBuilder app, IConfiguration config)
+            {
+                app.UseXForwardedHeaders(new ForwardedHeadersOptions
+                {
+                    AllowedHosts = new List<string> { "localhost" },
+                    ForwardedHeaders = ForwardedHeaders.All
+                });
+
+                app.Run(async context =>
+                {
+                    context.Response.ContentType = "text/plain";
+                    await context.Response.WriteAsync($"Hi from Host {config.GetValue<string>("hostname")}\n");
+                    await context.Response.WriteAsync($"RequestUrl={context.Request.GetEncodedUrl()}\n");
+                    await context.Response.WriteAsync($"PathBase={context.Request.PathBase}\n");
+                    foreach (var requestHeader in context.Request.Headers)
+                    {
+                        await context.Response.WriteAsync(
+                            $"{requestHeader.Key}={string.Join(",", requestHeader.Value)}\n");
+                    }
+                });
             }
         }
     }
