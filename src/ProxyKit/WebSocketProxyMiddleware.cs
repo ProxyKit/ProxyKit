@@ -58,38 +58,29 @@ namespace ProxyKit
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.WebSockets.IsWebSocketRequest)
-            {
-                Uri uri;
-
-                if (_urlPath != null)
-                {
-                    if (context.Request.Path.StartsWithSegments(_urlPath))
-                    {
-						var relativePath = context.Request.Path.ToString();
-						uri = new Uri(_chooseUri(context), relativePath.Length >= _urlPath.Length ? relativePath.Substring(_urlPath.Length):"");
-                    }
-                    else
-                    {
-                        await _next(context).ConfigureAwait(false);
-
-                        return;
-                    }
-                }
-				else
-				{
-					uri = _destinationUri;
-				}
-
-                await AcceptProxyWebSocketRequest(context, uri).ConfigureAwait(false);
-            }
+			if (context.WebSockets.IsWebSocketRequest)
+			{
+				await ProxyOutToWebSocket(context).ConfigureAwait(false);
+			}
             else
             {
                 await _next(context).ConfigureAwait(false);
             }
         }
 
-        private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri)
+		private Task ProxyOutToWebSocket(HttpContext context)
+		{
+			if (_urlPath == null) return AcceptProxyWebSocketRequest(context, _destinationUri);
+
+			if (!context.Request.Path.StartsWithSegments(_urlPath)) return _next(context);
+
+			var relativePath = context.Request.Path.ToString();
+			var uri = new Uri(_chooseUri(context), 
+							relativePath.Length >= _urlPath.Length ? relativePath.Substring(_urlPath.Length) : "");
+			return AcceptProxyWebSocketRequest(context, uri);
+		}
+
+		private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri)
         {
             using (var client = new ClientWebSocket())
             {

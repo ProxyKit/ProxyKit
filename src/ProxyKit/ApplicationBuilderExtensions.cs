@@ -86,21 +86,21 @@ namespace ProxyKit
             app.UseMiddleware<WebSocketProxyMiddleware>(destinationUri);
         }
 
-		/// <summary>
-		///     Adds WebSocket proxy that forwards websocket connections
-		///     to destination Uri based the HttpContext if the request matches
-		///     a given path.
-		/// </summary>
-		/// <param name="app">
-		///     The application builder.
-		/// </param>
-		/// <param name="urlPath">
-		///     The url path the request must match for the websocket request to be forwarded.
-		/// </param>
-		/// <param name="chooseUri">
-		///     The Uri selection function.
-		/// </param>
-		public static void UseWebSocketProxy(
+        /// <summary>
+        ///     Adds WebSocket proxy that forwards websocket connections
+        ///     to destination Uri based the HttpContext if the request matches
+        ///     a given path.
+        /// </summary>
+        /// <param name="app">
+        ///     The application builder.
+        /// </param>
+        /// <param name="urlPath">
+        ///     The url path the request must match for the websocket request to be forwarded.
+        /// </param>
+        /// <param name="chooseUri">
+        ///     The Uri selection function.
+        /// </param>
+        public static void UseWebSocketProxy(
             this IApplicationBuilder app, string urlPath,
             Func<HttpContext, Uri> chooseUri)
         {
