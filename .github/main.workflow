@@ -4,5 +4,5 @@ workflow "Build" {
 }
 
 action "dotnet-cli" {
-  uses = "Azure/github-actions@master"
+  uses = "Azure/github-actions/dotnet-cli@master"
 }
