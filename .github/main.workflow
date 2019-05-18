@@ -4,5 +4,6 @@ workflow "Build" {
 }
 
 action "dotnet-cli" {
-  uses = "Azure/github-actions/dotnet-cli@master"
+  uses = "Azure/github-actions/dotnetcore-cli@master"
+  args = "dotnet run --project build"
 }
