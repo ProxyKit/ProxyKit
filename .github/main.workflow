@@ -1,9 +1,9 @@
 workflow "Build" {
   on = "push"
-  resolves = ["dotnet-cli"]
+  resolves = ["build and test"]
 }
 
-action "dotnet-cli" {
+action "build and test" {
   uses = "Azure/github-actions/dotnetcore-cli@master"
-  args = "dotnet run --project build"
+  args = "run --project build"
 }
