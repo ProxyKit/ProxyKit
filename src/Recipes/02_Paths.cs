@@ -14,19 +14,23 @@ namespace ProxyKit.Recipes
 
             public void Configure(IApplicationBuilder app)
             {
-                app.RunProxy(
-                    "/app1",
-                    context => context
+                // Forwards requests from /app1 to upstream host http://localhost:5001/foo/
+                app.Map("/app1", app1 =>
+                {
+                    app1.RunProxy(context => context
                         .ForwardTo("http://localhost:5001/foo/")
                         .AddXForwardedHeaders()
                         .Send());
+                });
 
-                app.RunProxy(
-                    "/app2",
-                    context => context
+                // Forwards requests from /app2 to upstream host http://localhost:5002/bar/
+                app.Map("/app2", app2 =>
+                {
+                    app2.RunProxy(context => context
                         .ForwardTo("http://localhost:5002/bar/")
                         .AddXForwardedHeaders()
                         .Send());
+                });
             }
         }
     }

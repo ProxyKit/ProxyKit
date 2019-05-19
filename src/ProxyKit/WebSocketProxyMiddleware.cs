@@ -20,9 +20,7 @@ namespace ProxyKit
         private const int DefaultWebSocketBufferSize = 4096;
         private readonly RequestDelegate _next;
         private readonly ProxyOptions _options;
-        private readonly Uri _destinationUri;
         private readonly ILogger<WebSocketProxyMiddleware> _logger;
-        private readonly string _urlPath;
         private readonly Func<HttpContext, Uri> _getDestinationUri;
 
         private WebSocketProxyMiddleware(
@@ -41,17 +39,15 @@ namespace ProxyKit
             Uri destinationUri,
             ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _destinationUri = destinationUri;
+            _getDestinationUri = _ => destinationUri;
         }
 
         public WebSocketProxyMiddleware(
                RequestDelegate next,
                IOptionsMonitor<ProxyOptions> options,
-               string urlPath,
                Func<HttpContext, Uri> getDestinationUri,
                ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _urlPath = urlPath;
             _getDestinationUri = getDestinationUri;
         }
 
@@ -69,20 +65,11 @@ namespace ProxyKit
 
         private Task ProxyOutToWebSocket(HttpContext context)
         {
-            if (_urlPath == null)
-            {
-                return AcceptProxyWebSocketRequest(context, _destinationUri);
-            }
-
-            if (!context.Request.Path.StartsWithSegments(_urlPath))
-            {
-                return _next(context);
-            }
-
             var relativePath = context.Request.Path.ToString();
-            var uri = new Uri(
-                _getDestinationUri(context), 
-                relativePath.Length >= _urlPath.Length ? relativePath.Substring(_urlPath.Length) : "");
+            var uri = _getDestinationUri(context);
+           /*var uri = new Uri(
+                _getDestinationUri(context),  
+                relativePath.Length >= _urlPath.Length ? relativePath.Substring(_urlPath.Length) : "");*/
             return AcceptProxyWebSocketRequest(context, uri);
         }
 
