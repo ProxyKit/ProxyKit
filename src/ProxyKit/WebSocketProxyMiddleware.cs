@@ -21,7 +21,7 @@ namespace ProxyKit
         private readonly RequestDelegate _next;
         private readonly ProxyOptions _options;
         private readonly ILogger<WebSocketProxyMiddleware> _logger;
-        private readonly Func<HttpContext, Uri> _getUpstreamUri;
+        private readonly Func<HttpContext, UpstreamHost> _getUpstreamHost;
         private readonly Action<WebSocketClientOptions> _customizeWebSocketClient = _ => { };
 
         private WebSocketProxyMiddleware(
@@ -40,26 +40,26 @@ namespace ProxyKit
             Uri upstreamUri,
             ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _getUpstreamUri = _ => upstreamUri;
+            _getUpstreamHost = _ => upstreamUri;
         }
 
         public WebSocketProxyMiddleware(
                RequestDelegate next,
                IOptionsMonitor<ProxyOptions> options,
-               Func<HttpContext, Uri> getUpstreamUri,
+               Func<HttpContext, UpstreamHost> getUpstreamHost,
                ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _getUpstreamUri = getUpstreamUri;
+            _getUpstreamHost = getUpstreamHost;
         }
 
         public WebSocketProxyMiddleware(
             RequestDelegate next,
             IOptionsMonitor<ProxyOptions> options,
-            Func<HttpContext, Uri> getUpstreamUri,
+            Func<HttpContext, UpstreamHost> getUpstreamHost,
             Action<WebSocketClientOptions> customizeWebSocketClient,
             ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _getUpstreamUri = getUpstreamUri;
+            _getUpstreamHost = getUpstreamHost;
             _customizeWebSocketClient = customizeWebSocketClient;
         }
 
@@ -78,9 +78,9 @@ namespace ProxyKit
         private Task ProxyOutToWebSocket(HttpContext context)
         {
             var relativePath = context.Request.Path.ToString();
-            var upstreamUri = _getUpstreamUri(context);
+            var upstreamUri = _getUpstreamHost(context);
             var uriWithPath = new Uri(
-                upstreamUri,
+                upstreamUri.Uri,
                 relativePath.Length >= 0 ? relativePath : "");
 
             var uriBuilder = new UriBuilder(uriWithPath)
@@ -115,7 +115,7 @@ namespace ProxyKit
                     client.Options.KeepAliveInterval = _options.WebSocketKeepAliveInterval.Value;
                 }
 
-                _customizeWebSocketClient(new WebSocketClientOptions(client.Options));
+                _customizeWebSocketClient(new WebSocketClientOptions(client.Options, context));
 
                 try
                 {

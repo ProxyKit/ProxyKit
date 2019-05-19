@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
+using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
 {
@@ -7,9 +8,12 @@ namespace ProxyKit
     {
         private readonly ClientWebSocketOptions _options;
 
-        internal WebSocketClientOptions(ClientWebSocketOptions options)
+        internal WebSocketClientOptions(
+            ClientWebSocketOptions options,
+            HttpContext httpContext)
         {
             _options = options;
+            HttpContext = httpContext;
         }
 
         /// <summary>
@@ -20,6 +24,11 @@ namespace ProxyKit
             get => _options.Cookies;
             set => _options.Cookies = value;
         }
+
+        /// <summary>
+        ///     The incoming HttpContext.
+        /// </summary>
+        public HttpContext HttpContext { get; }
 
         /// <summary>
         ///     Set a header on the upstream websocket request.
