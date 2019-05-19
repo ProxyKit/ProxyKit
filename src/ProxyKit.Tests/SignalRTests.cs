@@ -20,8 +20,6 @@ namespace ProxyKit
     {
         private readonly ITestOutputHelper _outputHelper;
 
-        private static bool useChooseFunction = false;
-
         public SignalRTests(ITestOutputHelper outputHelper)
         {
             _outputHelper = outputHelper;
@@ -30,9 +28,8 @@ namespace ProxyKit
         [Theory]
         [InlineData(true, "Use routing")]
         [InlineData(false, "No routing")]
-        public async Task Can_connect_via_proxy(bool shouldUseChooseFunction, string testDescription)
+        public async Task Can_connect_via_proxy(bool useRouting, string testDescription)
         {
-            useChooseFunction = shouldUseChooseFunction;
             using (var signalRServer = BuildSignalRServerOnRandomPort(_outputHelper))
             {
                 await signalRServer.StartAsync();
@@ -57,14 +54,14 @@ namespace ProxyKit
                     await directConnection.StartAsync();
 
                     // Callback when On
-                    var messageRecieved = new TaskCompletionSource<bool>();
+                    var messageReceived = new TaskCompletionSource<bool>();
                     directConnection.On("OnPing", () =>
                     {
-                        messageRecieved.SetResult(true);
+                        messageReceived.SetResult(true);
                     });
 
                     // Connect to SignalR Server via proxy
-					var hubPath = useChooseFunction ? "app/ping" : "ping";
+                    var hubPath = useRouting ? "app/ping" : "ping";
                     var proxyConnection = new HubConnectionBuilder()
                         .WithUrl($"http://localhost:{proxyPort}/{hubPath}")
                         .ConfigureLogging(logging => logging
@@ -80,8 +77,8 @@ namespace ProxyKit
                     // Send message to all clients
                     await proxyConnection.InvokeAsync("PingAll");
 
-                    messageRecieved.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue(testDescription);
-                    messageRecieved.Task.Result.ShouldBeTrue(testDescription);
+                    messageReceived.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue(testDescription);
+                    messageReceived.Task.Result.ShouldBeTrue(testDescription);
                 }
             }
         }
@@ -169,16 +166,13 @@ namespace ProxyKit
 
                 app.UseWebSockets();
 
-                if (useChooseFunction)
+                app.Map("/app", app2 =>
                 {
-                    app.UseWebSocketProxy("/app", context => destinationUri);
-                    app.RunProxy("/app", context => Send(context, port));
-                }
-                else
-                {
-                    app.UseWebSocketProxy(destinationUri);
-                    app.RunProxy(context => Send(context, port));
-                }
+                    app2.UseWebSocketProxy(_ => destinationUri);
+                    app2.RunProxy(context => Send(context, port));
+                });
+                app.UseWebSocketProxy(destinationUri);
+                app.RunProxy(context => Send(context, port));
             }
         }
     }
