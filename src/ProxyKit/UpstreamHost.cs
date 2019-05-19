@@ -23,6 +23,7 @@ namespace ProxyKit
             Host = host;
             PathBase = pathBase;
             Weight = weight;
+            Uri = GetUri();
         }
 
         public UpstreamHost(
@@ -38,6 +39,31 @@ namespace ProxyKit
             Host = HostString.FromUriComponent(upstreamUri);
             PathBase = PathString.FromUriComponent(upstreamUri);
             Weight = weight;
+            Uri = GetUri();
+        }
+
+        private Uri GetUri()
+        {
+            var port = Host.Port ?? DefaultPort(Scheme);
+            var builder = new UriBuilder(Scheme, Host.Host, port, PathBase.Value);
+            return builder.Uri;
+        }
+
+        private int DefaultPort(string scheme)
+        {
+            switch (scheme.ToLower())
+            {
+                case "http":
+                    return 80;
+                case "https":
+                    return 443;
+                case "ws":
+                    return 80;
+                case "wss":
+                    return 443;
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
         public string Scheme { get; }
@@ -47,6 +73,8 @@ namespace ProxyKit
         public PathString PathBase { get; }
 
         public uint Weight { get; }
+
+        public Uri Uri { get; }
 
         public override string ToString()
         {

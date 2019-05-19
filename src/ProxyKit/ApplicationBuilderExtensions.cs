@@ -78,7 +78,7 @@ namespace ProxyKit
         /// </param>
         public static void UseWebSocketProxy(
             this IApplicationBuilder app, 
-            Func<HttpContext, Uri> getUpstreamUri)
+            Func<HttpContext, UpstreamHost> getUpstreamUri)
         {
             if (app == null)
             {
@@ -105,14 +105,14 @@ namespace ProxyKit
         ///     A function to get the uri to forward the websocket connection to. The
         ///     result of which must start with ws:// or wss://
         /// </param>
-        /// <param name="customizeWebSocketClient">
+        /// <param name="configureClientOptions">
         ///     An action to allow customizing of the websocket client before initial
         ///     connection allowing you to set custom headers or adjust cookies.
         /// </param>
         public static void UseWebSocketProxy(
             this IApplicationBuilder app,
-            Func<HttpContext, Uri> getUpstreamUri,
-            Action<WebSocketClientOptions> customizeWebSocketClient)
+            Func<HttpContext, UpstreamHost> getUpstreamUri,
+            Action<WebSocketClientOptions> configureClientOptions)
         {
             if (app == null)
             {
@@ -124,7 +124,7 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
-            app.UseMiddleware<WebSocketProxyMiddleware>(getUpstreamUri, customizeWebSocketClient);
+            app.UseMiddleware<WebSocketProxyMiddleware>(getUpstreamUri, configureClientOptions);
         }
     }
 }

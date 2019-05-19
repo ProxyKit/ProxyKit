@@ -19,7 +19,9 @@ namespace ProxyKit.Recipes
                 app.UseWebSockets();
 
                 // websockets proxy is non-terminating
-                app.UseWebSocketProxy(context => new Uri("ws://upstream-host:80"));
+                app.UseWebSocketProxy(
+                    context => new Uri("ws://upstream-host:80"),
+                    options => options.AddXForwardedHeaders());
             }
         }
     }

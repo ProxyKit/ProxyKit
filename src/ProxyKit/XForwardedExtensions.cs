@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
@@ -29,7 +30,7 @@ namespace ProxyKit
             => ApplyXForwardedHeaders(outgoingHeaders, @for, host, proto, string.Empty);
 
         /// <summary>
-        ///     Applies X-Forwarded.* headers to the outgoing header collection
+        ///     Applies X-Forwarded-* headers to the outgoing header collection
         ///     with an additional PathBase parameter.
         /// </summary>
         /// <param name="outgoingHeaders">The outgoing HTTP request
@@ -67,6 +68,37 @@ namespace ProxyKit
             if (!string.IsNullOrWhiteSpace(pathBase))
             {
                 outgoingHeaders.Add(XForwardedPathBase, pathBase);
+            }
+        }
+
+        internal static void AddXForwardedHeaders(
+            this WebSocketClientOptions options,
+            IPAddress @for,
+            HostString host,
+            string proto,
+            PathString pathBase)
+        {
+            if (@for != null)
+            {
+                var forString = @for.AddressFamily == AddressFamily.InterNetworkV6
+                    ? $"\"[{@for}]\""
+                    : @for.ToString();
+                options.SetRequestHeader(XForwardedFor, forString);
+            }
+
+            if (host.HasValue)
+            {
+                options.SetRequestHeader(XForwardedHost, host.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(proto))
+            {
+                options.SetRequestHeader(XForwardedProto, proto);
+            }
+
+            if (!string.IsNullOrWhiteSpace(pathBase))
+            {
+                options.SetRequestHeader(XForwardedPathBase, pathBase);
             }
         }
     }
