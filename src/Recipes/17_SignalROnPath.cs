@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipes
 {
-    public class SignalWithRouting
+    public class SignalROnPath
     {
         public class Startup
         {
