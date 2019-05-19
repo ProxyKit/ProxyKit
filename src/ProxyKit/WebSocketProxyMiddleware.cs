@@ -21,7 +21,7 @@ namespace ProxyKit
         private readonly RequestDelegate _next;
         private readonly ProxyOptions _options;
         private readonly ILogger<WebSocketProxyMiddleware> _logger;
-        private readonly Func<HttpContext, Uri> _getDestinationUri;
+        private readonly Func<HttpContext, Uri> _getUpstreamUri;
 
         private WebSocketProxyMiddleware(
             RequestDelegate next,
@@ -36,19 +36,19 @@ namespace ProxyKit
         public WebSocketProxyMiddleware(
             RequestDelegate next,
             IOptionsMonitor<ProxyOptions> options,
-            Uri destinationUri,
+            Uri upstreamUri,
             ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _getDestinationUri = _ => destinationUri;
+            _getUpstreamUri = _ => upstreamUri;
         }
 
         public WebSocketProxyMiddleware(
                RequestDelegate next,
                IOptionsMonitor<ProxyOptions> options,
-               Func<HttpContext, Uri> getDestinationUri,
+               Func<HttpContext, Uri> getUpstreamUri,
                ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _getDestinationUri = getDestinationUri;
+            _getUpstreamUri = getUpstreamUri;
         }
 
         public async Task Invoke(HttpContext context)
@@ -66,14 +66,17 @@ namespace ProxyKit
         private Task ProxyOutToWebSocket(HttpContext context)
         {
             var relativePath = context.Request.Path.ToString();
-            var uri = _getDestinationUri(context);
-           /*var uri = new Uri(
-                _getDestinationUri(context),  
-                relativePath.Length >= _urlPath.Length ? relativePath.Substring(_urlPath.Length) : "");*/
+            var upstreamUri = _getUpstreamUri(context);
+            var uri = new Uri(
+                upstreamUri,  
+                relativePath.Length >= 0 ? relativePath : "");
+
+            _logger.LogInformation("Forwarding websocket connection to {0}", uri);
+
             return AcceptProxyWebSocketRequest(context, uri);
         }
 
-        private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri)
+        private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri upstreamUri)
         {
             using (var client = new ClientWebSocket())
             {
@@ -97,7 +100,7 @@ namespace ProxyKit
 
                 try
                 {
-                    await client.ConnectAsync(destinationUri, context.RequestAborted).ConfigureAwait(false);
+                    await client.ConnectAsync(upstreamUri, context.RequestAborted).ConfigureAwait(false);
                 }
                 catch (WebSocketException ex)
                 {
