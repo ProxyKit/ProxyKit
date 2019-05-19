@@ -12,7 +12,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <MinVerTagPrefix>v</MinVerTagPrefix>
-    <MinVerMinimumMajorMinor>3.0</MinVerMinimumMajorMinor>
+    <MinVerMinimumMajorMinor>2.0</MinVerMinimumMajorMinor>
     <TRAVIS_BUILD_NUMBER Condition="'$(TRAVIS_BUILD_NUMBER)' == ''">0</TRAVIS_BUILD_NUMBER>
     <MinVerBuildMetadata>build.$(TRAVIS_BUILD_NUMBER)</MinVerBuildMetadata>
     <PackageTags>aspnetcore;proxy;http</PackageTags>
