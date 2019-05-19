@@ -1,9 +1,15 @@
-workflow "Build" {
+workflow "Build and Test on push" {
   on = "push"
-  resolves = ["build and test"]
+  resolves = ["Build and Test"]
 }
 
-action "build and test" {
+workflow "PR Build and Test" {
+  on = "pull_request"
+  resolves = ["Build and Test"]
+}
+
+action "Build and Test" {
   uses = "Azure/github-actions/dotnetcore-cli@master"
   args = "run --project build"
 }
+
