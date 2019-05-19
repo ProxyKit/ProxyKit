@@ -183,7 +183,7 @@ namespace ProxyKit
                     app2.UseWebSocketProxy(_ => upstreamUri);
                     app2.RunProxy(context => Send(context, port));
                 });
-                app.UseWebSocketProxy(upstreamUri);
+                app.UseWebSocketProxy(_ => upstreamUri);
                 app.RunProxy(context => Send(context, port));
             }
         }

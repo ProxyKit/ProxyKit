@@ -20,7 +20,7 @@ namespace ProxyKit.Recipes
 
                 // SignalR, as part of it's protocol, needs both http and ws traffic
                 // to be forwarded to the servers hosting signalr hubs.
-                app.UseWebSocketProxy(new Uri("ws://upstream-host:80"));
+                app.UseWebSocketProxy(context => new Uri("ws://upstream-host:80"));
                 app.RunProxy(context => context
                     .ForwardTo(new Uri($"http://localhost:80"))
                     .AddXForwardedHeaders()

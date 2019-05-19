@@ -22,6 +22,7 @@ namespace ProxyKit
         private readonly ProxyOptions _options;
         private readonly ILogger<WebSocketProxyMiddleware> _logger;
         private readonly Func<HttpContext, Uri> _getUpstreamUri;
+        private readonly Action<WebSocketClientOptions> _customizeWebSocketClient = _ => { };
 
         private WebSocketProxyMiddleware(
             RequestDelegate next,
@@ -49,6 +50,17 @@ namespace ProxyKit
                ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
             _getUpstreamUri = getUpstreamUri;
+        }
+
+        public WebSocketProxyMiddleware(
+            RequestDelegate next,
+            IOptionsMonitor<ProxyOptions> options,
+            Func<HttpContext, Uri> getUpstreamUri,
+            Action<WebSocketClientOptions> customizeWebSocketClient,
+            ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
+        {
+            _getUpstreamUri = getUpstreamUri;
+            _customizeWebSocketClient = customizeWebSocketClient;
         }
 
         public async Task Invoke(HttpContext context)
@@ -98,6 +110,8 @@ namespace ProxyKit
                     client.Options.KeepAliveInterval = _options.WebSocketKeepAliveInterval.Value;
                 }
 
+                _customizeWebSocketClient(new WebSocketClientOptions(client.Options));
+
                 try
                 {
                     await client.ConnectAsync(upstreamUri, context.RequestAborted).ConfigureAwait(false);
@@ -132,7 +146,8 @@ namespace ProxyKit
                 WebSocketReceiveResult result;
                 try
                 {
-                    result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken)
+                    result = await source
+                        .ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)

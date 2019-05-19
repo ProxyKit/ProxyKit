@@ -34,34 +34,6 @@ namespace ProxyKit
 
         /// <summary>
         ///     Adds WebSocket proxy that forwards websocket connections
-        ///     to destination Uri.
-        /// </summary>
-        /// <param name="app">
-        ///     The application builder.
-        /// </param>
-        /// <param name="upstreamUri">
-        ///     The uri to forward the websocket connection to. Must start with
-        ///     ws:// or wss://
-        /// </param>
-        public static void UseWebSocketProxy(
-            this IApplicationBuilder app,
-            Uri upstreamUri)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            if (upstreamUri == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            app.UseMiddleware<WebSocketProxyMiddleware>(upstreamUri);
-        }
-
-        /// <summary>
-        ///     Adds WebSocket proxy that forwards websocket connections
         ///     to destination Uri based the HttpContext if the request matches
         ///     a given path.
         /// </summary>
@@ -87,6 +59,40 @@ namespace ProxyKit
             }
 
             app.UseMiddleware<WebSocketProxyMiddleware>(getUpstreamUri);
+        }
+
+        /// <summary>
+        ///     Adds WebSocket proxy that forwards websocket connections
+        ///     to destination Uri based the HttpContext if the request matches
+        ///     a given path.
+        /// </summary>
+        /// <param name="app">
+        ///     The application builder.
+        /// </param>
+        /// <param name="getUpstreamUri">
+        ///     A function to get the uri to forward the websocket connection to. The
+        ///     result of which must start with ws:// or wss://
+        /// </param>
+        /// <param name="customizeWebSocketClient">
+        ///     An action to allow customizing of the websocket client before initial
+        ///     connection allowing you to set custom headers or adjust cookies.
+        /// </param>
+        public static void UseWebSocketProxy(
+            this IApplicationBuilder app,
+            Func<HttpContext, Uri> getUpstreamUri,
+            Action<WebSocketClientOptions> customizeWebSocketClient)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (getUpstreamUri == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            app.UseMiddleware<WebSocketProxyMiddleware>(getUpstreamUri, customizeWebSocketClient);
         }
     }
 }

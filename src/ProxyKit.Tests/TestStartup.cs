@@ -48,7 +48,14 @@ namespace ProxyKit
                 app.UseWebSockets();
                 app.Map("/ws", appInner =>
                 {
-                    appInner.UseWebSocketProxy(new Uri($"ws://localhost:{port}/ws/"));
+                    appInner.UseWebSocketProxy(_ => new Uri($"ws://localhost:{port}/ws/"));
+                });
+
+                app.Map("/ws-custom", appInner =>
+                {
+                    appInner.UseWebSocketProxy(
+                        _ => new Uri($"ws://localhost:{port}/ws-custom/"),
+                        webSocketClientOptions => webSocketClientOptions.SetRequestHeader("X-TraceId", "123"));
                 });
             }
         }
