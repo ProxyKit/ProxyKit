@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Threading;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
@@ -19,14 +20,19 @@ namespace ProxyKit
     {
         private readonly ITestOutputHelper _outputHelper;
 
+        private static bool useChooseFunction = false;
+
         public SignalRTests(ITestOutputHelper outputHelper)
         {
             _outputHelper = outputHelper;
         }
 
-        [Fact]
-        public async Task Can_connect_via_proxy()
+        [Theory]
+        [InlineData(true, "Use routing")]
+        [InlineData(false, "No routing")]
+        public async Task Can_connect_via_proxy(bool shouldUseChooseFunction, string testDescription)
         {
+            useChooseFunction = shouldUseChooseFunction;
             using (var signalRServer = BuildSignalRServerOnRandomPort(_outputHelper))
             {
                 await signalRServer.StartAsync();
@@ -58,8 +64,9 @@ namespace ProxyKit
                     });
 
                     // Connect to SignalR Server via proxy
+					var hubPath = useChooseFunction ? "app/ping" : "ping";
                     var proxyConnection = new HubConnectionBuilder()
-                        .WithUrl($"http://localhost:{proxyPort}/ping")
+                        .WithUrl($"http://localhost:{proxyPort}/{hubPath}")
                         .ConfigureLogging(logging => logging
                             .AddDebug()
                             .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-proxy")))
@@ -73,8 +80,8 @@ namespace ProxyKit
                     // Send message to all clients
                     await proxyConnection.InvokeAsync("PingAll");
 
-                    messageRecieved.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue();
-                    messageRecieved.Task.Result.ShouldBeTrue();
+                    messageRecieved.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue(testDescription);
+                    messageRecieved.Task.Result.ShouldBeTrue(testDescription);
                 }
             }
         }
@@ -152,14 +159,26 @@ namespace ProxyKit
 
             public void Configure(IApplicationBuilder app, IServiceProvider sp)
             {
+                Task<HttpResponseMessage> Send(HttpContext context, int servicePort) => context
+                                                                            .ForwardTo(new Uri($"http://localhost:{servicePort}"))
+                                                                            .AddXForwardedHeaders()
+                                                                            .Send();
+
                 var port = _config.GetValue("port", 0);
+                var destinationUri = new Uri($"ws://localhost:{port}");
 
                 app.UseWebSockets();
-                app.UseWebSocketProxy(new Uri($"ws://localhost:{port}"));
-                app.RunProxy(context => context
-                    .ForwardTo(new Uri($"http://localhost:{port}"))
-                    .AddXForwardedHeaders()
-                    .Send());
+
+                if (useChooseFunction)
+                {
+                    app.UseWebSocketProxy("/app", context => destinationUri);
+                    app.RunProxy("/app", context => Send(context, port));
+                }
+                else
+                {
+                    app.UseWebSocketProxy(destinationUri);
+                    app.RunProxy(context => Send(context, port));
+                }
             }
         }
     }

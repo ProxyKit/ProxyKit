@@ -11,6 +11,9 @@ namespace ProxyKit
 {
     public class WebSocketProxyMiddleware
     {
+        private readonly string _urlPath;
+        private readonly Func<HttpContext, Uri> _chooseUri;
+
         private static readonly HashSet<string> NotForwardedWebSocketHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept",
@@ -23,31 +26,61 @@ namespace ProxyKit
         private readonly Uri _destinationUri;
         private readonly ILogger<WebSocketProxyMiddleware> _logger;
 
-        public WebSocketProxyMiddleware(
+        private WebSocketProxyMiddleware(
             RequestDelegate next,
             IOptionsMonitor<ProxyOptions> options,
-            Uri destinationUri,
             ILogger<WebSocketProxyMiddleware> logger)
         {
             _next = next;
             _options = options.CurrentValue;
-            _destinationUri = destinationUri;
             _logger = logger;
+        }
+
+        public WebSocketProxyMiddleware(
+            RequestDelegate next,
+            IOptionsMonitor<ProxyOptions> options,
+            Uri destinationUri,
+            ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
+        {
+            _destinationUri = destinationUri;
+        }
+
+        public WebSocketProxyMiddleware(
+                   RequestDelegate next,
+                   IOptionsMonitor<ProxyOptions> options,
+                   string urlPath,
+                   Func<HttpContext, Uri> chooseUri,
+                   ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
+        {
+            _urlPath = urlPath;
+            _chooseUri = chooseUri;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.WebSockets.IsWebSocketRequest)
-            {
-                await AcceptProxyWebSocketRequest(context, _destinationUri).ConfigureAwait(false);
-            }
+			if (context.WebSockets.IsWebSocketRequest)
+			{
+				await ProxyOutToWebSocket(context).ConfigureAwait(false);
+			}
             else
             {
                 await _next(context).ConfigureAwait(false);
             }
         }
 
-        private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri)
+		private Task ProxyOutToWebSocket(HttpContext context)
+		{
+			if (_urlPath == null) return AcceptProxyWebSocketRequest(context, _destinationUri);
+
+			if (!context.Request.Path.StartsWithSegments(_urlPath)) return _next(context);
+
+			var relativePath = context.Request.Path.ToString();
+			var uri = new Uri(_chooseUri(context), 
+							relativePath.Length >= _urlPath.Length ? relativePath.Substring(_urlPath.Length) : "");
+			return AcceptProxyWebSocketRequest(context, uri);
+		}
+
+		private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri)
         {
             using (var client = new ClientWebSocket())
             {
