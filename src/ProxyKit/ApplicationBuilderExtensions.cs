@@ -24,6 +24,11 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
+            if (handleProxyRequest == null)
+            {
+                throw new ArgumentNullException(nameof(handleProxyRequest));
+            }
+
             app.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
         }
 
@@ -49,6 +54,11 @@ namespace ProxyKit
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
+            }
+
+            if (handleProxyRequest == null)
+            {
+                throw new ArgumentNullException(nameof(handleProxyRequest));
             }
 
             app.Map(pathMatch, appInner =>
