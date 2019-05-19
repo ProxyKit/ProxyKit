@@ -44,8 +44,13 @@ issues making it suitable for microservice / container environments.
     - [3.10. Copy X-Forwarded Headers](#310-copy-x-forwarded-headers)
     - [3.11. Caching Upstream Responses with CacheCow](#311-caching-upstream-responses-with-cachecow)
     - [3.12. Conditional Proxying](#312-conditional-proxying)
-    - [3.13 Client Certificate](#313-client-certificate)
-    - [3.14 Source IP Blocking](#314-source-ip-blocking)
+    - [3.13. Client Certificate](#313-client-certificate)
+    - [3.14. Source IP Blocking](#314-source-ip-blocking)
+    - [3.14. Source IP Blocking](#314-source-ip-blocking-1)
+    - [3.15. WebSockets](#315-websockets)
+    - [3.16. SignalR](#316-signalr)
+    - [3.17. SignalR with Path](#317-signalr-with-path)
+    - [3.18. Automatic Decompression](#318-automatic-decompression)
 - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
 - [5. Performance considerations](#5-performance-considerations)
 - [6. Note about serverless](#6-note-about-serverless)
@@ -443,17 +448,47 @@ value on `HttpContext`.
 
 [src/Recipes/12_ConditionalProxying.cs](src/Recipes/12_ConditionalProxying.cs)
 
-### 3.13 Client Certificate
+### 3.13. Client Certificate
 
 Using a client certificate in requests to upstream hosts.
 
 [src/Recipes/13_ClientCertificate.cs](src/Recipes/13_ClientCertificate.cs)
 
-### 3.14 Source IP Blocking
+### 3.14. Source IP Blocking
 
 Block requests from sources whose IP addresses is not allowed.
 
 [src/Recipes/14_SourceIPBlocking.cs](src/Recipes/14_SourceIPBlocking.cs)
+
+### 3.14. Source IP Blocking
+
+Block requests from sources whose IP addresses is not allowed.
+
+### 3.15. WebSockets
+
+How to proxy WebSocket connections.
+
+[src/Recipes/14_WebSockets.cs](src/Recipes/15_WebSockets.cs)
+
+### 3.16. SignalR
+
+Proxying for SignalR whose protocol requires both HTTP and WebSocket forwarding
+to upstream hosts.
+
+[src/Recipes/16_SignalR.cs](src/Recipes/16_SignalR.cs)
+
+### 3.17. SignalR with Path
+
+Proxying for SignalR on a specific path.
+
+[src/Recipes/17_SignalROnPath.cs](src/Recipes/17_SignalROnPath.cs)
+
+### 3.18. Automatic Decompression
+
+Automatic decompression of responses from upstream hosts allowing response body
+manipulation.
+
+[src/Recipes/18_AutomaticDecompression.cs](src/Recipes/18_AutomaticDecompression.cs)
 
 ## 4. Making upstream servers reverse proxy friendly
 

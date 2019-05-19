@@ -7,7 +7,7 @@ namespace ProxyKit
     public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        /// Runs proxy forwarding requests to downstream server.
+        ///     Runs proxy forwarding requests to downstream server.
         /// </summary>
         /// <param name="app">
         ///     The application builder.
@@ -24,11 +24,16 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
+            if (handleProxyRequest == null)
+            {
+                throw new ArgumentNullException(nameof(handleProxyRequest));
+            }
+
             app.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
         }
 
         /// <summary>
-        /// Runs proxy forwarding requests to downstream server.
+        ///     Runs proxy forwarding requests to downstream server.
         /// </summary>
         /// <param name="app">
         ///     The application builder.
@@ -41,6 +46,8 @@ namespace ProxyKit
         /// <param name="handleProxyRequest">
         ///     A delegate that can resolve the destination Uri.
         /// </param>
+        [Obsolete("Use app.Map(\"/path\", appProxy=> { appProxy.UseProxy(...); } instead. " +
+                  "This will be removed in a future version", false)]
         public static void RunProxy(
             this IApplicationBuilder app,
             PathString pathMatch,
@@ -57,33 +64,33 @@ namespace ProxyKit
             });
         }
 
-
         /// <summary>
         ///     Adds WebSocket proxy that forwards websocket connections
-        ///     to destination Uri.
+        ///     to destination Uri based the HttpContext if the request matches
+        ///     a given path.
         /// </summary>
         /// <param name="app">
         ///     The application builder.
         /// </param>
-        /// <param name="destinationUri">
-        ///     The uri to forward the websocket connection to. Must start with
-        ///     ws:// or wss://
+        /// <param name="getUpstreamUri">
+        ///     A function to get the uri to forward the websocket connection to. The
+        ///     result of which must start with ws:// or wss://
         /// </param>
         public static void UseWebSocketProxy(
-            this IApplicationBuilder app,
-            Uri destinationUri)
+            this IApplicationBuilder app, 
+            Func<HttpContext, Uri> getUpstreamUri)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (destinationUri == null)
+            if (getUpstreamUri == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            app.UseMiddleware<WebSocketProxyMiddleware>(destinationUri);
+            app.UseMiddleware<WebSocketProxyMiddleware>(getUpstreamUri);
         }
 
         /// <summary>
@@ -94,23 +101,30 @@ namespace ProxyKit
         /// <param name="app">
         ///     The application builder.
         /// </param>
-        /// <param name="urlPath">
-        ///     The url path the request must match for the websocket request to be forwarded.
+        /// <param name="getUpstreamUri">
+        ///     A function to get the uri to forward the websocket connection to. The
+        ///     result of which must start with ws:// or wss://
         /// </param>
-        /// <param name="chooseUri">
-        ///     The Uri selection function.
+        /// <param name="customizeWebSocketClient">
+        ///     An action to allow customizing of the websocket client before initial
+        ///     connection allowing you to set custom headers or adjust cookies.
         /// </param>
         public static void UseWebSocketProxy(
-            this IApplicationBuilder app, string urlPath,
-            Func<HttpContext, Uri> chooseUri)
+            this IApplicationBuilder app,
+            Func<HttpContext, Uri> getUpstreamUri,
+            Action<WebSocketClientOptions> customizeWebSocketClient)
         {
-            if (app == null) throw new ArgumentNullException(nameof(app));
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
 
-            if (string.IsNullOrWhiteSpace(urlPath)) throw new ArgumentNullException(nameof(urlPath));
+            if (getUpstreamUri == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
 
-            if (chooseUri == null) throw new ArgumentNullException(nameof(app));
-
-            app.UseMiddleware<WebSocketProxyMiddleware>(urlPath, chooseUri);
+            app.UseMiddleware<WebSocketProxyMiddleware>(getUpstreamUri, customizeWebSocketClient);
         }
     }
 }

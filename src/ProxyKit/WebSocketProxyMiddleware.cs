@@ -11,9 +11,6 @@ namespace ProxyKit
 {
     public class WebSocketProxyMiddleware
     {
-        private readonly string _urlPath;
-        private readonly Func<HttpContext, Uri> _chooseUri;
-
         private static readonly HashSet<string> NotForwardedWebSocketHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept",
@@ -23,8 +20,9 @@ namespace ProxyKit
         private const int DefaultWebSocketBufferSize = 4096;
         private readonly RequestDelegate _next;
         private readonly ProxyOptions _options;
-        private readonly Uri _destinationUri;
         private readonly ILogger<WebSocketProxyMiddleware> _logger;
+        private readonly Func<HttpContext, Uri> _getUpstreamUri;
+        private readonly Action<WebSocketClientOptions> _customizeWebSocketClient = _ => { };
 
         private WebSocketProxyMiddleware(
             RequestDelegate next,
@@ -39,48 +37,63 @@ namespace ProxyKit
         public WebSocketProxyMiddleware(
             RequestDelegate next,
             IOptionsMonitor<ProxyOptions> options,
-            Uri destinationUri,
+            Uri upstreamUri,
             ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _destinationUri = destinationUri;
+            _getUpstreamUri = _ => upstreamUri;
         }
 
         public WebSocketProxyMiddleware(
-                   RequestDelegate next,
-                   IOptionsMonitor<ProxyOptions> options,
-                   string urlPath,
-                   Func<HttpContext, Uri> chooseUri,
-                   ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
+               RequestDelegate next,
+               IOptionsMonitor<ProxyOptions> options,
+               Func<HttpContext, Uri> getUpstreamUri,
+               ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
         {
-            _urlPath = urlPath;
-            _chooseUri = chooseUri;
+            _getUpstreamUri = getUpstreamUri;
+        }
+
+        public WebSocketProxyMiddleware(
+            RequestDelegate next,
+            IOptionsMonitor<ProxyOptions> options,
+            Func<HttpContext, Uri> getUpstreamUri,
+            Action<WebSocketClientOptions> customizeWebSocketClient,
+            ILogger<WebSocketProxyMiddleware> logger) : this(next, options, logger)
+        {
+            _getUpstreamUri = getUpstreamUri;
+            _customizeWebSocketClient = customizeWebSocketClient;
         }
 
         public async Task Invoke(HttpContext context)
         {
-			if (context.WebSockets.IsWebSocketRequest)
-			{
-				await ProxyOutToWebSocket(context).ConfigureAwait(false);
-			}
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                await ProxyOutToWebSocket(context).ConfigureAwait(false);
+            }
             else
             {
                 await _next(context).ConfigureAwait(false);
             }
         }
 
-		private Task ProxyOutToWebSocket(HttpContext context)
-		{
-			if (_urlPath == null) return AcceptProxyWebSocketRequest(context, _destinationUri);
+        private Task ProxyOutToWebSocket(HttpContext context)
+        {
+            var relativePath = context.Request.Path.ToString();
+            var upstreamUri = _getUpstreamUri(context);
+            var uriWithPath = new Uri(
+                upstreamUri,
+                relativePath.Length >= 0 ? relativePath : "");
 
-			if (!context.Request.Path.StartsWithSegments(_urlPath)) return _next(context);
+            var uriBuilder = new UriBuilder(uriWithPath)
+            {
+                Query = context.Request.QueryString.ToUriComponent()
+            };
 
-			var relativePath = context.Request.Path.ToString();
-			var uri = new Uri(_chooseUri(context), 
-							relativePath.Length >= _urlPath.Length ? relativePath.Substring(_urlPath.Length) : "");
-			return AcceptProxyWebSocketRequest(context, uri);
-		}
+            _logger.LogInformation("Forwarding websocket connection to {0}", uriBuilder.Uri);
 
-		private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri)
+            return AcceptProxyWebSocketRequest(context, uriBuilder.Uri);
+        }
+
+        private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri upstreamUri)
         {
             using (var client = new ClientWebSocket())
             {
@@ -102,9 +115,11 @@ namespace ProxyKit
                     client.Options.KeepAliveInterval = _options.WebSocketKeepAliveInterval.Value;
                 }
 
+                _customizeWebSocketClient(new WebSocketClientOptions(client.Options));
+
                 try
                 {
-                    await client.ConnectAsync(destinationUri, context.RequestAborted).ConfigureAwait(false);
+                    await client.ConnectAsync(upstreamUri, context.RequestAborted).ConfigureAwait(false);
                 }
                 catch (WebSocketException ex)
                 {
@@ -136,14 +151,15 @@ namespace ProxyKit
                 WebSocketReceiveResult result;
                 try
                 {
-                    result = await source.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken)
+                    result = await source
+                        .ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
                     await destination.CloseOutputAsync(
                         WebSocketCloseStatus.EndpointUnavailable,
-                        "Endpoind unavailable",
+                        "Endpoint unavailable",
                         cancellationToken)
                         .ConfigureAwait(false);
                     return;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -61,15 +62,32 @@ namespace ProxyKit
                 ctx.Response.Headers.Add("Location", ctx.Request.GetEncodedUrl());
             }));
 
-            app.Map("/ws", a =>
+            app.Map("/ws", wsApp =>
             {
-                app.UseWebSockets();
-                app.Use(async (context, next) =>
+                wsApp.UseWebSockets();
+                wsApp.Use(async (context, next) =>
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         await Echo(context, webSocket);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                });
+            });
+
+            app.Map("/ws-custom", wsApp =>
+            {
+                wsApp.UseWebSockets();
+                wsApp.Use(async (context, next) =>
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        await EchoTraceIdHeaderAndQuery(context, webSocket);
                     }
                     else
                     {
@@ -95,6 +113,21 @@ namespace ProxyKit
             while (!result.CloseStatus.HasValue)
             {
                 await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+        }
+
+        private async Task EchoTraceIdHeaderAndQuery(HttpContext context, WebSocket webSocket)
+        {
+            var buffer = new byte[1024 * 4];
+            var header = context.Request.Headers["X-TraceId"];
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            while (!result.CloseStatus.HasValue)
+            {
+                var arraySegment = new ArraySegment<byte>(Encoding.UTF8.GetBytes("X-TraceId=" + header + context.Request.QueryString.Value));
+                await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, result.EndOfMessage, CancellationToken.None);
 
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }

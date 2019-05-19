@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -141,9 +142,50 @@ namespace ProxyKit
                 {
                     var client = testServer.CreateWebSocketClient();
                     var webSocket = await client.ConnectAsync(new Uri("ws://localhost/ws"), CancellationToken.None);
+                    await SendText(webSocket, "foo");
+                    var result = await ReceiveText(webSocket);
+                    result.ShouldBe("foo");
                     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close", CancellationToken.None);
                 }
             }
+        }
+
+        [Fact]
+        public async Task Can_proxy_websockets_with_request_customization()
+        {
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
+            {
+                await server.StartAsync();
+                var port = server.GetServerPort();
+
+                using (var testServer = new TestServer(new WebHostBuilder()
+                    .UseSetting("port", port.ToString())
+                    .UseSetting("timeout", "1")
+                    .UseStartup<TestStartup>()))
+                {
+                    var client = testServer.CreateWebSocketClient();
+                    var webSocket = await client.ConnectAsync(new Uri("ws://localhost/ws-custom?a=b"), CancellationToken.None);
+                    await SendText(webSocket, "foo");
+                    var result = await ReceiveText(webSocket);
+                    result.ShouldBe("X-TraceId=123?a=b"); // Custom websocket echos this header
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close", CancellationToken.None);
+                }
+            }
+        }
+
+        private async Task SendText(WebSocket webSocket, string s)
+        {
+            var bytes = Encoding.UTF8.GetBytes(s);
+            await webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        private async Task<string> ReceiveText(WebSocket webSocket)
+        {
+            var buffer = new Memory<byte>(new byte[1024]);
+            var receiveResult = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+            receiveResult.EndOfMessage.ShouldBeTrue();
+            var echoResult = Encoding.UTF8.GetString(buffer.Slice(0, receiveResult.Count).Span);
+            return echoResult;
         }
     }
 }

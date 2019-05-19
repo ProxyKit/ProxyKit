@@ -17,26 +17,34 @@ namespace ProxyKit.Recipes
 
             public void Configure(IApplicationBuilder app)
             {
-                app.RunProxy("api/foo", async context =>
+                app.Map("/api/foo", apiFoo =>
                 {
-                    var consulClient = context.RequestServices.GetRequiredService<ConsulClient>();
-                    var service = await consulClient.Catalog.Service("foo-service");
-                    var upstreamHost = new Uri($"https://{service.Response[0].Address}:{service.Response[0].ServicePort}");
-                    return await context
-                        .ForwardTo(upstreamHost)
-                        .AddXForwardedHeaders()
-                        .Send();
+                    apiFoo.RunProxy(async context =>
+                    {
+                        var consulClient = context.RequestServices.GetRequiredService<ConsulClient>();
+                        var service = await consulClient.Catalog.Service("foo-service");
+                        var upstreamHost =
+                            new Uri($"https://{service.Response[0].Address}:{service.Response[0].ServicePort}");
+                        return await context
+                            .ForwardTo(upstreamHost)
+                            .AddXForwardedHeaders()
+                            .Send();
+                    });
                 });
 
-                app.RunProxy("api/bar", async context =>
+                app.Map("/api/bar", apiBar =>
                 {
-                    var consulClient = context.RequestServices.GetRequiredService<ConsulClient>();
-                    var service = await consulClient.Catalog.Service("bar-service");
-                    var upstreamHost = new Uri($"https://{service.Response[0].Address}:{service.Response[0].ServicePort}");
-                    return await context
-                        .ForwardTo(upstreamHost)
-                        .AddXForwardedHeaders()
-                        .Send();
+                    apiBar.RunProxy(async context =>
+                    {
+                        var consulClient = context.RequestServices.GetRequiredService<ConsulClient>();
+                        var service = await consulClient.Catalog.Service("bar-service");
+                        var upstreamHost =
+                            new Uri($"https://{service.Response[0].Address}:{service.Response[0].ServicePort}");
+                        return await context
+                            .ForwardTo(upstreamHost)
+                            .AddXForwardedHeaders()
+                            .Send();
+                    });
                 });
             }
         }
