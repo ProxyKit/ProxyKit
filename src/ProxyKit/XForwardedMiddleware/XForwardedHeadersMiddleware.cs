@@ -7,8 +7,7 @@ namespace ProxyKit.XForwardedMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public XForwardedHeadersMiddleware(
-            RequestDelegate next)
+        public XForwardedHeadersMiddleware(RequestDelegate next)
         {
             _next = next;
         }
@@ -19,10 +18,9 @@ namespace ProxyKit.XForwardedMiddleware
             if (context.Request.Headers.TryGetValue(XForwardedExtensions.XForwardedPathBase, out var pathBase))
             {
                 context.Request.PathBase = new PathString(pathBase);
-                if (originalPathBase.HasValue)
-                {
-                    context.Request.Headers.Append("X-Original-PathBase", originalPathBase.Value);
-                }
+                context.Request.Headers.Add(
+                    "X-Original-PathBase",
+                    originalPathBase.HasValue ? originalPathBase.Value : "/");
             }
             return _next(context);
         }
