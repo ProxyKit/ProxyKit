@@ -15,9 +15,14 @@ namespace ProxyKit.XForwardedMiddleware
 
         public Task Invoke(HttpContext context)
         {
+            var originalPathBase = context.Request.PathBase;
             if (context.Request.Headers.TryGetValue(XForwardedExtensions.XForwardedPathBase, out var pathBase))
             {
                 context.Request.PathBase = new PathString(pathBase);
+                if (originalPathBase.HasValue)
+                {
+                    context.Request.Headers.Append("X-Original-PathBase", originalPathBase.Value);
+                }
             }
             return _next(context);
         }
