@@ -79,13 +79,18 @@ namespace ProxyKit
         {
             var relativePath = context.Request.Path.ToString();
             var upstreamUri = _getUpstreamUri(context);
-            var uri = new Uri(
-                upstreamUri,  
+            var uriWithPath = new Uri(
+                upstreamUri,
                 relativePath.Length >= 0 ? relativePath : "");
 
-            _logger.LogInformation("Forwarding websocket connection to {0}", uri);
+            var uriBuilder = new UriBuilder(uriWithPath)
+            {
+                Query = context.Request.QueryString.ToUriComponent()
+            };
 
-            return AcceptProxyWebSocketRequest(context, uri);
+            _logger.LogInformation("Forwarding websocket connection to {0}", uriBuilder.Uri);
+
+            return AcceptProxyWebSocketRequest(context, uriBuilder.Uri);
         }
 
         private async Task AcceptProxyWebSocketRequest(HttpContext context, Uri upstreamUri)

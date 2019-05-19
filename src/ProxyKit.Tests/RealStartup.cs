@@ -87,7 +87,7 @@ namespace ProxyKit
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        await EchoTraceIdHeader(context, webSocket);
+                        await EchoTraceIdHeaderAndQuery(context, webSocket);
                     }
                     else
                     {
@@ -119,14 +119,14 @@ namespace ProxyKit
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
         }
 
-        private async Task EchoTraceIdHeader(HttpContext context, WebSocket webSocket)
+        private async Task EchoTraceIdHeaderAndQuery(HttpContext context, WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
             var header = context.Request.Headers["X-TraceId"];
             var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             while (!result.CloseStatus.HasValue)
             {
-                var arraySegment = new ArraySegment<byte>(Encoding.UTF8.GetBytes("X-TraceId=" + header));
+                var arraySegment = new ArraySegment<byte>(Encoding.UTF8.GetBytes("X-TraceId=" + header + context.Request.QueryString.Value));
                 await webSocket.SendAsync(arraySegment, WebSocketMessageType.Text, result.EndOfMessage, CancellationToken.None);
 
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);

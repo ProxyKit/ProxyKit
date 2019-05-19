@@ -164,10 +164,10 @@ namespace ProxyKit
                     .UseStartup<TestStartup>()))
                 {
                     var client = testServer.CreateWebSocketClient();
-                    var webSocket = await client.ConnectAsync(new Uri("ws://localhost/ws-custom"), CancellationToken.None);
+                    var webSocket = await client.ConnectAsync(new Uri("ws://localhost/ws-custom?a=b"), CancellationToken.None);
                     await SendText(webSocket, "foo");
                     var result = await ReceiveText(webSocket);
-                    result.ShouldBe("X-TraceId=123"); // Custom websocket echos this header
+                    result.ShouldBe("X-TraceId=123?a=b"); // Custom websocket echos this header
                     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close", CancellationToken.None);
                 }
             }
