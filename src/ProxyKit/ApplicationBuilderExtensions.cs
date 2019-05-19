@@ -97,20 +97,30 @@ namespace ProxyKit
         /// <param name="urlPath">
         ///     The url path the request must match for the websocket request to be forwarded.
         /// </param>
-        /// <param name="chooseUri">
+        /// <param name="getDestinationUri">
         ///     The Uri selection function.
         /// </param>
         public static void UseWebSocketProxy(
-            this IApplicationBuilder app, string urlPath,
-            Func<HttpContext, Uri> chooseUri)
+            this IApplicationBuilder app,
+            string urlPath,
+            Func<HttpContext, Uri> getDestinationUri)
         {
-            if (app == null) throw new ArgumentNullException(nameof(app));
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
 
-            if (string.IsNullOrWhiteSpace(urlPath)) throw new ArgumentNullException(nameof(urlPath));
+            if (string.IsNullOrWhiteSpace(urlPath))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(urlPath));
+            }
 
-            if (chooseUri == null) throw new ArgumentNullException(nameof(app));
+            if (getDestinationUri == null)
+            {
+                throw new ArgumentNullException(nameof(getDestinationUri));
+            }
 
-            app.UseMiddleware<WebSocketProxyMiddleware>(urlPath, chooseUri);
+            app.UseMiddleware<WebSocketProxyMiddleware>(urlPath, getDestinationUri);
         }
     }
 }
