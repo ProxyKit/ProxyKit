@@ -549,8 +549,7 @@ text](https://www.techempower.com/benchmarks/#section=data-r17&hw=ph&test=plaint
 As ProxyKit simply captures headers and async copies request and response body
 streams, it will be fast enough for most scenarios.
 
-Stress testing shows that ProxyKit is approximately 8% slower than nginx for
-simple forwarding on linux. If absolute raw throughput is a concern for you, then
+If absolute raw throughput is a concern for you, then
 consider nginx or alternatives. For me being able to create flexible proxies
 using C# is a reasonable tradeoff for the (small) performance cost. Note that
 what your specific proxy (and its specific configuration) does will impact performance
