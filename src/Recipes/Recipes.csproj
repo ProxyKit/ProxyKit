@@ -12,7 +12,7 @@
     <PackageReference Include="CacheCow.Client" Version="2.4.3" />
     <PackageReference Include="Consul" Version="0.7.2.6" />
     <PackageReference Include="EasyConsoleStd" Version="2.0.0" />
-    <PackageReference Include="IPNetwork2" Version="2.4.0.99" />
+    <PackageReference Include="IPNetwork2" Version="2.4.0.114" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
   </ItemGroup>
