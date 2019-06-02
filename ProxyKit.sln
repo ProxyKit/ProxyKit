@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paths", "src\Paths\Paths.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenantForwarding", "src\TenantForwarding\TenantForwarding.csproj", "{086050F2-0756-4936-A0A6-74851A7FA67F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RunnableRecipes", "RunnableRecipes", "{63C061FD-D3D9-4517-9398-2A6F1769022E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSimpleChat", "src\SignalRSimpleChat\SignalRSimpleChat.csproj", "{42BFCF9F-53B9-4600-9183-12349DE9E3D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,9 +49,19 @@ Global
 		{086050F2-0756-4936-A0A6-74851A7FA67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{086050F2-0756-4936-A0A6-74851A7FA67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{086050F2-0756-4936-A0A6-74851A7FA67F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5CA0D249-B84F-4C1A-BA4A-A39005038D84} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
+		{A10DFD36-8672-4359-988E-6B52B1F96F2A} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
+		{086050F2-0756-4936-A0A6-74851A7FA67F} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
+		{42BFCF9F-53B9-4600-9183-12349DE9E3D9} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61D66EC0-2E2A-4AE6-A06E-F8D572DFB319}

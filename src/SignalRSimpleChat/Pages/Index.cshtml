@@ -1,0 +1,74 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<script>
+    function continueToChat() {
+        $('#spn-nick').text($('#nick').val());
+        $('#entrance').hide();
+        $('#chat').show();
+    }
+</script>
+<div class="form-group">
+    &nbsp;
+</div>
+
+<div id="entrance">
+    <label for="nick">Enter your nickname:</label>
+    <input type="text" id="nick" />
+    <button onclick="continueToChat()">Continue</button>
+</div>
+
+<div id="chat" style="display: none">
+    <h3 id="spn-nick"></h3>
+    <form id="frm-send-message" action="#">
+        <label for="message">Message:</label>
+        <input type="text" id="message" />
+        <input type="submit" id="send" value="Send" class="send" />
+    </form>
+    <div class="clear">
+    </div>
+    <ul id="messages"></ul>
+</div>
+
+<script src="lib/signalr/signalr.min.js"></script>
+
+<script>
+    
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chat")
+        .build();
+
+    connection.start().catch(err => console.error(err.toString()));
+    
+    connection.on('Send', (nick, message) => {
+        appendLine(nick, message);    
+    });
+
+    document.getElementById('frm-send-message').addEventListener('submit', event => {
+        let message = $('#message').val();
+        let nick = $('#spn-nick').text();
+
+        $('#message').val('');
+    
+        connection.invoke('Send', nick, message);   
+        event.preventDefault();
+    });
+
+    function appendLine(nick, message, color) {  
+        let nameElement = document.createElement('strong');      
+        nameElement.innerText = `${nick}:`;
+
+        let msgElement = document.createElement('em');
+        msgElement.innerText = ` ${message}`;
+
+        let li = document.createElement('li');
+        li.appendChild(nameElement);
+        li.appendChild(msgElement);
+       
+        $('#messages').append(li);
+    };
+
+</script>
