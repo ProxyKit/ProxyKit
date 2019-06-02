@@ -24,7 +24,7 @@ namespace ProxyKit.Recipes
                     // to be forwarded to the servers hosting signalr hubs.
                     signalrApp.UseWebSocketProxy(context => new Uri("ws://upstream-host:80"));
                     signalrApp.RunProxy(context => context
-                        .ForwardTo(new Uri($"http://localhost:80"))
+                        .ForwardTo(new Uri($"http://upstream-host:80"))
                         .AddXForwardedHeaders()
                         .Send());
                 });
