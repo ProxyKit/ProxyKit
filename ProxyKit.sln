@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simple", "src\Simple\Simple
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paths", "src\Paths\Paths.csproj", "{A10DFD36-8672-4359-988E-6B52B1F96F2A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenantForwarding", "src\TenantForwarding\TenantForwarding.csproj", "{086050F2-0756-4936-A0A6-74851A7FA67F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{A10DFD36-8672-4359-988E-6B52B1F96F2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A10DFD36-8672-4359-988E-6B52B1F96F2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A10DFD36-8672-4359-988E-6B52B1F96F2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{086050F2-0756-4936-A0A6-74851A7FA67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{086050F2-0756-4936-A0A6-74851A7FA67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{086050F2-0756-4936-A0A6-74851A7FA67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{086050F2-0756-4936-A0A6-74851A7FA67F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
