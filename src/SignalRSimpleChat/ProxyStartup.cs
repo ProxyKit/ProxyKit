@@ -18,11 +18,14 @@ namespace ProxyKit.Recipe.SignalRSimpleChat
 
             // SignalR, as part of it's protocol, needs both http and ws traffic
             // to be forwarded to the servers hosting signalr hubs.
-            app.UseWebSocketProxy(context => new Uri("ws://localhost:5001"));
-            app.RunProxy(context => context
-                .ForwardTo("http://localhost:5001")
+            app.Map("/subpath", appInner =>
+            {
+                appInner.UseWebSocketProxy(context => new Uri("ws://localhost:5001/subpath/"));
+                appInner.RunProxy(context => context
+                    .ForwardTo("http://localhost:5001/subpath/")
                 .AddXForwardedHeaders()
-                .Send());
+                    .Send());
+            });
         }
     }
 }
