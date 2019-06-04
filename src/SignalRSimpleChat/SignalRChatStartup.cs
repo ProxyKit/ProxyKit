@@ -21,15 +21,20 @@ namespace ProxyKit.Recipe.SignalRSimpleChat
         }
 
         public void Configure(IApplicationBuilder app)
-        {         
-            app.UseStaticFiles();
+        {
+            //app.UsePathBase("/subpath");
 
-            app.UseSignalR(routes =>
+            app.Map("/subpath", appInner =>
             {
-                routes.MapHub<Chat>("/chat");
-            });
+                appInner.UseStaticFiles();
 
-            app.UseMvcWithDefaultRoute();
+                appInner.UseSignalR(routes =>
+                {
+                    routes.MapHub<Chat>("/chat");
+                });
+
+                appInner.UseMvcWithDefaultRoute();
+            });
         }
     }
 }
