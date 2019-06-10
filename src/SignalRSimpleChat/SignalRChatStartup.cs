@@ -22,8 +22,6 @@ namespace ProxyKit.Recipe.SignalRSimpleChat
 
         public void Configure(IApplicationBuilder app)
         {
-            //app.UsePathBase("/subpath");
-
             app.Map("/subpath", appInner =>
             {
                 appInner.UseStaticFiles();
