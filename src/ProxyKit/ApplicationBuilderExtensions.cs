@@ -1,4 +1,6 @@
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -29,7 +31,25 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(handleProxyRequest));
             }
 
-            app.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
+            app.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
+        }
+
+
+        /// <summary>
+        ///     Runs a reverse proxy forwarding requests to an upstream host.
+        /// </summary>
+        /// <param name="app">
+        ///     The application builder.
+        /// </param>
+        public static void RunProxy<TProxyHandler>(this IApplicationBuilder app) 
+            where TProxyHandler : IProxyHandler
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            app.UseMiddleware<ProxyMiddleware<TProxyHandler>>();
         }
 
         /// <summary>
@@ -60,7 +80,7 @@ namespace ProxyKit
 
             app.Map(pathMatch, appInner =>
             {
-                appInner.UseMiddleware<ProxyMiddleware>(handleProxyRequest);
+                appInner.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
             });
         }
 
@@ -125,6 +145,19 @@ namespace ProxyKit
             }
 
             app.UseMiddleware<WebSocketProxyMiddleware>(getUpstreamUri, configureClientOptions);
+        }
+
+        private class HandleProxyRequestWrapper : IProxyHandler
+        {
+            private readonly HandleProxyRequest _handleProxyRequest;
+
+            public HandleProxyRequestWrapper(HandleProxyRequest handleProxyRequest)
+            {
+                _handleProxyRequest = handleProxyRequest;
+            }
+
+            public Task<HttpResponseMessage> HandleProxyRequest(HttpContext httpContext)
+                => _handleProxyRequest(httpContext);
         }
     }
 }
