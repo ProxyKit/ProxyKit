@@ -7,7 +7,7 @@ namespace ProxyKit
     public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        ///     Runs proxy forwarding requests to downstream server.
+        ///     Runs a reverse proxy forwarding requests to an upstream host.
         /// </summary>
         /// <param name="app">
         ///     The application builder.
@@ -33,7 +33,7 @@ namespace ProxyKit
         }
 
         /// <summary>
-        ///     Runs proxy forwarding requests to downstream server.
+        ///     Runs reverse proxy forwarding requests to an upstream host.
         /// </summary>
         /// <param name="app">
         ///     The application builder.
