@@ -23,7 +23,7 @@ namespace ProxyKit.Recipe.SignalRSimpleChat
                 appInner.UseWebSocketProxy(context => new Uri("ws://localhost:5001/subpath/"));
                 appInner.RunProxy(context => context
                     .ForwardTo("http://localhost:5001/subpath/")
-                .AddXForwardedHeaders()
+                    .AddXForwardedHeaders()
                     .Send());
             });
         }
