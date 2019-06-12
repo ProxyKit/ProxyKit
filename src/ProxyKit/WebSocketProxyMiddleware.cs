@@ -77,7 +77,7 @@ namespace ProxyKit
 
         private Task ProxyOutToWebSocket(HttpContext context)
         {
-            var relativePath = context.Request.Path.ToString();
+            var relativePath = context.Request.Path.ToString().TrimStart('/');
             var upstreamUri = _getUpstreamHost(context);
             var uriWithPath = new Uri(
                 upstreamUri.Uri,

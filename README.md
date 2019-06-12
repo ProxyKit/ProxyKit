@@ -87,7 +87,7 @@ Forward requests to `upstream-server:5001`:
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001")
+        .ForwardTo("http://upstream-server:5001/")
         .Send());
 }
 ```
@@ -122,7 +122,7 @@ public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context =>
     {
-        var forwardContext = context.ForwardTo("http://upstream-server:5001");
+        var forwardContext = context.ForwardTo("http://upstream-server:5001/");
         if (!forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
         {
             forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
@@ -156,7 +156,7 @@ public static class CorrelationIdExtensions
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001")
+        .ForwardTo("http://upstream-server:5001/")
         .ApplyCorrelationId()
         .Send());
 }
@@ -173,7 +173,7 @@ public void Configure(IApplicationBuilder app)
     app.RunProxy(async context =>
     {
         var response = await context
-            .ForwardTo("http://localhost:5001")
+            .ForwardTo("http://localhost:5001/")
             .Send();
 
         response.Headers.Remove("MachineID");
@@ -207,7 +207,7 @@ To add `X-Forwarded-*` headers to the request to the upstream server:
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001")
+        .ForwardTo("http://upstream-server:5001/")
         .AddXForwardedHeaders()
         .Send());
 }
@@ -228,7 +228,7 @@ headers from previous proxy. To do so, use `CopyXForwardedHeaders()`:
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001")
+        .ForwardTo("http://upstream-server:5001/")
         .CopyXForwardedHeaders()
         .Send());
 }
@@ -242,7 +242,7 @@ header values by combining `CopyXForwardedHeaders()` and
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001")
+        .ForwardTo("http://upstream-server:5001/")
         .CopyXForwardedHeaders()
         .AddXForwardedHeaders()
         .Send());
@@ -345,8 +345,8 @@ public void Configure(IApplicationBuilder app)
 {
     var roundRobin = new RoundRobin
     {
-        new UpstreamHost("http://localhost:5001", weight: 1),
-        new UpstreamHost("http://localhost:5002", weight: 2)
+        new UpstreamHost("http://localhost:5001/", weight: 1),
+        new UpstreamHost("http://localhost:5002/", weight: 2)
     };
 
     app.RunProxy(
