@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -9,19 +8,19 @@ using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
 {
-    public class ProxyMiddleware
+    public class ProxyMiddleware<TProxyHandler> where TProxyHandler:IProxyHandler
     {
-        private readonly HandleProxyRequest _handleProxyRequest;
+        private readonly TProxyHandler _handler;
         private const int StreamCopyBufferSize = 81920;
 
-        public ProxyMiddleware(RequestDelegate _, HandleProxyRequest handleProxyRequest)
+        public ProxyMiddleware(RequestDelegate _, TProxyHandler handler)
         {
-            _handleProxyRequest = handleProxyRequest;
+            _handler = handler;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            using (var response = await _handleProxyRequest(context).ConfigureAwait(false))
+            using (var response = await _handler.HandleProxyRequest(context).ConfigureAwait(false))
             {
                 await CopyProxyHttpResponse(context, response).ConfigureAwait(false);
             }

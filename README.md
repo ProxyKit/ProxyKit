@@ -31,6 +31,7 @@ issues making it suitable for microservice / container environments.
     - [2.6. Testing](#26-testing)
     - [2.7. Load Balancing](#27-load-balancing)
         - [2.7.1. Weighted Round Robin](#271-weighted-round-robin)
+    - [2.8. Typed Handlers](#28-typed-handlers)
 - [3. Recipes](#3-recipes)
     - [3.1. Simple Forwarding](#31-simple-forwarding)
     - [3.2. Proxy Paths](#32-proxy-paths)
@@ -357,6 +358,61 @@ public void Configure(IApplicationBuilder app)
                 .ForwardTo(host)
                 .Send();
         });
+}
+```
+
+### 2.8. Typed Handlers
+
+_New in version 2.1.0_
+
+Instead of specifying a delegate, it is possible to use a typed handler. The
+reason you may want to do this is when you want to better leverage dependency
+injection.
+
+Typed handlers must implement `IProxyHandler` that has a single method with same
+signature as `HandleProxyRequest`. In this example our typed handler has a
+dependency on an imaginary service to lookup hosts:
+
+```csharp
+public class MyTypedHandler : IProxyHandler
+{
+    private IUpstreamHostLookup _upstreamHostLookup;
+
+    public MyTypeHandler(IUpstreamHostLookup upstreamHostLookup)
+    {
+        _upstreamHostLookup = upstreamHostLookup;
+    }
+
+    public Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
+    {
+        var upstreamHost = _upstreamHostLookup.Find(context);
+        return context
+            .ForwardTo(upstreamHost)
+            .AddXForwardedHeaders()
+            .Send();
+    }
+}
+```
+
+We then need to register our typed handler service:
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    ...
+    services.AddSingleton<MyTypedHandler>();
+    ...
+}
+```
+
+When adding the proxy to the pipeline, use the generic form:
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    ...
+    appInner.RunProxy<MyTypedHandler>());
+    ...
 }
 ```
 

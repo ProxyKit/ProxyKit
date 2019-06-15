@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit.Recipe.SignalRSimpleChat
 {
-    public class SignalRChatStartup
+    public class SignalRChatStartup 
     {
         public SignalRChatStartup(IConfiguration configuration)
         {

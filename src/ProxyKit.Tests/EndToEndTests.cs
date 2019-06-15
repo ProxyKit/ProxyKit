@@ -49,6 +49,8 @@ namespace ProxyKit
                     // When server is running, response code should be 'ok'
                     var result = await client.GetAsync("/realserver/normal");
                     result.StatusCode.ShouldBe(HttpStatusCode.OK);
+                    var resultTypedHandler = await client.GetAsync("/realserver-typedhandler/normal");
+                    resultTypedHandler.StatusCode.ShouldBe(HttpStatusCode.OK);
 
                     // error status codes should just be proxied
                     result = await client.GetAsync("/realserver/badrequest");
