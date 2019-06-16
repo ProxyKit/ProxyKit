@@ -10,11 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ProxyKit
 {
-    public class TestStartup
+    public class ProxyStartup
     {
         private readonly IConfiguration _config;
 
-        public TestStartup(IConfiguration config)
+        public ProxyStartup(IConfiguration config)
         {
             _config = config;
         }

@@ -17,7 +17,7 @@ namespace ProxyKit
         public async Task Can_get_proxied_route()
         {
             var webHostBuilder = new WebHostBuilder()
-                .UseStartup<TestStartup>();
+                .UseStartup<ProxyStartup>();
 
             using (var testServer = new TestServer(webHostBuilder))
             {
@@ -41,7 +41,7 @@ namespace ProxyKit
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
                     .UseSetting("timeout", "4")
-                    .UseStartup<TestStartup>()))
+                    .UseStartup<ProxyStartup>()))
                 {
                     var client = testServer.CreateClient();
                     client.BaseAddress = new Uri("http://example.com:8080");
@@ -93,7 +93,7 @@ namespace ProxyKit
 
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
-                    .UseStartup<TestStartup>()))
+                    .UseStartup<ProxyStartup>()))
                 {
                     var client = testServer.CreateClient();
                     // When server is running, response code should be 'ok'
@@ -119,7 +119,7 @@ namespace ProxyKit
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
                     .UseSetting("timeout", "1")
-                    .UseStartup<TestStartup>()))
+                    .UseStartup<ProxyStartup>()))
                 {
                     var client = testServer.CreateClient();
                     await server.StopAsync();
@@ -140,7 +140,7 @@ namespace ProxyKit
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
                     .UseSetting("timeout", "1")
-                    .UseStartup<TestStartup>()))
+                    .UseStartup<ProxyStartup>()))
                 {
                     var client = testServer.CreateWebSocketClient();
                     var webSocket = await client.ConnectAsync(new Uri("ws://localhost/ws/"), CancellationToken.None);
@@ -163,7 +163,7 @@ namespace ProxyKit
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
                     .UseSetting("timeout", "1")
-                    .UseStartup<TestStartup>()))
+                    .UseStartup<ProxyStartup>()))
                 {
                     var client = testServer.CreateWebSocketClient();
                     var webSocket = await client.ConnectAsync(new Uri("ws://localhost/ws-custom/?a=b"), CancellationToken.None);
