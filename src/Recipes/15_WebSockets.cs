@@ -20,7 +20,7 @@ namespace ProxyKit.Recipes
 
                 // websockets proxy is non-terminating
                 app.UseWebSocketProxy(
-                    context => new Uri("ws://upstream-host:80"),
+                    context => new Uri("ws://upstream-host:80/"),
                     // optionally add X-ForwardedHeaders to websocket client.
                     options => options.AddXForwardedHeaders());
             }
