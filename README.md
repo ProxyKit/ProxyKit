@@ -19,8 +19,11 @@ issues making it suitable for microservice / container environments.
 <!-- TOC depthFrom:2 -->
 
 - [1. Quick Start](#1-quick-start)
+    - [1.1. Install](#11-install)
+    - [1.2. Forward HTTP Requests](#12-forward-http-requests)
+    - [1.3. Forward WebSocket Requests](#13-forward-websocket-requests)
 - [2. Core Features](#2-core-features)
-    - [2.1. Customising the upstream request](#21-customising-the-upstream-request)
+    - [2.1. Customising the upstream HTTP request](#21-customising-the-upstream-http-request)
     - [2.2. Customising the upstream response](#22-customising-the-upstream-response)
     - [2.3. X-Forwarded Headers](#23-x-forwarded-headers)
         - [2.3.1. Client Sent X-Forwarded-Headers](#231-client-sent-x-forwarded-headers)
@@ -64,11 +67,15 @@ issues making it suitable for microservice / container environments.
 
 ## 1. Quick Start
 
+### 1.1. Install
+
 ProxyKit is a `NetStandard2.0` package. Install into your ASP.NET Core project:
 
 ```bash
 dotnet add package ProxyKit
 ```
+
+### 1.2. Forward HTTP Requests
 
 In your `Startup`, add the proxy service:
 
@@ -81,13 +88,14 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-Forward requests to `upstream-server:5001`:
+Forward HTTP requests to `upstream-server:5001`:
 
 ```csharp
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
         .ForwardTo("http://upstream-server:5001/")
+        .AddXForwardedHeaders()
         .Send());
 }
 ```
@@ -97,17 +105,43 @@ What is happening here?
  1. `context.ForwardTo(upstreamHost)` is an extension method on
     `HttpContext` that creates and initializes an `HttpRequestMessage` with
     the original request headers copied over, yielding a `ForwardContext`.
- 2. `Send` Sends the forward request to the upstream server and returns an
+ 2. `AddXForwardedHeaders` adds `X-Forwarded-For`, `X-Forwarded-Host`,
+    `X-Forwarded-Proto` and `X-Forwarded-PathBase` headers to the upstream
+    request.
+ 3. `Send` Sends the forward request to the upstream server and returns an
     `HttpResponseMessage`.
- 3. The proxy middleware then takes the response and applies it to
+ 4. The proxy middleware then takes the response and applies it to
     `HttpContext.Response`.
 
-Note: `RunProxy` is [terminal] - anything added to the pipeline after `RunProxy`
-will never be executed.
+Note: `RunProxy` is [terminal] - anything added to the pipeline _after_
+`RunProxy` will never be executed.
+
+### 1.3. Forward WebSocket Requests
+
+Forward WebSocket requests to `upstream-server:5002`:
+
+```csharp
+public void Configure(IApplicationBuilder app)
+{
+    app.UseWebSockets();
+    app.UseWebSocketProxy(
+        context => new Uri("ws://upstream-host:80/"),
+        options => options.AddXForwardedHeaders());
+}
+```
+
+What is happening here?
+
+ 1. `app.UseWebSockets()` must first be added otherwise websocket requests will
+    never be handled by ProxyKit.
+ 2. The first parameter must return the URI of the upstream host with a scheme
+    of `ws://`.
+ 3. The second parameter `options` allows you to do some customisation of the
+    initial upstream requests such as adding some headers.
 
 ## 2. Core Features
 
-### 2.1. Customising the upstream request
+### 2.1. Customising the upstream HTTP request
 
 One can modify the upstream request headers prior to sending them to suit
 customisation needs. ProxyKit doesn't add, remove, nor modify any headers by
