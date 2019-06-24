@@ -16,7 +16,7 @@ namespace ProxyKit
         /// to.</param>
         /// <returns>A <see cref="ForwardContext"/> that represents the
         /// forwarding request context.</returns>
-        public static ForwardContext ForwardTo(this HttpContext context, UpstreamHost upstreamHost)
+        public static ForwardContext ForwardTo(this HttpContext context, UpstreamHost upstreamHost, ProxyKitClient client = null)
         {
             var uri = new Uri(UriHelper.BuildAbsolute(
                 upstreamHost.Scheme,
@@ -29,7 +29,7 @@ namespace ProxyKit
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            var proxyKitClient = context
+            var proxyKitClient = client ?? context
                 .RequestServices
                 .GetRequiredService<ProxyKitClient>();
 
