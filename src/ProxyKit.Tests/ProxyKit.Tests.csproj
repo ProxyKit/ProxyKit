@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CacheCow.Client" Version="2.4.3" />
+    <PackageReference Include="CacheCow.Client" Version="2.4.4" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
