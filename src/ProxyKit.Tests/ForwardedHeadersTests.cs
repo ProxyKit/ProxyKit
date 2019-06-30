@@ -73,11 +73,7 @@ namespace ProxyKit
             httpContext.Request.Headers.TryAdd(XForwardedExtensions.XForwardedProto, "http");
             httpContext.Request.Headers.TryAdd(XForwardedExtensions.XForwardedPathBase, "127.0.0.1");
 
-            var services = new ServiceCollection();
-            services.AddTransient<ProxyKitClient>();
-            services.AddTransient(sp => new HttpClient());
-            var serviceProvider = services.BuildServiceProvider();
-            httpContext.RequestServices = serviceProvider;
+            httpContext.Features.Set(new ProxyKitClient(new HttpClient()));
 
             var forwardContext = httpContext
                 .ForwardTo(new UpstreamHost("http://localhost"))

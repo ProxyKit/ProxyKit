@@ -16,7 +16,7 @@ namespace ProxyKit
         /// to.</param>
         /// <returns>A <see cref="ForwardContext"/> that represents the
         /// forwarding request context.</returns>
-        public static ForwardContext ForwardTo(this HttpContext context, UpstreamHost upstreamHost, ProxyKitClient client = null)
+        public static ForwardContext ForwardTo(this HttpContext context, UpstreamHost upstreamHost)
         {
             var uri = new Uri(UriHelper.BuildAbsolute(
                 upstreamHost.Scheme,
@@ -29,11 +29,12 @@ namespace ProxyKit
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            var proxyKitClient = client ?? context
-                .RequestServices
-                .GetRequiredService<ProxyKitClient>();
+            if (!context.Items.TryGetValue(ProxyKitClient.Key, out var proxyKitClient))
+            {
+                throw new InvalidOperationException("The method should be called when inside ProxyKit middleware.");
+            }
 
-            return new ForwardContext(context, request, proxyKitClient.Client);
+            return new ForwardContext(context, request, ((ProxyKitClient)proxyKitClient).Client);
         }
 
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
