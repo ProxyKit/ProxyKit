@@ -29,12 +29,11 @@ namespace ProxyKit
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            if (!context.Items.TryGetValue(ProxyKitClient.Key, out var proxyKitClient))
-            {
-                throw new InvalidOperationException("The method should be called when inside ProxyKit middleware.");
-            }
+            var proxyKitClient = context
+                .RequestServices
+                .GetRequiredService<ProxyKitClient>();
 
-            return new ForwardContext(context, request, ((ProxyKitClient)proxyKitClient).Client);
+            return new ForwardContext(context, request, proxyKitClient.Client);
         }
 
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
