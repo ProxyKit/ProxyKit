@@ -1,0 +1,11 @@
+C:\code\ProxyKit\Failing\Failing\bin\Debug\netcoreapp2.1\Failing.deps.json
+C:\code\ProxyKit\Failing\Failing\bin\Debug\netcoreapp2.1\Failing.runtimeconfig.json
+C:\code\ProxyKit\Failing\Failing\bin\Debug\netcoreapp2.1\Failing.runtimeconfig.dev.json
+C:\code\ProxyKit\Failing\Failing\bin\Debug\netcoreapp2.1\Failing.dll
+C:\code\ProxyKit\Failing\Failing\bin\Debug\netcoreapp2.1\Failing.pdb
+C:\code\ProxyKit\Failing\Failing\obj\Debug\netcoreapp2.1\Failing.csprojAssemblyReference.cache
+C:\code\ProxyKit\Failing\Failing\obj\Debug\netcoreapp2.1\Failing.csproj.CoreCompileInputs.cache
+C:\code\ProxyKit\Failing\Failing\obj\Debug\netcoreapp2.1\Failing.AssemblyInfoInputs.cache
+C:\code\ProxyKit\Failing\Failing\obj\Debug\netcoreapp2.1\Failing.AssemblyInfo.cs
+C:\code\ProxyKit\Failing\Failing\obj\Debug\netcoreapp2.1\Failing.dll
+C:\code\ProxyKit\Failing\Failing\obj\Debug\netcoreapp2.1\Failing.pdb

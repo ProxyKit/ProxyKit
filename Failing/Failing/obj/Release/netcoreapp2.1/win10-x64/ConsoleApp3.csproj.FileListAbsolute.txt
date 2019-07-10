@@ -1,0 +1,14 @@
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\hostpolicy.dll
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\hostfxr.dll
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\ConsoleApp3.exe
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\ConsoleApp3.deps.json
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\ConsoleApp3.runtimeconfig.json
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\ConsoleApp3.runtimeconfig.dev.json
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\ConsoleApp3.dll
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\bin\Release\netcoreapp2.1\win10-x64\ConsoleApp3.pdb
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\obj\Release\netcoreapp2.1\win10-x64\ConsoleApp3.csprojAssemblyReference.cache
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\obj\Release\netcoreapp2.1\win10-x64\ConsoleApp3.csproj.CoreCompileInputs.cache
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\obj\Release\netcoreapp2.1\win10-x64\ConsoleApp3.AssemblyInfoInputs.cache
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\obj\Release\netcoreapp2.1\win10-x64\ConsoleApp3.AssemblyInfo.cs
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\obj\Release\netcoreapp2.1\win10-x64\ConsoleApp3.dll
+C:\Users\peter.menzies\source\repos\ConsoleApp3\ConsoleApp3\obj\Release\netcoreapp2.1\win10-x64\ConsoleApp3.pdb

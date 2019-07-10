@@ -1,0 +1,4 @@
+C:\Users\peter.menzies\source\repos\Receive\Receive\obj\Debug\netcoreapp2.1\Receive.csprojAssemblyReference.cache
+C:\Users\peter.menzies\source\repos\Receive\Receive\obj\Debug\netcoreapp2.1\Receive.csproj.CoreCompileInputs.cache
+C:\Users\peter.menzies\source\repos\Receive\Receive\obj\Debug\netcoreapp2.1\Receive.AssemblyInfoInputs.cache
+C:\Users\peter.menzies\source\repos\Receive\Receive\obj\Debug\netcoreapp2.1\Receive.AssemblyInfo.cs
