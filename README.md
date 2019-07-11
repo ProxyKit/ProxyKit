@@ -1,5 +1,5 @@
 ## ECMAScript Websockets and .NET Framework ##
-When a websocket message is sent using ECMAScript ProxyKit fails to Proxy the message along if using .NET framework instead of .NET core.
+When a WebSocket message is sent using ECMAScript ProxyKit fails to Proxy the message along if using .NET framework instead of .NET core.
 ### Steps to Recreate ###
 Run the following commands from the ProxyKit folder
   1. Open a command prompt and run `dotnet run --project Receive/Receive`
@@ -8,4 +8,4 @@ Run the following commands from the ProxyKit folder
 
 ### .Net Core VS .Net Framework ###
 To see the app working with .NET Core simply run the second command with a framework of `netcoreapp2.1` instead of `net471`
-With this change you should see a message in the console for the Receive project saying "Message Received."
+With this change, you should see a message in the console for the Receive project saying "Message Received."
