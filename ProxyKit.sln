@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28922.388
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit", "src\ProxyKit\ProxyKit.csproj", "{9BD55660-9B5A-400E-B099-E52EE3C3A813}"
 EndProject
@@ -18,6 +18,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RunnableRecipes", "RunnableRecipes", "{63C061FD-D3D9-4517-9398-2A6F1769022E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSimpleChat", "src\SignalRSimpleChat\SignalRSimpleChat.csproj", "{42BFCF9F-53B9-4600-9183-12349DE9E3D9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Failing", "Failing\Failing\Failing.csproj", "{E6C2F49D-B487-41A4-8390-9F94F1C4ABED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Receive", "Receive\Receive\Receive.csproj", "{A477FFDD-5B46-4C92-A767-5709A5796905}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +57,14 @@ Global
 		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6C2F49D-B487-41A4-8390-9F94F1C4ABED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6C2F49D-B487-41A4-8390-9F94F1C4ABED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6C2F49D-B487-41A4-8390-9F94F1C4ABED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6C2F49D-B487-41A4-8390-9F94F1C4ABED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A477FFDD-5B46-4C92-A767-5709A5796905}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A477FFDD-5B46-4C92-A767-5709A5796905}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A477FFDD-5B46-4C92-A767-5709A5796905}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A477FFDD-5B46-4C92-A767-5709A5796905}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
