@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sender</title>
+</head>
+<body>
+    <button type="button" onclick="buttonAction()">Send</button>
+
+    <script>
+        let connection = new WebSocket("ws://localhost:5050/ws");
+        // When the connection is open, send some data to the server
+        connection.onopen = function () {
+            connection.send('Ping'); // Send the message 'Ping' to the server
+        };
+
+        // Log errors
+        connection.onerror = function (error) {
+            console.log('WebSocket Error ' + error);
+        };
+
+        // Log messages from the server
+        connection.onmessage = function (e) {
+            console.log('Server: ' + e.data);
+        };
+        
+        let buttonAction = () => {
+            if (connection.CLOSED) {
+                alert("Websocket Closed");
+            } else if (connection.CONNECTING) {
+                alert("WebSocket Connecting");
+            } else {
+                connection.send('your message');
+            }
+        }
+    </script>
+</body>
+</html>
