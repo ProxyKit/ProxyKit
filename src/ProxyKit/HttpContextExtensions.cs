@@ -29,11 +29,13 @@ namespace ProxyKit
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            var proxyKitClient = context
+            var httpClientFactory = context
                 .RequestServices
-                .GetRequiredService<ProxyKitClient>();
+                .GetRequiredService<IHttpClientFactory>();
 
-            return new ForwardContext(context, request, proxyKitClient.Client);
+            var httpClient = httpClientFactory.CreateClient(ServiceCollectionExtensions.ProxyKitHttpClientName);
+
+            return new ForwardContext(context, request, httpClient);
         }
 
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)

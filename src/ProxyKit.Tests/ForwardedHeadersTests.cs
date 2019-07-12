@@ -74,8 +74,7 @@ namespace ProxyKit
             httpContext.Request.Headers.TryAdd(XForwardedExtensions.XForwardedPathBase, "127.0.0.1");
 
             var services = new ServiceCollection();
-            services.AddTransient<ProxyKitClient>();
-            services.AddTransient(sp => new HttpClient());
+            services.AddHttpClient();
             var serviceProvider = services.BuildServiceProvider();
             httpContext.RequestServices = serviceProvider;
 
