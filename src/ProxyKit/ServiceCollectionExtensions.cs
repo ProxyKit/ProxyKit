@@ -6,6 +6,8 @@ namespace ProxyKit
 {
     public static class ServiceCollectionExtensions
     {
+        internal const string ProxyKitHttpClientName = "ProxyKitClient";
+
         public static IServiceCollection AddProxy(
             this IServiceCollection services,
             Action<IHttpClientBuilder> configureHttpClientBuilder = null,
@@ -17,7 +19,7 @@ namespace ProxyKit
             }
 
             var httpClientBuilder = services
-                .AddHttpClient<ProxyKitClient>()
+                .AddHttpClient(ProxyKitHttpClientName)
                 .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
                 {
                     AllowAutoRedirect = false,
