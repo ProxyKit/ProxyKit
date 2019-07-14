@@ -47,9 +47,10 @@ namespace ProxyKit
                             .AddDebug()
                             .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-direct")))
                         .Build();
-                    directConnection.Closed += async error =>
+                    directConnection.Closed += error =>
                     {
                         _outputHelper.WriteLine("connection-direct error: " + error.ToString());
+                        return Task.CompletedTask;
                     };
                     var directMessageReceived = new TaskCompletionSource<bool>();
                     directConnection.On("OnPing", () =>
@@ -70,9 +71,10 @@ namespace ProxyKit
                     {
                         _outputHelper.WriteLine("connection-proxy: OnPing");
                     });
-                    proxyConnection.Closed += async error =>
+                    proxyConnection.Closed += error =>
                     {
                         _outputHelper.WriteLine(error.ToString());
+                        return Task.CompletedTask;
                     };
                     var proxyMessageReceived = new TaskCompletionSource<bool>();
                     proxyConnection.On("OnPing", () =>
