@@ -31,7 +31,7 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(handleProxyRequest));
             }
 
-            app.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
+            app.UseMiddleware<ConventionalProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
         }
 
 
@@ -49,7 +49,7 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(app));
             }
 
-            app.UseMiddleware<ProxyMiddleware<TProxyHandler>>();
+            app.UseMiddleware<ConventionalProxyMiddleware<TProxyHandler>>();
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace ProxyKit
 
             app.Map(pathMatch, appInner =>
             {
-                appInner.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
+                appInner.UseMiddleware<ConventionalProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
             });
         }
 
