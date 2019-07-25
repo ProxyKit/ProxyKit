@@ -66,7 +66,7 @@ namespace ProxyKit
         /// <param name="handleProxyRequest">
         ///     A delegate that can resolve the destination Uri.
         /// </param>
-        [Obsolete("Use app.Map(\"/path\", appProxy=> { appProxy.UseProxy(...); } instead. " +
+        [Obsolete("Use app.Map(\"/path\", appProxy=> { appProxy.RunProxy(...); } instead. " +
                   "This will be removed in a future version", false)]
         public static void RunProxy(
             this IApplicationBuilder app,
