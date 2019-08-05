@@ -50,7 +50,6 @@ issues making it suitable for microservice / container environments.
     - [3.12. Conditional Proxying](#312-conditional-proxying)
     - [3.13. Client Certificate](#313-client-certificate)
     - [3.14. Source IP Blocking](#314-source-ip-blocking)
-    - [3.14. Source IP Blocking](#314-source-ip-blocking-1)
     - [3.15. WebSockets](#315-websockets)
     - [3.16. SignalR](#316-signalr)
     - [3.17. SignalR with Path](#317-signalr-with-path)
@@ -549,10 +548,6 @@ Using a client certificate in requests to upstream hosts.
 Block requests from sources whose IP addresses is not allowed.
 
 [src/Recipes/14_SourceIPBlocking.cs](src/Recipes/14_SourceIPBlocking.cs)
-
-### 3.14. Source IP Blocking
-
-Block requests from sources whose IP addresses is not allowed.
 
 ### 3.15. WebSockets
 
