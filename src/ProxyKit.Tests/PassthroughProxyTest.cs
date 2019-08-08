@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,7 +19,7 @@ namespace ProxyKit
 {
     public class ProxyTests
     {
-        private readonly TestMessageHandler _testMessageHandler;
+        private TestMessageHandler _testMessageHandler;
         private readonly IWebHostBuilder _builder;
 
         public ProxyTests()
@@ -176,6 +177,43 @@ namespace ProxyKit
             sentRequest.Headers.Contains(XForwardedExtensions.XForwardedProto).ShouldBeFalse();
             sentRequest.Headers.Contains(XForwardedExtensions.XForwardedFor).ShouldBeFalse();
             sentRequest.Headers.Contains(XForwardedExtensions.XForwardedPathBase).ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task Response_stream_should_not_be_Flushed_if_the_response_is_ReadyOnly()
+        {
+            _testMessageHandler = new TestMessageHandler
+            {
+                Sender = req =>
+                {
+                    var response = new HttpResponseMessage(HttpStatusCode.Found)
+                    {
+                        // Usually the response of FOUND verb comes with null stream in TestHost. At least that's been observed sometimes.
+                        Content = new StreamContent(Stream.Null)
+                    };
+                    return response;
+                }
+            };
+
+            _builder.Configure(app => app.RunProxy(
+                    context => context
+                        .ForwardTo("http://localhost:5000/bar/")
+                        .Send()))
+                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
+                {
+                    //overwrite the registration that made in constructor with the null stream handler
+                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
+                }));
+            var server = new TestServer(_builder);
+            HttpClient client = server.CreateClient();
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://mydomain.example")
+            {
+                Content = new StringContent("Request Body")
+            };
+
+            Func<Task> send = () => client.SendAsync(requestMessage);
+            send.ShouldNotThrow();
         }
     }
 
