@@ -40,7 +40,7 @@ namespace ProxyKit
 
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
-                    .UseSetting("timeout", "4")
+                    .UseSetting("timeout", "2") // 2 seconds
                     .UseStartup<ProxyStartup>()))
                 {
                     var client = testServer.CreateClient();
@@ -58,14 +58,10 @@ namespace ProxyKit
                     result = await client.GetAsync("/realserver/error");
                     result.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
 
-                    // server timeouts should be returned as gateway timeouts
-                    result = await client.GetAsync("/realserver/slow");
-                    result.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
-
-                    // server timeouts should be 'delayed' 
+                    // server timeouts should return GatewayTimeout 
                     using (var cts = new CancellationTokenSource())
                     {
-                        cts.CancelAfter(TimeSpan.FromMilliseconds(1000));
+                        cts.CancelAfter(TimeSpan.FromSeconds(4)); // should be longer than timeout
                         result = await client.GetAsync("/realserver/slow", cts.Token);
                         result.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
                     }
