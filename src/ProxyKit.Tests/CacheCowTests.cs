@@ -10,15 +10,23 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ProxyKit
 {
     public class CacheCowTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public CacheCowTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public async Task Should_return_cached_item()
         {
-            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
             {
                 await server.StartAsync();
                 var port = server.GetServerPort();

@@ -6,13 +6,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Logging;
+using ProxyKit.Infra;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ProxyKit
 {
     public class EndToEndTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public EndToEndTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public async Task Can_get_proxied_route()
         {
@@ -33,7 +43,7 @@ namespace ProxyKit
         [Fact]
         public async Task Responses_from_real_server_are_handled_correctly()
         {
-            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
             {
                 await server.StartAsync();
                 var port = server.GetServerPort();
@@ -41,7 +51,11 @@ namespace ProxyKit
                 using (var testServer = new TestServer(new WebHostBuilder()
                     .UseSetting("port", port.ToString())
                     .UseSetting("timeout", "2") // 2 seconds
-                    .UseStartup<ProxyStartup>()))
+                    .UseStartup<ProxyStartup>()
+                    .ConfigureLogging(builder =>
+                        {
+                            builder.AddProvider(new XunitLoggerProvider(_testOutputHelper, "Proxy"));
+                        })))
                 {
                     var client = testServer.CreateClient();
                     client.BaseAddress = new Uri("http://example.com:8080");
@@ -82,7 +96,7 @@ namespace ProxyKit
         [Fact]
         public async Task When_upstream_host_is_not_running_then_should_get_service_unavailable()
         {
-            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
             {
                 await server.StartAsync();
                 var port = server.GetServerPort();
@@ -107,7 +121,7 @@ namespace ProxyKit
         [Fact]
         public async Task When_upstream_host_is_not_running_and_timeout_is_small_then_operation_cancelled_is_service_unavailable()
         {
-            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
             {
                 await server.StartAsync();
                 var port = server.GetServerPort();
@@ -128,7 +142,7 @@ namespace ProxyKit
         [Fact]
         public async Task Can_proxy_websockets()
         {
-            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
             {
                 await server.StartAsync();
                 var port = server.GetServerPort();
@@ -151,7 +165,7 @@ namespace ProxyKit
         [Fact]
         public async Task Can_proxy_websockets_with_request_customization()
         {
-            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort())
+            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
             {
                 await server.StartAsync();
                 var port = server.GetServerPort();
