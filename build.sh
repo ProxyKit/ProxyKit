@@ -5,6 +5,7 @@ docker build \
  --tag proxykit-build .
 
 docker run --rm --name proxykit-build \
+ --build-arg MYGET_API_KEY=$MYGET_API_KEY \
  -v $PWD/artifacts:/repo/artifacts \
  -v $PWD/.git:/repo/.git \
  proxykit-build \

@@ -1,4 +1,6 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-alpine3.9
+ARG MYGET_API_KEY
+ENV MYGET_API_KEY=${MYGET_API_KEY}
 
 # Install DotNet Core 2.1
 RUN wget -O dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/Sdk/2.1.802/dotnet-sdk-2.1.802-linux-musl-x64.tar.gz \
