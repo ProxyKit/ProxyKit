@@ -2,7 +2,8 @@ language: csharp
 mono: none
 sudo: false
 dist: xenial
-dotnet: 2.2
+services:
+  - docker
 script: "./build.sh --travis"
 git:
   depth: false

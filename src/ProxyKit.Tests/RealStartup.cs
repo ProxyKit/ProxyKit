@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -9,6 +11,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProxyKit.Infra;
+using Xunit.Abstractions;
+
 #pragma warning disable 1998
 
 namespace ProxyKit
@@ -21,6 +27,9 @@ namespace ProxyKit
         {
             var options = new ForwardedHeadersOptions();
             options.AllowedHosts.Add("*");
+            options.KnownProxies.Add(IPAddress.Loopback);
+            options.KnownProxies.Add(IPAddress.IPv6Loopback);
+            options.KnownProxies.Add(IPAddress.Parse("::ffff:127.0.0.1"));
             options.ForwardedHeaders = ForwardedHeaders.All;
             app.UseXForwardedHeaders(options);
 
@@ -97,12 +106,17 @@ namespace ProxyKit
             });
         }
 
-        public static IWebHost BuildKestrelBasedServerOnRandomPort()
+        public static IWebHost BuildKestrelBasedServerOnRandomPort(ITestOutputHelper testOutputHelper)
         {
             return new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://*:0")
                 .UseStartup<RealStartup>()
+                .ConfigureLogging(builder =>
+                {
+                    builder.AddProvider(new XunitLoggerProvider(testOutputHelper, "Upstream"));
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                })
                 .Build();
         }
 
