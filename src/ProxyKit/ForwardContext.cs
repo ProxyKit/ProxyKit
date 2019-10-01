@@ -36,17 +36,18 @@ namespace ProxyKit
         public Task<HttpResponseMessage> Execute() => Send();
 
         /// <summary>
-        /// Sends the forward request to the upstream host.
+        /// Sends the upstream request to the upstream host.
         /// </summary>
-        /// <returns>An HttpResponseMessage </returns>
+        /// <returns>An <see cref="HttpResponseMessage"/> the represents the proxy response.</returns>
         public async Task<HttpResponseMessage> Send()
         {
             try
             {
-                return await _httpClient.SendAsync(
-                    UpstreamRequest,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    HttpContext.RequestAborted)
+                return await _httpClient
+                    .SendAsync(
+                        UpstreamRequest,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        HttpContext.RequestAborted)
                     .ConfigureAwait(false);
             }
             catch (TaskCanceledException ex) when (ex.InnerException is IOException)
