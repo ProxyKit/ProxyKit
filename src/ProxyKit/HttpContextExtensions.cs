@@ -25,6 +25,18 @@ namespace ProxyKit
                 context.Request.Path,
                 context.Request.QueryString));
 
+            return ForwardTo(context, uri);
+        }
+        /// <summary>
+        ///     Forward the request to the specified upstream uri.
+        /// </summary>
+        /// <param name="context">The HttpContext</param>
+        /// <param name="uri">The upstream uri to forward the requests
+        /// to.</param>
+        /// <returns>A <see cref="ForwardContext"/> that represents the
+        /// forwarding request context.</returns>
+        public static ForwardContext ForwardTo(this HttpContext context, Uri uri)
+        {
             var request = context.Request.CreateProxyHttpRequest();
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
@@ -54,7 +66,7 @@ namespace ProxyKit
             // Copy the request headers *except* x-forwarded-* headers.
             foreach (var header in request.Headers)
             {
-                if(header.Key.StartsWith("X-Forwarded-", StringComparison.OrdinalIgnoreCase))
+                if (header.Key.StartsWith("X-Forwarded-", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
