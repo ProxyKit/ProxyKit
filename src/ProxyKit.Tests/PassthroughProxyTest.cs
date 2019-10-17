@@ -50,7 +50,7 @@ namespace ProxyKit
         [InlineData("DELETE", 3004)]
         public async Task PassthroughRequestsWithoutBodyWithResponseHeaders(string methodType, int port)
         {
-            _builder.Configure(app => app.RunProxy(context=>
+            _builder.Configure(app => app.RunProxy(context =>
             {
                 var forwardContext = context.ForwardTo($"http://localhost:{port}");
                 return forwardContext.Send();
@@ -137,7 +137,7 @@ namespace ProxyKit
         [Fact]
         public async Task ReturnsStatusCode()
         {
-            _builder.Configure(app => 
+            _builder.Configure(app =>
                 app.RunProxy(context => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable))));
             var server = new TestServer(_builder);
             var client = server.CreateClient();
@@ -214,6 +214,50 @@ namespace ProxyKit
 
             Func<Task> send = () => client.SendAsync(requestMessage);
             send.ShouldNotThrow();
+        }
+
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("POST")]
+        [InlineData("TRACE")]
+        [InlineData("PUT")]
+        [InlineData("DELETE")]
+        [InlineData("PATCH")]
+        public async Task Request_body_should_stay_as_is(string httpMethod)
+        {
+            const string text = "you shall stay same";
+
+            _testMessageHandler = new TestMessageHandler
+            {
+                Sender = message => new HttpResponseMessage(HttpStatusCode.OK)
+            };
+
+            _builder.Configure(app => app.RunProxy(
+                    context => context
+                        .ForwardTo("http://localhost:5000/bar/")
+                        .Send()))
+                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
+                {
+                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
+                }));
+
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
+
+            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
+            {
+                Content = new StringContent(text)
+            };
+
+            await client.SendAsync(requestMessage);
+            var sentRequest = _testMessageHandler.SentRequestMessages.First();
+            var sentContent = sentRequest.Content;
+            
+            sentContent.ShouldNotBeNull();
+            var sentString = await sentContent.ReadAsStringAsync();
+            sentString.Length.ShouldBe(text.Length);
+
+            server.Dispose();
         }
     }
 

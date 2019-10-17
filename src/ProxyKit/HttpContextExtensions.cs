@@ -41,20 +41,13 @@ namespace ProxyKit
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
         {
             var requestMessage = new HttpRequestMessage();
-            var requestMethod = request.Method;
-            if (!HttpMethods.IsGet(requestMethod) &&
-                !HttpMethods.IsHead(requestMethod) &&
-                !HttpMethods.IsDelete(requestMethod) &&
-                !HttpMethods.IsTrace(requestMethod))
-            {
-                var streamContent = new StreamContent(request.Body);
-                requestMessage.Content = streamContent;
-            }
+            var streamContent = new StreamContent(request.Body);
+            requestMessage.Content = streamContent;
 
             // Copy the request headers *except* x-forwarded-* headers.
             foreach (var header in request.Headers)
             {
-                if(header.Key.StartsWith("X-Forwarded-", StringComparison.OrdinalIgnoreCase))
+                if (header.Key.StartsWith("X-Forwarded-", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
