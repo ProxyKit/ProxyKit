@@ -25,6 +25,18 @@ namespace ProxyKit
                 context.Request.Path,
                 context.Request.QueryString));
 
+            return ForwardToUrl(context, uri);
+        }
+        /// <summary>
+        ///     Forward the request to the specified upstream uri.
+        /// </summary>
+        /// <param name="context">The HttpContext</param>
+        /// <param name="uri">The upstream uri to forward the requests
+        /// to.</param>
+        /// <returns>A <see cref="ForwardContext"/> that represents the
+        /// forwarding request context.</returns>
+        public static ForwardContext ForwardToUrl(this HttpContext context, Uri uri)
+        {
             var request = context.Request.CreateProxyHttpRequest();
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
