@@ -41,8 +41,13 @@ namespace ProxyKit
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
         {
             var requestMessage = new HttpRequestMessage();
-            var streamContent = new StreamContent(request.Body);
-            requestMessage.Content = streamContent;
+            
+            //Only copy Body when original request has a body.
+            if (request.ContentLength.HasValue)
+            {
+                var streamContent = new StreamContent(request.Body);
+                requestMessage.Content = streamContent;
+            }
 
             // Copy the request headers *except* x-forwarded-* headers.
             foreach (var header in request.Headers)
