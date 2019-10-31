@@ -17,9 +17,11 @@ namespace ProxyKit
         /// <param name="handleProxyRequest">
         ///     A delegate that can resolve the destination Uri.
         /// </param>
+        /// <param name="processProxyResponse">A delegate that can process response from destination</param>
         public static void RunProxy(
             this IApplicationBuilder app,
-            HandleProxyRequest handleProxyRequest)
+            HandleProxyRequest handleProxyRequest,
+            ProcessProxyResponse processProxyResponse = null)
         {
             if (app == null)
             {
@@ -31,9 +33,8 @@ namespace ProxyKit
                 throw new ArgumentNullException(nameof(handleProxyRequest));
             }
 
-            app.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
+            app.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest, processProxyResponse));
         }
-
 
         /// <summary>
         ///     Runs a reverse proxy forwarding requests to an upstream host.
@@ -41,7 +42,7 @@ namespace ProxyKit
         /// <param name="app">
         ///     The application builder.
         /// </param>
-        public static void RunProxy<TProxyHandler>(this IApplicationBuilder app) 
+        public static void RunProxy<TProxyHandler>(this IApplicationBuilder app)
             where TProxyHandler : IProxyHandler
         {
             if (app == null)
@@ -80,7 +81,7 @@ namespace ProxyKit
 
             app.Map(pathMatch, appInner =>
             {
-                appInner.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
+                appInner.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest, null));
             });
         }
 
@@ -97,7 +98,7 @@ namespace ProxyKit
         ///     result of which must start with ws:// or wss://
         /// </param>
         public static void UseWebSocketProxy(
-            this IApplicationBuilder app, 
+            this IApplicationBuilder app,
             Func<HttpContext, UpstreamHost> getUpstreamUri)
         {
             if (app == null)
@@ -150,14 +151,21 @@ namespace ProxyKit
         private class HandleProxyRequestWrapper : IProxyHandler
         {
             private readonly HandleProxyRequest _handleProxyRequest;
+            private readonly ProcessProxyResponse _processProxyResponse;
 
-            public HandleProxyRequestWrapper(HandleProxyRequest handleProxyRequest)
+            public HandleProxyRequestWrapper(HandleProxyRequest handleProxyRequest, ProcessProxyResponse processProxyResponse)
             {
                 _handleProxyRequest = handleProxyRequest;
+                _processProxyResponse = processProxyResponse;
             }
 
             public Task<HttpResponseMessage> HandleProxyRequest(HttpContext httpContext)
                 => _handleProxyRequest(httpContext);
+
+            public Task ProcessProxyResponse(HttpResponse response)
+            {
+                return _processProxyResponse != null ? _processProxyResponse(response) : Task.CompletedTask;
+            }
         }
     }
 }

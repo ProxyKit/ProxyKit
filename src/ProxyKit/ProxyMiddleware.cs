@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
 {
-    public class ProxyMiddleware<TProxyHandler> where TProxyHandler:IProxyHandler
+    public class ProxyMiddleware<TProxyHandler> where TProxyHandler : IProxyHandler
     {
         private readonly TProxyHandler _handler;
         private const int StreamCopyBufferSize = 81920;
@@ -23,11 +23,11 @@ namespace ProxyKit
         {
             using (var response = await _handler.HandleProxyRequest(context).ConfigureAwait(false))
             {
-                await CopyProxyHttpResponse(context, response).ConfigureAwait(false);
+                await CopyProxyHttpResponse(context, response, _handler).ConfigureAwait(false);
             }
         }
 
-        private static async Task CopyProxyHttpResponse(HttpContext context, HttpResponseMessage responseMessage)
+        private static async Task CopyProxyHttpResponse(HttpContext context, HttpResponseMessage responseMessage, TProxyHandler handler)
         {
             var response = context.Response;
 
@@ -48,6 +48,9 @@ namespace ProxyKit
             // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
             response.Headers.Remove("transfer-encoding");
 
+            // process response
+            await handler.ProcessProxyResponse(response).ConfigureAwait(false);
+
             if (responseMessage.Content != null)
             {
                 using (var responseStream = await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false))
@@ -55,7 +58,7 @@ namespace ProxyKit
                     await responseStream.CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted).ConfigureAwait(false);
                     if (responseStream.CanWrite)
                     {
-                        await responseStream.FlushAsync(context.RequestAborted).ConfigureAwait(false);    
+                        await responseStream.FlushAsync(context.RequestAborted).ConfigureAwait(false);
                     }
                 }
             }

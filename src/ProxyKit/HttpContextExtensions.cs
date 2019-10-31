@@ -41,7 +41,7 @@ namespace ProxyKit
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
         {
             var requestMessage = new HttpRequestMessage();
-            
+
             //Only copy Body when original request has a body.
             if (request.ContentLength.HasValue)
             {

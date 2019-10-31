@@ -20,5 +20,7 @@ namespace ProxyKit
         ///    the result of handling the proxy request.
         /// </returns>
         Task<HttpResponseMessage> HandleProxyRequest(HttpContext context);
+
+        Task ProcessProxyResponse(HttpResponse response);
     }
 }
