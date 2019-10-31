@@ -83,9 +83,9 @@ namespace ProxyKit
                 var port = _config.GetValue("Port", 0);
 
                 return context
-                    .ForwardTo("http://localhost:" + port + "/")
-                    .AddXForwardedHeaders()
-                    .Send();
+                        .ForwardTo("http://localhost:" + port + "/")
+                        .AddXForwardedHeaders()
+                        .Send();
             }
 
             public Task ProcessProxyResponse(HttpResponse response)
