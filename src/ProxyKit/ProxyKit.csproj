@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <Description>An AspNet core middleware toolkit to create proxy servers. Can be embedded in applications or used as a standalone proxy.</Description>
-    <PackageId>ProxyKit</PackageId>
+    <PackageId>7pace.ProxyKit</PackageId>
     <Authors>Damian Hickey</Authors>
     <PackageProjectUrl>https://github.com/kolomik/ProxyKit</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
@@ -18,9 +18,10 @@
     <NoWarn>$(NoWarn);NU5105;1701;1702;1705;1591</NoWarn>
     <LangVersion>latest</LangVersion>
     <DebugType>full</DebugType>
-    <PackageIconUrl>https://raw.githubusercontent.com/damianh/ProxyKit/master/logo.png</PackageIconUrl>
+    <PackageIconUrl>https://github.com/kolomik/ProxyKit/master/logo.png</PackageIconUrl>
     <PackageReleaseNotes>See https://github.com/kolomik/ProxyKit/releases for release notes.</PackageReleaseNotes>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <Product>7pace.ProxyKit</Product>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ConfigureAwaitChecker.Analyzer" Version="4.0.0">
