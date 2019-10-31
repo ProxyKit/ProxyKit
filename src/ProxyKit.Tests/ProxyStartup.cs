@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 #pragma warning disable 1998
 
 namespace ProxyKit
@@ -31,12 +32,12 @@ namespace ProxyKit
         {
             app.UseXForwardedHeaders();
 
-            app.Map("/accepted", appInner => 
-                appInner.RunProxy(async context 
+            app.Map("/accepted", appInner =>
+                appInner.RunProxy(async context
                     => new HttpResponseMessage(HttpStatusCode.Accepted)));
 
-            app.Map("/forbidden", appInner => 
-                appInner.RunProxy(async context 
+            app.Map("/forbidden", appInner =>
+                appInner.RunProxy(async context
                     => new HttpResponseMessage(HttpStatusCode.Forbidden)));
 
             var port = _config.GetValue("Port", 0);
@@ -85,6 +86,11 @@ namespace ProxyKit
                     .ForwardTo("http://localhost:" + port + "/")
                     .AddXForwardedHeaders()
                     .Send();
+            }
+
+            public Task ProcessProxyResponse(HttpResponse response)
+            {
+                return Task.CompletedTask;
             }
         }
     }
