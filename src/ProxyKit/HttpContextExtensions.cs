@@ -3,6 +3,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace ProxyKit
 {
@@ -25,7 +26,8 @@ namespace ProxyKit
                 context.Request.Path,
                 context.Request.QueryString));
 
-            var request = context.Request.CreateProxyHttpRequest();
+            var options = context.RequestServices.GetService<IOptions<ProxyOptions>>().Value;
+            var request = context.Request.CreateProxyHttpRequest(options);
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
@@ -38,11 +40,14 @@ namespace ProxyKit
             return new ForwardContext(context, request, httpClient);
         }
 
-        private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
+        private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request, ProxyOptions options)
         {
             var requestMessage = new HttpRequestMessage();
-            var streamContent = new StreamContent(request.Body);
-            requestMessage.Content = streamContent;
+            if (options.CopyRequestBodyIf(request))
+            {
+                var streamContent = new StreamContent(request.Body);
+                requestMessage.Content = streamContent;
+            }
 
             // Copy the request headers *except* x-forwarded-* headers.
             foreach (var header in request.Headers)

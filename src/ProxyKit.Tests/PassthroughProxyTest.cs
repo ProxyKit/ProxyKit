@@ -252,10 +252,63 @@ namespace ProxyKit
             await client.SendAsync(requestMessage);
             var sentRequest = _testMessageHandler.SentRequestMessages.First();
             var sentContent = sentRequest.Content;
-            
+
             sentContent.ShouldNotBeNull();
             var sentString = await sentContent.ReadAsStringAsync();
             sentString.Length.ShouldBe(text.Length);
+
+            server.Dispose();
+        }
+
+        [Theory]
+        [InlineData("GET", false)]
+        [InlineData("POST", true)]
+        [InlineData("TRACE", false)]
+        [InlineData("PUT", true)]
+        [InlineData("DELETE", false)]
+        [InlineData("PATCH", true)]
+        public async Task Only_copy_request_body_when_condition_is_met(string httpMethod, bool shouldCopy)
+        {
+            const string text = "you might stay same";
+
+            _testMessageHandler = new TestMessageHandler
+            {
+                Sender = message => new HttpResponseMessage(HttpStatusCode.OK)
+            };
+
+            _builder.Configure(app => app.RunProxy(
+                    context => context
+                        .ForwardTo("http://localhost:5000/bar/")
+                        .Send()))
+                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
+                {
+                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
+                },
+                    options =>
+                {
+                    options.CopyRequestBodyIf = request => request.Method == httpMethod && shouldCopy;
+                }));
+
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
+
+            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
+            {
+                Content = new StringContent(text)
+            };
+
+            await client.SendAsync(requestMessage);
+            var sentRequest = _testMessageHandler.SentRequestMessages.First();
+            var sentContent = sentRequest.Content;
+
+            (sentContent != null).ShouldBe(shouldCopy);
+            var sentString = string.Empty;
+            if (shouldCopy)
+            {
+                sentContent.ShouldNotBeNull();
+                sentString = await sentContent.ReadAsStringAsync();
+            }
+            (sentString.Length > 0).ShouldBe(shouldCopy);
 
             server.Dispose();
         }
