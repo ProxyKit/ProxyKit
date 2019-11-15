@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +42,6 @@ namespace ProxyKit
                     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
                 }));
         }
-
 
         [Theory]
         [InlineData("GET", 3001)]
@@ -216,6 +216,16 @@ namespace ProxyKit
             send.ShouldNotThrow();
         }
 
+        private static Stream GenerateStreamFromString(string s)
+        {
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write(s);
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
+        }
+
         [Theory]
         [InlineData("GET")]
         [InlineData("POST")]
@@ -226,16 +236,25 @@ namespace ProxyKit
         public async Task Request_body_should_stay_as_is(string httpMethod)
         {
             const string text = "you shall stay same";
+            var contentStream = GenerateStreamFromString(text);
 
             _testMessageHandler = new TestMessageHandler
             {
                 Sender = message => new HttpResponseMessage(HttpStatusCode.OK)
             };
 
-            _builder.Configure(app => app.RunProxy(
-                    context => context
-                        .ForwardTo("http://localhost:5000/bar/")
-                        .Send()))
+            _builder.Configure(app =>
+                               {
+                                   app.Use((context, next) =>
+                                           {
+                                               context.Request.ContentLength = contentStream.Length;
+                                               return next();
+                                           });
+                                   app.RunProxy(
+                                       context => context
+                                                  .ForwardTo("http://localhost:5000/bar/")
+                                                  .Send());
+                               })
                 .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
                 {
                     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
@@ -252,10 +271,55 @@ namespace ProxyKit
             await client.SendAsync(requestMessage);
             var sentRequest = _testMessageHandler.SentRequestMessages.First();
             var sentContent = sentRequest.Content;
-            
+
             sentContent.ShouldNotBeNull();
             var sentString = await sentContent.ReadAsStringAsync();
             sentString.Length.ShouldBe(text.Length);
+
+            server.Dispose();
+            contentStream.Dispose();
+        }
+
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("POST")]
+        [InlineData("TRACE")]
+        [InlineData("PUT")]
+        [InlineData("DELETE")]
+        [InlineData("PATCH")]
+        public async Task Request_body_should_be_empty(string httpMethod)
+        {
+            const string text = "you shall not be present in a response";
+
+            _testMessageHandler = new TestMessageHandler
+            {
+                Sender = message => new HttpResponseMessage(HttpStatusCode.OK)
+            };
+
+            _builder.Configure(app =>
+                app.RunProxy(
+                    context => context
+                               .ForwardTo("http://localhost:5000/bar/")
+                               .Send())
+                )
+                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
+                {
+                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
+                }));
+
+            var server = new TestServer(_builder);
+            var client = server.CreateClient();
+
+            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
+            {
+                Content = new StringContent(text)
+            };
+
+            await client.SendAsync(requestMessage);
+            var sentRequest = _testMessageHandler.SentRequestMessages.First();
+            var sentContent = sentRequest.Content;
+
+            sentContent.ShouldBeNull();
 
             server.Dispose();
         }
