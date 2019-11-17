@@ -20,12 +20,12 @@ namespace build
             Target(
                 Test,
                 DependsOn(Build),
-                () => Run("dotnet", $"test src/ProxyKit.Tests/ProxyKit.Tests.csproj -c Release -r ../../{ArtifactsDir} --no-build -l trx;LogFileName=ProxyKit.Tests.xml --verbosity=normal"));
+                () => Run("dotnet", $"test src/ProxyKit.Tests/ProxyKit.Tests.csproj -c Release -r {ArtifactsDir} --no-build -l trx;LogFileName=ProxyKit.Tests.xml --verbosity=normal"));
 
             Target(
                 Pack,
                 DependsOn(Build),
-                () => Run("dotnet", $"pack src/ProxyKit/ProxyKit.csproj -c Release -o ../../{ArtifactsDir} --no-build"));
+                () => Run("dotnet", $"pack src/ProxyKit/ProxyKit.csproj -c Release -o {ArtifactsDir} --no-build"));
 
             Target(Publish, DependsOn(Pack), () =>
             {
