@@ -1,14 +1,27 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - master
+    tags:
+    - v*
+  pull_request:
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    env: 
+      MYGET_API_KEY: '{{secrets.MYGET_API_KEY}}'
     steps:
-    - uses: actions/checkout@v1
-    - name: Build and test
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Download latest NuGet (cross-platform)
+      uses: olegtarasov/download-nuget@v1
+    - name: Configure nuget package feed
+      run: mono $NUGET_EXE source Add -Name "github-damianh" -Source "https://nuget.pkg.github.com/damianh/index.json" -UserName damianh -Password ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and Test
+      
       run: bash build.sh
       shell: bash
