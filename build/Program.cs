@@ -45,7 +45,8 @@ namespace build
                     // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
                     try
                     {
-                        Run("dotnet", $"nuget push {packageToPush} -s https://www.myget.org/F/dh/api/v3/index.json -k {apiKey}", noEcho: true);
+                        //Run("dotnet", $"nuget push {packageToPush} -s https://www.myget.org/F/dh/api/v3/index.json -k {apiKey}", noEcho: true);
+                        Run("dotnet", $"nuget push {packageToPush} -s github-damianh", noEcho: true);
                     }
                     catch(SimpleExec.NonZeroExitCodeException){} //can get 1 if try to push package that differs only in build metadata
                 }
