@@ -12,8 +12,8 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerMinimumMajorMinor>2.0</MinVerMinimumMajorMinor>
-    <TRAVIS_BUILD_NUMBER Condition="'$(TRAVIS_BUILD_NUMBER)' == ''">0</TRAVIS_BUILD_NUMBER>
-    <MinVerBuildMetadata>build.$(TRAVIS_BUILD_NUMBER)</MinVerBuildMetadata>
+    <BUILD_NUMBER Condition="'$(BUILD_NUMBER)' == ''">0</BUILD_NUMBER>
+    <MinVerBuildMetadata>build.$(BUILD_NUMBER)</MinVerBuildMetadata>
     <PackageTags>aspnetcore;proxy;http</PackageTags>
     <NoWarn>$(NoWarn);NU5105;1701;1702;1705;1591</NoWarn>
     <LangVersion>latest</LangVersion>
