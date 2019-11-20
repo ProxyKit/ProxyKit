@@ -32,23 +32,19 @@ namespace build
                 var packagesToPush = Directory.GetFiles(ArtifactsDir, "*.nupkg", SearchOption.TopDirectoryOnly);
                 Console.WriteLine($"Found packages to publish: {string.Join("; ", packagesToPush)}");
 
-                var apiKey = Environment.GetEnvironmentVariable("MYGET_API_KEY");
-
-                if (string.IsNullOrWhiteSpace(apiKey))
+                var feedzApiKey = Environment.GetEnvironmentVariable("FEEDZ_API_KEY");
+                if (!string.IsNullOrWhiteSpace(feedzApiKey))
                 {
-                    Console.WriteLine("MyGet API key not available. Packages will not be pushed.");
-                    return;
-                }
-
-                foreach (var packageToPush in packagesToPush)
-                {
-                    // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
-                    try
+                    Console.WriteLine("Feedz API Key availabile. Pushing packages to Feedz...");
+                    foreach (var packageToPush in packagesToPush)
                     {
-                        //Run("dotnet", $"nuget push {packageToPush} -s https://www.myget.org/F/dh/api/v3/index.json -k {apiKey}", noEcho: true);
-                        Run("dotnet", $"nuget push {packageToPush} -s github-damianh", noEcho: true);
+                        // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
+                        try
+                        {
+                            Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/dh/oss-ci/nuget/index.json -k {feedzApiKey}", noEcho: true);
+                        }
+                        catch (SimpleExec.NonZeroExitCodeException) { } //can get 1 if try to push package that differs only in build metadata
                     }
-                    catch(SimpleExec.NonZeroExitCodeException){} //can get 1 if try to push package that differs only in build metadata
                 }
             });
 
