@@ -705,7 +705,7 @@ I can be reached on twitter at [@randompunter](https://twitter.com/randompunter)
 
 [nuget badge]: https://img.shields.io/nuget/v/ProxyKit.svg
 [nuget package]: https://www.nuget.org/packages/ProxyKit
-[feedz badge]: https://img.shields.io/badge/endpoint.svg?url=https%3A%2F%2Ff.feedz.io%2Fdh%2Foss-ci%2Fshield%2FProxyKit%2Flatest&label=ProxyKit
+[feedz badge]: https://img.shields.io/badge/endpoint.svg?url=https%3A%2F%2Ff.feedz.io%2Fdh%2Foss-ci%2Fshield%2FProxyKit%2Flatest
 [feedz package]: https://f.feedz.io/dh/oss-ci/packages/ProxyKit/latest/download
 [aspnet labs]: https://github.com/aspnet/AspLabs
 [`httpclientfactory`]:  https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests
