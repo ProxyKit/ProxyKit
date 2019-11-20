@@ -1,6 +1,6 @@
 ![Image](logo.png)
 
-# ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package]
+# ProxyKit [![Build Status][travis build]][project] [![NuGet][nuget badge]][nuget package] [![Feedz][feedz badge]][feedz package]
 
 A toolkit to create code-first **HTTP Reverse Proxies** hosted in ASP.NET Core as middleware. This
 allows focused code-first proxies that can be embedded in existing ASP.NET Core
@@ -707,6 +707,8 @@ I can be reached on twitter at [@randompunter](https://twitter.com/randompunter)
 [project]: https://travis-ci.org/damianh/ProxyKit
 [nuget badge]: https://img.shields.io/nuget/v/ProxyKit.svg
 [nuget package]: https://www.nuget.org/packages/ProxyKit
+[feedz badge]: https://img.shields.io/badge/endpoint.svg?url=https%3A%2F%2Ff.feedz.io%2Fdh%2Foss-ci%2Fshield%2FProxyKit%2Flatest&label=ProxyKit
+[feedz package]: https://f.feedz.io/dh/oss-ci/packages/ProxyKit/latest/download
 [aspnet labs]: https://github.com/aspnet/AspLabs
 [`httpclientfactory`]:  https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests
 [terminal]: https://docs.microsoft.com/en-ie/dotnet/api/microsoft.aspnetcore.builder.runextensions.run?view=aspnetcore-2.1
