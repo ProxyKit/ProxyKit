@@ -22,8 +22,8 @@ namespace ProxyKit
         public void ConfigureServices(IServiceCollection services)
         {
             var timeout = _config.GetValue("timeout", 60);
-            services.AddProxy(httpClientBuilder =>
-                httpClientBuilder.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(timeout)));
+            services.AddProxy(httpClientBuilder => httpClientBuilder
+                .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(timeout)));
             services.AddSingleton<TypedHandler>();
         }
 
