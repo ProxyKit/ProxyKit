@@ -330,7 +330,7 @@ namespace ProxyKit
             return _sender(request);
         }
 
-        public static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
+        private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
         {
             var clone = new HttpRequestMessage(req.Method, req.RequestUri);
 
