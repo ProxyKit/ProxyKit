@@ -25,16 +25,13 @@ namespace ProxyKit
 
         public ProxyTests()
         {
-            _testMessageHandler = new TestMessageHandler
+            _testMessageHandler = new TestMessageHandler(req =>
             {
-                Sender = req =>
-                {
-                    var response = new HttpResponseMessage(HttpStatusCode.Created);
-                    response.Headers.Add("testHeader", "testHeaderValue");
-                    response.Content = new StringContent("Response Body");
-                    return response;
-                }
-            };
+                var response = new HttpResponseMessage(HttpStatusCode.Created);
+                response.Headers.Add("testHeader", "testHeaderValue");
+                response.Content = new StringContent("Response Body");
+                return response;
+            });
 
             _builder = new WebHostBuilder()
                 .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
@@ -182,18 +179,15 @@ namespace ProxyKit
         [Fact]
         public async Task Response_stream_should_not_be_Flushed_if_the_response_is_ReadyOnly()
         {
-            _testMessageHandler = new TestMessageHandler
+            _testMessageHandler = new TestMessageHandler(req =>
             {
-                Sender = req =>
+                var response = new HttpResponseMessage(HttpStatusCode.Found)
                 {
-                    var response = new HttpResponseMessage(HttpStatusCode.Found)
-                    {
-                        // Usually the response of FOUND verb comes with null stream in TestHost. At least that's been observed sometimes.
-                        Content = new StreamContent(Stream.Null)
-                    };
-                    return response;
-                }
-            };
+                    // Usually the response of FOUND verb comes with null stream in TestHost. At least that's been observed sometimes.
+                    Content = new StreamContent(Stream.Null)
+                };
+                return response;
+            });
 
             _builder.Configure(app => app.RunProxy(
                     context => context
@@ -238,10 +232,7 @@ namespace ProxyKit
             const string text = "you shall stay same";
             var contentStream = GenerateStreamFromString(text);
 
-            _testMessageHandler = new TestMessageHandler
-            {
-                Sender = message => new HttpResponseMessage(HttpStatusCode.OK)
-            };
+            _testMessageHandler = new TestMessageHandler(message => new HttpResponseMessage(HttpStatusCode.OK));
 
             _builder.Configure(app =>
             {
@@ -290,10 +281,7 @@ namespace ProxyKit
         {
             const string text = "you shall not be present in a response";
 
-            _testMessageHandler = new TestMessageHandler
-            {
-                Sender = message => new HttpResponseMessage(HttpStatusCode.OK)
-            };
+            _testMessageHandler = new TestMessageHandler(message => new HttpResponseMessage(HttpStatusCode.OK));
 
             _builder.Configure(app =>
                 app.RunProxy(
@@ -326,17 +314,19 @@ namespace ProxyKit
 
     internal class TestMessageHandler : HttpMessageHandler
     {
-        public Func<HttpRequestMessage, HttpResponseMessage> Sender { get; set; }
+        private readonly Func<HttpRequestMessage, HttpResponseMessage> _sender;
+
+        public TestMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> sender)
+        {
+            _sender = sender;
+        }
 
         public List<HttpRequestMessage> SentRequestMessages { get; } = new List<HttpRequestMessage>();
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             SentRequestMessages.Add(request);
-
-            return Sender != null
-                ? Task.FromResult(Sender(request))
-                : Task.FromResult<HttpResponseMessage>(null);
+            return Task.FromResult(_sender(request));
         }
     }
 }
