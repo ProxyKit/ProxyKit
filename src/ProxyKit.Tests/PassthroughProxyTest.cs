@@ -323,10 +323,45 @@ namespace ProxyKit
 
         public List<HttpRequestMessage> SentRequestMessages { get; } = new List<HttpRequestMessage>();
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            SentRequestMessages.Add(request);
-            return Task.FromResult(_sender(request));
+            var clone = await CloneHttpRequestMessageAsync(request);
+            SentRequestMessages.Add(clone);
+            return _sender(request);
+        }
+
+        public static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
+        {
+            var clone = new HttpRequestMessage(req.Method, req.RequestUri);
+
+            // Copy the request's content (via a MemoryStream) into the cloned object
+            var ms = new MemoryStream();
+            if (req.Content != null)
+            {
+                await req.Content.CopyToAsync(ms).ConfigureAwait(false);
+                ms.Position = 0;
+                clone.Content = new StreamContent(ms);
+
+                // Copy the content headers
+                if (req.Content.Headers != null)
+                    foreach (var h in req.Content.Headers)
+                        clone.Content.Headers.Add(h.Key, h.Value);
+            }
+
+
+            clone.Version = req.Version;
+
+            foreach (var prop in req.Properties)
+            {
+                clone.Properties.Add(prop);
+            }
+
+            foreach (var header in req.Headers)
+            {
+                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+
+            return clone;
         }
     }
 }
