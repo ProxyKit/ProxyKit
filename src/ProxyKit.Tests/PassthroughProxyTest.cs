@@ -250,15 +250,14 @@ namespace ProxyKit
                     context.Request.ContentLength = contentStream.Length;
                     return next();
                 });
-                app.RunProxy(
-                    context => context
-                               .ForwardTo("http://localhost:5000/bar/")
-                               .Send());
+                app.RunProxy(context => context
+                    .ForwardTo("http://localhost:5000/bar/")
+                    .Send());
             })
-                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
-                {
-                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
-                }));
+            .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
+            {
+                httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
+            }));
 
             var server = new TestServer(_builder);
             var client = server.CreateClient();
