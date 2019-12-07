@@ -8,7 +8,7 @@ RUN wget -O dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/Sdk/2.1
     && tar -C /usr/share/dotnet -xzf dotnet.tar.gz \
     && rm dotnet.tar.gz
 
-RUN apk add git=2.20.1-r0
+RUN apk add git
 
 WORKDIR /repo
 
