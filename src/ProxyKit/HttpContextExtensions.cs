@@ -41,9 +41,19 @@ namespace ProxyKit
             request.Headers.Host = uri.Authority;
             request.RequestUri = uri;
 
-            var httpClientFactory = context
-                .RequestServices
-                .GetRequiredService<IHttpClientFactory>();
+            IHttpClientFactory httpClientFactory;
+            try
+            {
+                httpClientFactory = context
+                    .RequestServices
+                    .GetRequiredService<IHttpClientFactory>();
+            }
+            catch (InvalidOperationException exception)
+            {
+                throw new InvalidOperationException(
+                    $"{exception.Message} Did you forget to call services.AddProxy()?",
+                    exception);
+            }
 
             var httpClient = httpClientFactory.CreateClient(ServiceCollectionExtensions.ProxyKitHttpClientName);
 
@@ -53,8 +63,13 @@ namespace ProxyKit
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
         {
             var requestMessage = new HttpRequestMessage();
-            var streamContent = new StreamContent(request.Body);
-            requestMessage.Content = streamContent;
+            
+            //Only copy Body when original request has a body.
+            if (request.ContentLength.HasValue)
+            {
+                var streamContent = new StreamContent(request.Body);
+                requestMessage.Content = streamContent;
+            }
 
             // Copy the request headers *except* x-forwarded-* headers.
             foreach (var header in request.Headers)

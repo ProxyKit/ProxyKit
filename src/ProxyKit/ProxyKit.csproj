@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0;netcoreapp3.1</TargetFrameworks>
     <Description>An AspNet core middleware toolkit to create proxy servers. Can be embedded in applications or used as a standalone proxy.</Description>
     <PackageId>ProxyKit</PackageId>
     <Authors>Damian Hickey</Authors>
@@ -12,11 +12,11 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerMinimumMajorMinor>2.0</MinVerMinimumMajorMinor>
-    <TRAVIS_BUILD_NUMBER Condition="'$(TRAVIS_BUILD_NUMBER)' == ''">0</TRAVIS_BUILD_NUMBER>
-    <MinVerBuildMetadata>build.$(TRAVIS_BUILD_NUMBER)</MinVerBuildMetadata>
+    <BUILD_NUMBER Condition="'$(BUILD_NUMBER)' == ''">0</BUILD_NUMBER>
+    <MinVerBuildMetadata>build.$(BUILD_NUMBER)</MinVerBuildMetadata>
     <PackageTags>aspnetcore;proxy;http</PackageTags>
     <NoWarn>$(NoWarn);NU5105;1701;1702;1705;1591</NoWarn>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>7.3</LangVersion>
     <DebugType>full</DebugType>
     <PackageIconUrl>https://raw.githubusercontent.com/damianh/ProxyKit/master/logo.png</PackageIconUrl>
     <PackageReleaseNotes>See https://github.com/damianh/ProxyKit/releases for release notes.</PackageReleaseNotes>
@@ -27,7 +27,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19367-01" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="MinVer" Version="2.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -41,7 +41,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.1.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>

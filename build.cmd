@@ -12,7 +12,7 @@ if errorlevel 1 (
 docker run --rm --name proxykit-build ^
  -v %cd%/artifacts:/repo/artifacts ^
  -v %cd%/.git:/repo/.git ^
- -e MYGET_API_KEY=$MYGET_API_KEY ^
+ -e FEEDZ_API_KEY=$FEEDZ_API_KEY ^
  proxykit-build ^
  dotnet run -p /repo/build/build.csproj -c Release -- %*
 
