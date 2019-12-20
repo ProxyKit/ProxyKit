@@ -27,6 +27,8 @@ namespace ProxyKit
         /// </summary>
         public HttpContext HttpContext { get; }
 
+        public TimeSpan Timeout { get => _httpClient.Timeout; set => _httpClient.Timeout = value; }
+
         /// <summary>
         /// The upstream request message.
         /// </summary>
