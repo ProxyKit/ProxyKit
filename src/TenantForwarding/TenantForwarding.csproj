@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <AssemblyName>ProxyKit.Recipe.Simple</AssemblyName>
     <RootNamespace>ProxyKit.Recipe.Simple</RootNamespace>
@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="idunno.Authentication.Basic" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
