@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>ProxyKit.Recipe.SignalRSimpleChat</AssemblyName>
     <RootNamespace>ProxyKit.Recipe.SignalRSimpleChat</RootNamespace>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\lib\jquery-validation-unobtrusive\.bower.json" />
