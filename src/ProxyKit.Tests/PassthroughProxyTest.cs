@@ -199,15 +199,14 @@ namespace ProxyKit
                     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
                 }));
             var server = new TestServer(_builder);
-            HttpClient client = server.CreateClient();
+            var client = server.CreateClient();
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://mydomain.example")
             {
                 Content = new StringContent("Request Body")
             };
 
-            Func<Task> send = () => client.SendAsync(requestMessage);
-            send.ShouldNotThrow();
+            await client.SendAsync(requestMessage);
         }
 
         private static Stream GenerateStreamFromString(string s)
