@@ -24,7 +24,7 @@ namespace ProxyKit
 
         private HttpContext CreateHttpContext(IServiceProvider provider)
         {
-            var context= new DefaultHttpContext()
+            var context = new DefaultHttpContext()
             {
                 RequestServices = provider,
                 RequestAborted = CancellationToken.None
@@ -68,6 +68,26 @@ namespace ProxyKit
             forwardContext.Timeout = runtimeTimeout;
             Assert.NotNull(client);
             Assert.Equal(runtimeTimeout, client.Timeout);
+        }
+
+        [Fact]
+        public void SetTimeout_ShouldNotEffectOthers()
+        {
+            var host = new UpstreamHost("http://localhost");
+            var setupTimeout = TimeSpan.FromSeconds(_random.Next(1, 10));
+            var services = new ServiceCollection()
+                .AddProxy(builder =>
+                {
+                    builder.ConfigureHttpClient(http => http.Timeout = setupTimeout);
+                }).BuildServiceProvider();
+
+            var httpContext = CreateHttpContext(services);
+            var forwardContext = httpContext.ForwardTo(host);
+            forwardContext.Timeout = TimeSpan.FromMinutes(1);
+            Assert.NotEqual(setupTimeout, forwardContext.Timeout);
+
+            var otherForwardContext = httpContext.ForwardTo(host);            
+            Assert.Equal(setupTimeout, otherForwardContext.Timeout);
         }
     }
 }
