@@ -35,16 +35,18 @@ namespace build
                 var feedzApiKey = Environment.GetEnvironmentVariable("FEEDZ_PROXYKIT_API_KEY");
                 if (!string.IsNullOrWhiteSpace(feedzApiKey))
                 {
-                    Console.WriteLine("Feedz API Key availabile. Pushing packages to Feedz...");
-                    foreach (var packageToPush in packagesToPush)
+                    Console.WriteLine("Feedz API Key not availabile. No packages will be pushed.");
+                    return;
+                }
+                Console.WriteLine("Feedz API Key availabile. Pushing packages to Feedz...");
+                foreach (var packageToPush in packagesToPush)
+                {
+                    // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
+                    try
                     {
-                        // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
-                        try
-                        {
-                            Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/dh/oss-ci/nuget/index.json -k {feedzApiKey}", noEcho: true);
-                        }
-                        catch (SimpleExec.NonZeroExitCodeException) { } //can get 1 if try to push package that differs only in build metadata
+                        Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/dh/oss-ci/nuget/index.json -k {feedzApiKey}", noEcho: true);
                     }
+                    catch (SimpleExec.NonZeroExitCodeException) { } //can get 1 if try to push package that differs only in build metadata
                 }
             });
 
