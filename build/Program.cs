@@ -32,8 +32,8 @@ namespace build
                 var packagesToPush = Directory.GetFiles(ArtifactsDir, "*.nupkg", SearchOption.TopDirectoryOnly);
                 Console.WriteLine($"Found packages to publish: {string.Join("; ", packagesToPush)}");
 
-                var feedzApiKey = Environment.GetEnvironmentVariable("FEEDZ_PROXYKIT_API_KEY");
-                if (!string.IsNullOrWhiteSpace(feedzApiKey))
+                var apiKey = Environment.GetEnvironmentVariable("FEEDZ_PROXYKIT_API_KEY");
+                if (string.IsNullOrWhiteSpace(apiKey))
                 {
                     Console.WriteLine("Feedz API Key not availabile. No packages will be pushed.");
                     return;
@@ -44,7 +44,7 @@ namespace build
                     // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
                     try
                     {
-                        Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/dh/oss-ci/nuget/index.json -k {feedzApiKey}", noEcho: true);
+                        Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/dh/oss-ci/nuget/index.json -k {apiKey}", noEcho: true);
                     }
                     catch (SimpleExec.NonZeroExitCodeException) { } //can get 1 if try to push package that differs only in build metadata
                 }
