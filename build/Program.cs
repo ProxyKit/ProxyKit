@@ -32,7 +32,7 @@ namespace build
                 var packagesToPush = Directory.GetFiles(ArtifactsDir, "*.nupkg", SearchOption.TopDirectoryOnly);
                 Console.WriteLine($"Found packages to publish: {string.Join("; ", packagesToPush)}");
 
-                var feedzApiKey = Environment.GetEnvironmentVariable("FEEDZ_API_KEY");
+                var feedzApiKey = Environment.GetEnvironmentVariable("FEEDZ_PROXYKIT_API_KEY");
                 if (!string.IsNullOrWhiteSpace(feedzApiKey))
                 {
                     Console.WriteLine("Feedz API Key availabile. Pushing packages to Feedz...");
