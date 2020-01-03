@@ -5,8 +5,8 @@ docker build \
  --tag proxykit-build .
 
 docker run --rm --name proxykit-build \
- -v $PWD/artifacts:/repo/artifacts \
- -v $PWD/.git:/repo/.git \
+ -v $PWD:/repo \
+ -w /repo \
  -e FEEDZ_PROXYKIT_API_KEY=$FEEDZ_PROXYKIT_API_KEY \
  proxykit-build \
- dotnet run -p /repo/build/build.csproj -c Release -- "$@"
+ dotnet run -p build/build.csproj -c Release -- "$@"
