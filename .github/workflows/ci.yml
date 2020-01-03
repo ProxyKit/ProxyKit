@@ -12,7 +12,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env: 
-      FEEDZ_PROXYKIT_API_KEY: '{{secrets.FEEDZ_PROXYKIT_API_KEY}}'
+      FEEDZ_PROXYKIT_API_KEY: ${{secrets.FEEDZ_PROXYKIT_API_KEY}}
     steps:
     - name: Checkout
       uses: actions/checkout@v1
