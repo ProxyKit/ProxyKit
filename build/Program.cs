@@ -48,7 +48,7 @@ namespace build
                     Console.WriteLine("Feedz API Key not available. No packages will be pushed.");
                     return;
                 }
-                Console.WriteLine("Feedz API Key available. Pushing packages to Feedz...");
+                Console.WriteLine($"Feedz API Key ({apiKey.Substring(0,5)}) available. Pushing packages to Feedz...");
                 foreach (var packageToPush in packagesToPush)
                 {
                     // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
