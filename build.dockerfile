@@ -7,21 +7,3 @@ RUN wget -O dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/Sdk/2.1
     && rm dotnet.tar.gz
 
 RUN apk add git
-
-WORKDIR /repo
-
-# Copy slns, csprojs and do a dotnet restore
-COPY ./build/*.sln ./build/
-COPY ./build/*.csproj ./build/
-WORKDIR /repo/build
-RUN dotnet restore
-
-WORKDIR /repo
-COPY ./*.sln ./
-COPY ./src/*/*.csproj ./src/
-RUN for file in $(ls src/*.csproj); do mkdir -p ./${file%.*}/ && mv $file ./${file%.*}/; done
-RUN dotnet restore
-
-# Copy source files
-COPY ./build ./build/
-COPY ./src ./src/
