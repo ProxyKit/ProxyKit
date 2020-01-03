@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 docker build \
- --build-arg MYGET_API_KEY=$MYGET_API_KEY \
  -f build.dockerfile \
  --tag proxykit-build .
 
