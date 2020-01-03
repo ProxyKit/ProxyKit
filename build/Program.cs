@@ -8,6 +8,7 @@ namespace build
     class Program
     {
         private const string ArtifactsDir = "artifacts";
+        private const string Clean = "clean";
         private const string Build = "build";
         private const string Test = "test";
         private const string Pack = "pack";
@@ -15,6 +16,15 @@ namespace build
 
         static void Main(string[] args)
         {
+            Target(Clean, () =>
+            {
+                if (Directory.Exists(ArtifactsDir))
+                {
+                    Directory.Delete(ArtifactsDir, true);
+                }
+                Directory.CreateDirectory(ArtifactsDir);
+            });
+
             Target(Build, () => Run("dotnet", "build ProxyKit.sln -c Release"));
 
             Target(
@@ -50,7 +60,7 @@ namespace build
                 }
             });
 
-            Target("default", DependsOn(Test, Publish));
+            Target("default", DependsOn(Clean, Test, Publish));
 
             RunTargetsAndExit(args);
         }
