@@ -45,10 +45,10 @@ namespace build
                 var apiKey = Environment.GetEnvironmentVariable("FEEDZ_PROXYKIT_API_KEY");
                 if (string.IsNullOrWhiteSpace(apiKey))
                 {
-                    Console.WriteLine("Feedz API Key not availabile. No packages will be pushed.");
+                    Console.WriteLine("Feedz API Key not available. No packages will be pushed.");
                     return;
                 }
-                Console.WriteLine("Feedz API Key availabile. Pushing packages to Feedz...");
+                Console.WriteLine("Feedz API Key available. Pushing packages to Feedz...");
                 foreach (var packageToPush in packagesToPush)
                 {
                     // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
