@@ -18,49 +18,32 @@ issues making it suitable for microservice / container environments.
 
 <!-- TOC depthFrom:2 -->
 
-- [1. Quick Start](#1-quick-start)
+- [ProxyKit ![NuGet][nuget package] [![Feedz][feedz badge]][feedz package]](#proxykit-nugetnuget-package-feedzfeedz-badgefeedz-package)
+  - [1. Quick Start](#1-quick-start)
     - [1.1. Install](#11-install)
     - [1.2. Forward HTTP Requests](#12-forward-http-requests)
     - [1.3. Forward WebSocket Requests](#13-forward-websocket-requests)
-- [2. Core Features](#2-core-features)
+  - [2. Core Features](#2-core-features)
     - [2.1. Customising the upstream HTTP request](#21-customising-the-upstream-http-request)
     - [2.2. Customising the upstream response](#22-customising-the-upstream-response)
     - [2.3. X-Forwarded Headers](#23-x-forwarded-headers)
-        - [2.3.1. Client Sent X-Forwarded-Headers](#231-client-sent-x-forwarded-headers)
-        - [2.3.2. Adding `X-Forwarded-*` Headers](#232-adding-x-forwarded--headers)
-        - [2.3.3. Copying `X-Forwarded` headers](#233-copying-x-forwarded-headers)
+      - [2.3.1. Client Sent X-Forwarded-Headers](#231-client-sent-x-forwarded-headers)
+      - [2.3.2. Adding X-Forwarded-* Headers](#232-adding-x-forwarded--headers)
+      - [2.3.3. Copying X-Forwarded headers](#233-copying-x-forwarded-headers)
     - [2.4. Configuring ProxyKit's HttpClient](#24-configuring-proxykits-httpclient)
     - [2.5. Error handling](#25-error-handling)
     - [2.6. Testing](#26-testing)
     - [2.7. Load Balancing](#27-load-balancing)
-        - [2.7.1. Weighted Round Robin](#271-weighted-round-robin)
+      - [2.7.1. Weighted Round Robin](#271-weighted-round-robin)
     - [2.8. Typed Handlers](#28-typed-handlers)
-- [3. Recipes](#3-recipes)
-    - [3.1. Simple Forwarding](#31-simple-forwarding)
-    - [3.2. Proxy Paths](#32-proxy-paths)
-    - [3.3. Claims Based Tenant Routing](#33-claims-based-tenant-routing)
-    - [3.4. Authentication offloading with Identity Server](#34-authentication-offloading-with-identity-server)
-    - [3.5. Weighted Round Robin Load Balancing](#35-weighted-round-robin-load-balancing)
-    - [3.6. In-memory Testing](#36-in-memory-testing)
-    - [3.7. Customise Upstream Requests](#37-customise-upstream-requests)
-    - [3.8. Customise Upstream Responses](#38-customise-upstream-responses)
-    - [3.9. Consul Service Discovery](#39-consul-service-discovery)
-    - [3.10. Copy X-Forwarded Headers](#310-copy-x-forwarded-headers)
-    - [3.11. Caching Upstream Responses with CacheCow](#311-caching-upstream-responses-with-cachecow)
-    - [3.12. Conditional Proxying](#312-conditional-proxying)
-    - [3.13. Client Certificate](#313-client-certificate)
-    - [3.14. Source IP Blocking](#314-source-ip-blocking)
-    - [3.15. WebSockets](#315-websockets)
-    - [3.16. SignalR](#316-signalr)
-    - [3.17. SignalR with Path](#317-signalr-with-path)
-    - [3.18. Automatic Decompression](#318-automatic-decompression)
-- [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
-- [5. Performance considerations](#5-performance-considerations)
-- [6. Note about serverless](#6-note-about-serverless)
-- [7. Comparison with Ocelot](#7-comparison-with-ocelot)
-- [8. How to build](#8-how-to-build)
-- [9. Contributing / Feedback / Questions](#9-contributing--feedback--questions)
-- [10. Articles, blogs and other external links](#10-articles-blogs-and-other-external-links)
+  - [3. Recipes](#3-recipes)
+  - [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
+  - [5. Performance considerations](#5-performance-considerations)
+  - [6. Note about serverless](#6-note-about-serverless)
+  - [7. Comparison with Ocelot](#7-comparison-with-ocelot)
+  - [8. How to build](#8-how-to-build)
+  - [9. Contributing / Feedback / Questions](#9-contributing--feedback--questions)
+  - [10. Articles, blogs and other external links](#10-articles-blogs-and-other-external-links)
 
 <!-- /TOC -->
 
@@ -451,129 +434,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ## 3. Recipes
 
-Recipes are code samples that help you create proxy solutions for your needs.
-If you have any ideas for a recipe, or can spot any improvements to the ones
-below, please send a pull request! Recipes that stand test of time may be
-promoted to an out-of-the-box feature in a future version of ProxyKit.
-
-### 3.1. Simple Forwarding
-
-Forward request to a single upstream host.
-
-[src/Recipes/01_Simple.cs](src/Recipes/01_Simple.cs)
-
-### 3.2. Proxy Paths
-
-Hosting multiple proxies on separate paths.
-
-[src/Recipes/02_Paths.cs](src/Recipes/02_Paths.cs)
-
-### 3.3. Claims Based Tenant Routing
-
-Routing to a specific upstream host based on a `TenantId` claim for an
-authenticated user.
-
-[src/Recipes/03_TenantRouting.cs](src/Recipes/03_TenantRouting.cs)
-
-### 3.4. Authentication offloading with Identity Server
-
-Using [IdentityServer](https://identityserver.io/) to handle authentication
-before forwarding to upstream host.
-
-[src/Recipes/04_IdSrv.cs](src/Recipes/04_IdSrv.cs)
-
-### 3.5. Weighted Round Robin Load Balancing
-
-Weighted Round Robin load balancing to two upstream hosts.
-
-[src/Recipes/05_RoundRobin.cs](src/Recipes/05_RoundRobin.cs)
-
-### 3.6. In-memory Testing
-
-Testing behaviour or your ASP.NET Core application by running two instances
-behind round robin proxy. Really useful if your application has eventually
-consistent aspects.
-
-[src/Recipes/06_Testing.cs](src/Recipes/06_Testing.cs)
-
-### 3.7. Customise Upstream Requests
-
-Customise the upstream request by adding a header.
-
-[src/Recipes/07_CustomiseUpstreamRequest.cs](src/Recipes/07_CustomiseUpstreamRequest.cs)
-
-### 3.8. Customise Upstream Responses
-
-Customise the upstream response by removing a header.
-
-[src/Recipes/08_CustomiseUpstreamResponse.cs](src/Recipes/08_CustomiseUpstreamResponse.cs)
-
-### 3.9. Consul Service Discovery
-
-Service discovery for an upstream host using [Consul](https://www.consul.io/).
-
-[src/Recipes/09_ConsulServiceDisco.cs](src/Recipes/09_ConsulServiceDisco.cs)
-
-### 3.10. Copy X-Forwarded Headers
-
-Copies `X-Forwarded-For`, `X-Forwarded-Host`, `X-Forwarded-Proto` and
-`X-Forwarded-PathBase` headers from the incoming request. Typically only done
-when the proxy is in a chain of known proxies. Is it NOT recommended that you
-blindly accept these headers from the public Internet.
-
-[src/Recipes/10_CopyXForwarded.cs](src/Recipes/10_CopyXForwarded.cs)
-
-### 3.11. Caching Upstream Responses with CacheCow
-
-Using [CacheCow.Client](https://github.com/aliostad/CacheCow) to cache responses
-from upstream servers using standard HTTP caching headers.
-
-[src/Recipes/11_CachingWithCacheCow.cs](src/Recipes/11_CachingWithCacheCow.cs)
-
-### 3.12. Conditional Proxying
-
-Using `app.UseWhen()` to conditionally forward the request based on asserting a
-value on `HttpContext`.
-
-[src/Recipes/12_ConditionalProxying.cs](src/Recipes/12_ConditionalProxying.cs)
-
-### 3.13. Client Certificate
-
-Using a client certificate in requests to upstream hosts.
-
-[src/Recipes/13_ClientCertificate.cs](src/Recipes/13_ClientCertificate.cs)
-
-### 3.14. Source IP Blocking
-
-Block requests from sources whose IP addresses is not allowed.
-
-[src/Recipes/14_SourceIPBlocking.cs](src/Recipes/14_SourceIPBlocking.cs)
-
-### 3.15. WebSockets
-
-How to proxy WebSocket connections.
-
-[src/Recipes/14_WebSockets.cs](src/Recipes/15_WebSockets.cs)
-
-### 3.16. SignalR
-
-Proxying for SignalR whose protocol requires both HTTP and WebSocket forwarding
-to upstream hosts.
-
-[src/Recipes/16_SignalR.cs](src/Recipes/16_SignalR.cs)
-
-### 3.17. SignalR with Path
-
-Proxying for SignalR on a specific path.
-
-[src/Recipes/17_SignalROnPath.cs](src/Recipes/17_SignalROnPath.cs)
-
-### 3.18. Automatic Decompression
-
-Automatic decompression of responses from upstream hosts allowing response body
-manipulation.
-
-[src/Recipes/18_AutomaticDecompression.cs](src/Recipes/18_AutomaticDecompression.cs)
+Recipes have moved to [own repo](https://github.com/proxykit/Recipes).
 
 ## 4. Making upstream servers reverse proxy friendly
 
