@@ -1,6 +1,10 @@
 ![Image](logo.png)
 
-# ProxyKit [![NuGet][nuget badge]][nuget package] [![Feedz][feedz badge]][feedz package]
+# ProxyKit 
+
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fproxykit%2FProxyKit%2Fbadge%3Fref%3Dmaster&style=flat&label=build)](https://actions-badge.atrox.dev/proxykit/ProxyKit/goto?ref=master)
+[![NuGet][nuget badge]][nuget package]
+[![Feedz][feedz badge]][feedz package]
 
 A toolkit to create code-first **HTTP Reverse Proxies** hosted in ASP.NET Core as middleware. This
 allows focused code-first proxies that can be embedded in existing ASP.NET Core
