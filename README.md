@@ -1,6 +1,6 @@
-![Image](logo.png)
+# ProxyKit
 
-# ProxyKit 
+![Image](logo.png)
 
 [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fproxykit%2FProxyKit%2Fbadge%3Fref%3Dmaster&style=flat&label=build)](https://actions-badge.atrox.dev/proxykit/ProxyKit/goto?ref=master)
 [![NuGet][nuget badge]][nuget package]
