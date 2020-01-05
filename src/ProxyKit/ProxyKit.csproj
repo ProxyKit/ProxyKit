@@ -11,7 +11,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <MinVerTagPrefix>v</MinVerTagPrefix>
-    <MinVerMinimumMajorMinor>2.0</MinVerMinimumMajorMinor>
+    <MinVerMinimumMajorMinor>3.0</MinVerMinimumMajorMinor>
     <BUILD_NUMBER Condition="'$(BUILD_NUMBER)' == ''">0</BUILD_NUMBER>
     <MinVerBuildMetadata>build.$(BUILD_NUMBER)</MinVerBuildMetadata>
     <PackageTags>aspnetcore;proxy;http</PackageTags>
