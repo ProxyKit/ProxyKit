@@ -29,7 +29,7 @@ namespace ProxyKit
 
         public void Configure(IApplicationBuilder app, IServiceProvider sp)
         {
-            app.UseXForwardedHeaders();
+            app.UseForwardedHeadersWithPathBase();
 
             app.Map("/accepted", appInner => 
                 appInner.RunProxy(async context 

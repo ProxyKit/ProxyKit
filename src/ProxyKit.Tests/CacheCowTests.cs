@@ -86,7 +86,7 @@ namespace ProxyKit
 
             public void Configure(IApplicationBuilder app, IServiceProvider sp)
             {
-                app.UseXForwardedHeaders();
+                app.UseForwardedHeadersWithPathBase();
 
                 var port = _config.GetValue("Port", 0);
                 if (port != 0)

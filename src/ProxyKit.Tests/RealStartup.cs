@@ -25,13 +25,13 @@ namespace ProxyKit
 
         public void Configure(IApplicationBuilder app)
         {
-            var options = new ForwardedHeadersOptions();
+            var options = new ForwardedHeadersWithPathBaseOptions();
             options.AllowedHosts.Add("*");
             options.KnownProxies.Add(IPAddress.Loopback);
             options.KnownProxies.Add(IPAddress.IPv6Loopback);
             options.KnownProxies.Add(IPAddress.Parse("::ffff:127.0.0.1"));
-            options.ForwardedHeaders = ForwardedHeaders.All;
-            app.UseXForwardedHeaders(options);
+            options.ForwardedHeaders = ForwardedHeadersWithPathBase.All;
+            app.UseForwardedHeadersWithPathBase(options);
 
             app.Map("/normal", a => a.Run(async ctx =>
             {

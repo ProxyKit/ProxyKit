@@ -137,7 +137,7 @@ namespace ProxyKit
             public void Configure(IApplicationBuilder app, IHostingEnvironment env)
             {
                 app.UseCors("all");
-                app.UseXForwardedHeaders();
+                app.UseForwardedHeadersWithPathBase();
                 app.UseWebSockets();
                 app.UseSignalR(routes =>
                 {
