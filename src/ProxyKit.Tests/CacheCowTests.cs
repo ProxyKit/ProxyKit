@@ -26,37 +26,33 @@ namespace ProxyKit
         [Fact]
         public async Task Should_return_cached_item()
         {
-            using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
-            {
-                await server.StartAsync();
-                var port = server.GetServerPort();
+            using var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper);
+            await server.StartAsync();
+            var port = server.GetServerPort();
 
-                using (var testServer = new TestServer(new WebHostBuilder()
-                    .UseSetting("port", port.ToString())
-                    .UseSetting("timeout", "4")
-                    .UseStartup<TestCachingStartup>()))
-                {
-                    var client = testServer.CreateClient();
+            using var testServer = new TestServer(new WebHostBuilder()
+                .UseSetting("port", port.ToString())
+                .UseSetting("timeout", "4")
+                .UseStartup<TestCachingStartup>());
+            var client = testServer.CreateClient();
 
-                    var response = await client.GetAsync("/realserver/normal");
-                    response.Headers
-                        .GetValues("x-cachecow-client")
-                        .Single()
-                        .ShouldContain("not-cacheable=true;did-not-exist=true");
+            var response = await client.GetAsync("/realserver/normal");
+            response.Headers
+                .GetValues("x-cachecow-client")
+                .Single()
+                .ShouldContain("not-cacheable=true;did-not-exist=true");
 
-                    response = await client.GetAsync("/realserver/cachable");
-                    response.Headers
-                        .GetValues("x-cachecow-client")
-                        .Single()
-                        .ShouldContain("did-not-exist=true");
+            response = await client.GetAsync("/realserver/cachable");
+            response.Headers
+                .GetValues("x-cachecow-client")
+                .Single()
+                .ShouldContain("did-not-exist=true");
 
-                    response = await client.GetAsync("/realserver/cachable");
-                    response.Headers
-                        .GetValues("x-cachecow-client")
-                        .Single()
-                        .ShouldContain("did-not-exist=false");
-                }
-            }
+            response = await client.GetAsync("/realserver/cachable");
+            response.Headers
+                .GetValues("x-cachecow-client")
+                .Single()
+                .ShouldContain("did-not-exist=false");
         }
 
 
@@ -86,7 +82,7 @@ namespace ProxyKit
 
             public void Configure(IApplicationBuilder app, IServiceProvider sp)
             {
-                app.UseXForwardedHeaders();
+                app.UseForwardedHeadersWithPathBase();
 
                 var port = _config.GetValue("Port", 0);
                 if (port != 0)
