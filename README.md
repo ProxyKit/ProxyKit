@@ -6,7 +6,7 @@
 [![NuGet][nuget badge]][nuget package]
 [![Feedz][feedz badge]][feedz package]
 
-:information: **`master` branch is now focused on the next version, 3. To view docs related to
+ℹ️ **`master` branch is now focused on the next version, 3. To view docs related to
 the current supported release, go to `releases/2.x` [branch](https://github.com/proxykit/ProxyKit/tree/releases/2.x). Pull requests for the current release should target that branch.**
 
 A toolkit to create code-first **HTTP Reverse Proxies** hosted in ASP.NET Core as middleware. This
