@@ -134,14 +134,15 @@ namespace ProxyKit
                 services.AddSignalR();
             }
 
-            public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+            public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
             {
                 app.UseCors("all");
                 app.UseForwardedHeadersWithPathBase();
                 app.UseWebSockets();
-                app.UseSignalR(routes =>
+                app.UseRouting();
+                app.UseEndpoints(endpoints =>
                 {
-                    routes.MapHub<Ping>("/ping");
+                    endpoints.MapHub<Ping>("/ping");
                 });
             }
 
