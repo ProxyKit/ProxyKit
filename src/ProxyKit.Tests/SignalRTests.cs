@@ -30,71 +30,67 @@ namespace ProxyKit
         [InlineData(false, "No routing")]
         public async Task Can_connect_via_proxy(bool useRouting, string testDescription)
         {
-            using (var signalRServer = BuildSignalRServerOnRandomPort(_outputHelper))
+            using var signalRServer = BuildSignalRServerOnRandomPort(_outputHelper);
+            await signalRServer.StartAsync();
+            var signalRPort = signalRServer.GetServerPort();
+
+            using var proxyServer = BuildWebSocketProxyServerOnRandomPort(signalRPort, _outputHelper);
+            await proxyServer.StartAsync();
+            var proxyPort = proxyServer.GetServerPort();
+
+            // Connection directly to SignalR Server
+            var directConnection = new HubConnectionBuilder()
+                .WithUrl($"http://localhost:{signalRPort}/ping")
+                .ConfigureLogging(logging => logging
+                    .AddDebug()
+                    .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-direct")))
+                .Build();
+            directConnection.Closed += error =>
             {
-                await signalRServer.StartAsync();
-                var signalRPort = signalRServer.GetServerPort();
+                _outputHelper.WriteLine("connection-direct error: " + error);
+                return Task.CompletedTask;
+            };
+            var directMessageReceived = new TaskCompletionSource<bool>();
+            directConnection.On("OnPing", () =>
+            {
+                directMessageReceived.SetResult(true);
+            });
+            await directConnection.StartAsync();
 
-                using (var proxyServer = BuildWebSocketProxyServerOnRandomPort(signalRPort, _outputHelper))
-                {
-                    await proxyServer.StartAsync();
-                    var proxyPort = proxyServer.GetServerPort();
+            // Connect to SignalR Server via proxy
+            var hubPath = useRouting ? "app/ping" : "ping";
+            var proxyConnection = new HubConnectionBuilder()
+                .WithUrl($"http://localhost:{proxyPort}/{hubPath}")
+                .ConfigureLogging(logging => logging
+                    .AddDebug()
+                    .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-proxy")))
+                .Build();
+            proxyConnection.On("OnPing", () =>
+            {
+                _outputHelper.WriteLine("connection-proxy: OnPing");
+            });
+            proxyConnection.Closed += error =>
+            {
+                _outputHelper.WriteLine(error.ToString());
+                return Task.CompletedTask;
+            };
+            var proxyMessageReceived = new TaskCompletionSource<bool>();
+            proxyConnection.On("OnPing", () =>
+            {
+                proxyMessageReceived.SetResult(true);
+            });
+            await proxyConnection.StartAsync();
 
-                    // Connection directly to SignalR Server
-                    var directConnection = new HubConnectionBuilder()
-                        .WithUrl($"http://localhost:{signalRPort}/ping")
-                        .ConfigureLogging(logging => logging
-                            .AddDebug()
-                            .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-direct")))
-                        .Build();
-                    directConnection.Closed += error =>
-                    {
-                        _outputHelper.WriteLine("connection-direct error: " + error.ToString());
-                        return Task.CompletedTask;
-                    };
-                    var directMessageReceived = new TaskCompletionSource<bool>();
-                    directConnection.On("OnPing", () =>
-                    {
-                        directMessageReceived.SetResult(true);
-                    });
-                    await directConnection.StartAsync();
+            // Send message to all clients
+            await proxyConnection.InvokeAsync("PingAll");
 
-                    // Connect to SignalR Server via proxy
-                    var hubPath = useRouting ? "app/ping" : "ping";
-                    var proxyConnection = new HubConnectionBuilder()
-                        .WithUrl($"http://localhost:{proxyPort}/{hubPath}")
-                        .ConfigureLogging(logging => logging
-                            .AddDebug()
-                            .AddProvider(new XunitLoggerProvider(_outputHelper, "connection-proxy")))
-                        .Build();
-                    proxyConnection.On("OnPing", () =>
-                    {
-                        _outputHelper.WriteLine("connection-proxy: OnPing");
-                    });
-                    proxyConnection.Closed += error =>
-                    {
-                        _outputHelper.WriteLine(error.ToString());
-                        return Task.CompletedTask;
-                    };
-                    var proxyMessageReceived = new TaskCompletionSource<bool>();
-                    proxyConnection.On("OnPing", () =>
-                    {
-                        proxyMessageReceived.SetResult(true);
-                    });
-                    await proxyConnection.StartAsync();
+            directMessageReceived.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue(testDescription);
+            directMessageReceived.Task.Result.ShouldBeTrue(testDescription);
+            proxyMessageReceived.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue(testDescription);
+            proxyMessageReceived.Task.Result.ShouldBeTrue(testDescription);
 
-                    // Send message to all clients
-                    await proxyConnection.InvokeAsync("PingAll");
-
-                    directMessageReceived.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue(testDescription);
-                    directMessageReceived.Task.Result.ShouldBeTrue(testDescription);
-                    proxyMessageReceived.Task.Wait(TimeSpan.FromSeconds(3)).ShouldBeTrue(testDescription);
-                    proxyMessageReceived.Task.Result.ShouldBeTrue(testDescription);
-
-                    await proxyServer.StopAsync();
-                    await signalRServer.StopAsync();
-                }
-            }
+            await proxyServer.StopAsync();
+            await signalRServer.StopAsync();
         }
 
         public static IWebHost BuildSignalRServerOnRandomPort(ITestOutputHelper outputHelper) =>
@@ -134,14 +130,15 @@ namespace ProxyKit
                 services.AddSignalR();
             }
 
-            public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+            public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
             {
                 app.UseCors("all");
-                app.UseXForwardedHeaders();
+                app.UseForwardedHeadersWithPathBase();
                 app.UseWebSockets();
-                app.UseSignalR(routes =>
+                app.UseRouting();
+                app.UseEndpoints(endpoints =>
                 {
-                    routes.MapHub<Ping>("/ping");
+                    endpoints.MapHub<Ping>("/ping");
                 });
             }
 

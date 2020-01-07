@@ -7,18 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit", "src\ProxyKit\Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyKit.Tests", "src\ProxyKit.Tests\ProxyKit.Tests.csproj", "{10818657-9BA0-4E37-9E55-7B24DA381144}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Recipes", "src\Recipes\Recipes.csproj", "{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simple", "src\Simple\Simple.csproj", "{5CA0D249-B84F-4C1A-BA4A-A39005038D84}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paths", "src\Paths\Paths.csproj", "{A10DFD36-8672-4359-988E-6B52B1F96F2A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenantForwarding", "src\TenantForwarding\TenantForwarding.csproj", "{086050F2-0756-4936-A0A6-74851A7FA67F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RunnableRecipes", "RunnableRecipes", "{63C061FD-D3D9-4517-9398-2A6F1769022E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSimpleChat", "src\SignalRSimpleChat\SignalRSimpleChat.csproj", "{42BFCF9F-53B9-4600-9183-12349DE9E3D9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,35 +21,9 @@ Global
 		{10818657-9BA0-4E37-9E55-7B24DA381144}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10818657-9BA0-4E37-9E55-7B24DA381144}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10818657-9BA0-4E37-9E55-7B24DA381144}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B2DE9AD5-0E1C-4774-A4EB-B7A18D12529B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5CA0D249-B84F-4C1A-BA4A-A39005038D84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5CA0D249-B84F-4C1A-BA4A-A39005038D84}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5CA0D249-B84F-4C1A-BA4A-A39005038D84}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5CA0D249-B84F-4C1A-BA4A-A39005038D84}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A10DFD36-8672-4359-988E-6B52B1F96F2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A10DFD36-8672-4359-988E-6B52B1F96F2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A10DFD36-8672-4359-988E-6B52B1F96F2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A10DFD36-8672-4359-988E-6B52B1F96F2A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{086050F2-0756-4936-A0A6-74851A7FA67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{086050F2-0756-4936-A0A6-74851A7FA67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{086050F2-0756-4936-A0A6-74851A7FA67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{086050F2-0756-4936-A0A6-74851A7FA67F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{42BFCF9F-53B9-4600-9183-12349DE9E3D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{5CA0D249-B84F-4C1A-BA4A-A39005038D84} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
-		{A10DFD36-8672-4359-988E-6B52B1F96F2A} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
-		{086050F2-0756-4936-A0A6-74851A7FA67F} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
-		{42BFCF9F-53B9-4600-9183-12349DE9E3D9} = {63C061FD-D3D9-4517-9398-2A6F1769022E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61D66EC0-2E2A-4AE6-A06E-F8D572DFB319}
