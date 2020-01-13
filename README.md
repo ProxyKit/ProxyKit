@@ -229,7 +229,7 @@ public void Configure(IApplicationBuilder app)
     });
 }
 ```
-<sup><a href='/src/ProxyKit.Tests/Snippets/AddXCorrelationIDHeader - Copy.cs#L6-L20' title='File snippet `customisingtheupstreamresponse` was extracted from'>snippet source</a> | <a href='#snippet-customisingtheupstreamresponse' title='Navigate to start of snippet `customisingtheupstreamresponse`'>anchor</a></sup>
+<sup><a href='/src/ProxyKit.Tests/Snippets/CustomisingTheUpstreamResponse.cs#L6-L20' title='File snippet `customisingtheupstreamresponse` was extracted from'>snippet source</a> | <a href='#snippet-customisingtheupstreamresponse' title='Navigate to start of snippet `customisingtheupstreamresponse`'>anchor</a></sup>
 <!-- endsnippet -->
 
 ### 2.3. X-Forwarded Headers
@@ -295,7 +295,9 @@ You may optionally also add the "internal" proxy details to the `X-Forwarded-*`
 header values by combining `CopyXForwardedHeaders()` and
 `AddXForwardedHeaders()` (*note the order is important*):
 
-```csharp
+<!-- snippet: CopyAndAddXForwardedHeaders -->
+<a id='snippet-copyandaddxforwardedheaders'/></a>
+```cs
 public void Configure(IApplicationBuilder app)
 {
     app.RunProxy(context => context
@@ -305,6 +307,8 @@ public void Configure(IApplicationBuilder app)
         .Send());
 }
 ```
+<sup><a href='/src/ProxyKit.Tests/Snippets/CopyAndAddXForwardedHeaders.cs#L6-L15' title='File snippet `copyandaddxforwardedheaders` was extracted from'>snippet source</a> | <a href='#snippet-copyandaddxforwardedheaders' title='Navigate to start of snippet `copyandaddxforwardedheaders`'>anchor</a></sup>
+<!-- endsnippet -->
 
 ### 2.4. Configuring ProxyKit's HttpClient
 
@@ -321,20 +325,28 @@ Below are two examples of what you might want to do:
 
 1. Configure the HTTP Client's timeout to 5 seconds:
 
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigureHttpClient =
-            client => client.Timeout = TimeSpan.FromSeconds(5));
-    ```
+<!-- snippet: ConfigureHttpTimeout -->
+<a id='snippet-configurehttptimeout'/></a>
+```cs
+services.AddProxy(httpClientBuilder =>
+    httpClientBuilder.ConfigureHttpClient(client =>
+        client.Timeout = TimeSpan.FromSeconds(5)));
+```
+<sup><a href='/src/ProxyKit.Tests/Snippets/Snippets.cs#L10-L14' title='File snippet `configurehttptimeout` was extracted from'>snippet source</a> | <a href='#snippet-configurehttptimeout' title='Navigate to start of snippet `configurehttptimeout`'>anchor</a></sup>
+<!-- endsnippet -->
 
 2. Configure the primary `HttpMessageHandler`. This is typically used in testing
    to inject a test handler (see _Testing_ below). 
 
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigurePrimaryHttpMessageHandler = 
-            () => _testMessageHandler);
-    ```
+<!-- snippet: ConfigurePrimaryHttpMessageHandler -->
+<a id='snippet-configureprimaryhttpmessagehandler'/></a>
+```cs
+services.AddProxy(httpClientBuilder =>
+    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(
+        () => _testMessageHandler));
+```
+<sup><a href='/src/ProxyKit.Tests/Snippets/Snippets.cs#L17-L21' title='File snippet `configureprimaryhttpmessagehandler` was extracted from'>snippet source</a> | <a href='#snippet-configureprimaryhttpmessagehandler' title='Navigate to start of snippet `configureprimaryhttpmessagehandler`'>anchor</a></sup>
+<!-- endsnippet -->
 
 ### 2.5. Error handling
 
@@ -397,7 +409,9 @@ Round Robin simply distributes requests as they arrive to the next host in a
 distribution list. With optional weighting, more requests are sent to the host with
 the greater weight.
 
-```csharp
+<!-- snippet: WeightedRoundRobin -->
+<a id='snippet-weightedroundrobin'/></a>
+```cs
 public void Configure(IApplicationBuilder app)
 {
     var roundRobin = new RoundRobin
@@ -417,6 +431,8 @@ public void Configure(IApplicationBuilder app)
         });
 }
 ```
+<sup><a href='/src/ProxyKit.Tests/Snippets/WeightedRoundRobin.cs#L6-L25' title='File snippet `weightedroundrobin` was extracted from'>snippet source</a> | <a href='#snippet-weightedroundrobin' title='Navigate to start of snippet `weightedroundrobin`'>anchor</a></sup>
+<!-- endsnippet -->
 
 ### 2.8. Typed Handlers
 
@@ -430,12 +446,14 @@ Typed handlers must implement `IProxyHandler` that has a single method with same
 signature as `HandleProxyRequest`. In this example our typed handler has a
 dependency on an imaginary service to lookup hosts:
 
-```csharp
+<!-- snippet: TypedHandler -->
+<a id='snippet-typedhandler'/></a>
+```cs
 public class MyTypedHandler : IProxyHandler
 {
     private IUpstreamHostLookup _upstreamHostLookup;
 
-    public MyTypeHandler(IUpstreamHostLookup upstreamHostLookup)
+    public MyTypedHandler(IUpstreamHostLookup upstreamHostLookup)
     {
         _upstreamHostLookup = upstreamHostLookup;
     }
@@ -450,6 +468,8 @@ public class MyTypedHandler : IProxyHandler
     }
 }
 ```
+<sup><a href='/src/ProxyKit.Tests/Snippets/MyTypedHandler.cs#L6-L26' title='File snippet `typedhandler` was extracted from'>snippet source</a> | <a href='#snippet-typedhandler' title='Navigate to start of snippet `typedhandler`'>anchor</a></sup>
+<!-- endsnippet -->
 
 We then need to register our typed handler service:
 
@@ -501,21 +521,28 @@ Related issues and discussions:
 To support PathBase dynamically in your application with `X-Forwarded-PathBase`,
 examine the header early in your pipeline and set the `PathBase` accordingly:
 
-```csharp
-var options = new ForwardedHeadersOptions
+<!-- snippet: SupportPathBaseDynamically -->
+<a id='snippet-supportpathbasedynamically'/></a>
+```cs
+public void Configure(IApplicationBuilder app)
 {
-   ...
-};
-app.UseForwardedHeaders(options);
-app.Use((context, next) => 
-{
-    if (context.Request.Headers.TryGetValue("X-Forwarded-PathBase", out var pathBases))
+    var options = new ForwardedHeadersOptions
     {
-        context.Request.PathBase = pathBases.First();
-    }
-    return next();
-});
+        //Other options
+    };
+    app.UseForwardedHeaders(options);
+    app.Use((context, next) =>
+    {
+        if (context.Request.Headers.TryGetValue("X-Forwarded-PathBase", out var pathBases))
+        {
+            context.Request.PathBase = pathBases.First();
+        }
+        return next();
+    });
+}
 ```
+<sup><a href='/src/ProxyKit.Tests/Snippets/SupportPathBaseDynamically.cs#L6-L23' title='File snippet `supportpathbasedynamically` was extracted from'>snippet source</a> | <a href='#snippet-supportpathbasedynamically' title='Navigate to start of snippet `supportpathbasedynamically`'>anchor</a></sup>
+<!-- endsnippet -->
 
 Alternatively you can use ProxyKit's `UseXForwardedHeaders` extension that
 performs the same as the above (including calling `UseForwardedHeaders`):

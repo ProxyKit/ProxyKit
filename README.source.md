@@ -150,16 +150,7 @@ You may optionally also add the "internal" proxy details to the `X-Forwarded-*`
 header values by combining `CopyXForwardedHeaders()` and
 `AddXForwardedHeaders()` (*note the order is important*):
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001/")
-        .CopyXForwardedHeaders()
-        .AddXForwardedHeaders()
-        .Send());
-}
-```
+snippet: CopyAndAddXForwardedHeaders
 
 ### 2.4. Configuring ProxyKit's HttpClient
 
@@ -176,20 +167,12 @@ Below are two examples of what you might want to do:
 
 1. Configure the HTTP Client's timeout to 5 seconds:
 
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigureHttpClient =
-            client => client.Timeout = TimeSpan.FromSeconds(5));
-    ```
+snippet: ConfigureHttpTimeout
 
 2. Configure the primary `HttpMessageHandler`. This is typically used in testing
    to inject a test handler (see _Testing_ below). 
 
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigurePrimaryHttpMessageHandler = 
-            () => _testMessageHandler);
-    ```
+snippet: ConfigurePrimaryHttpMessageHandler
 
 ### 2.5. Error handling
 
@@ -252,26 +235,7 @@ Round Robin simply distributes requests as they arrive to the next host in a
 distribution list. With optional weighting, more requests are sent to the host with
 the greater weight.
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    var roundRobin = new RoundRobin
-    {
-        new UpstreamHost("http://localhost:5001/", weight: 1),
-        new UpstreamHost("http://localhost:5002/", weight: 2)
-    };
-
-    app.RunProxy(
-        async context =>
-        {
-            var host = roundRobin.Next();
-
-            return await context
-                .ForwardTo(host)
-                .Send();
-        });
-}
-```
+snippet: WeightedRoundRobin
 
 ### 2.8. Typed Handlers
 
@@ -285,26 +249,7 @@ Typed handlers must implement `IProxyHandler` that has a single method with same
 signature as `HandleProxyRequest`. In this example our typed handler has a
 dependency on an imaginary service to lookup hosts:
 
-```csharp
-public class MyTypedHandler : IProxyHandler
-{
-    private IUpstreamHostLookup _upstreamHostLookup;
-
-    public MyTypeHandler(IUpstreamHostLookup upstreamHostLookup)
-    {
-        _upstreamHostLookup = upstreamHostLookup;
-    }
-
-    public Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
-    {
-        var upstreamHost = _upstreamHostLookup.Find(context);
-        return context
-            .ForwardTo(upstreamHost)
-            .AddXForwardedHeaders()
-            .Send();
-    }
-}
-```
+snippet: TypedHandler
 
 We then need to register our typed handler service:
 
@@ -356,21 +301,7 @@ Related issues and discussions:
 To support PathBase dynamically in your application with `X-Forwarded-PathBase`,
 examine the header early in your pipeline and set the `PathBase` accordingly:
 
-```csharp
-var options = new ForwardedHeadersOptions
-{
-   ...
-};
-app.UseForwardedHeaders(options);
-app.Use((context, next) => 
-{
-    if (context.Request.Headers.TryGetValue("X-Forwarded-PathBase", out var pathBases))
-    {
-        context.Request.PathBase = pathBases.First();
-    }
-    return next();
-});
-```
+snippet: SupportPathBaseDynamically
 
 Alternatively you can use ProxyKit's `UseXForwardedHeaders` extension that
 performs the same as the above (including calling `UseForwardedHeaders`):
