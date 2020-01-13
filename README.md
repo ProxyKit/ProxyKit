@@ -488,7 +488,7 @@ When adding the proxy to the pipeline, use the generic form:
 public void ConfigureServices(IServiceCollection services)
 {
     ...
-    appInner.RunProxy<MyTypedHandler>());
+    appInner.RunProxy<MyTypedHandler>();
     ...
 }
 ```
