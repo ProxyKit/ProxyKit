@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ProxyKit.Infra;
-using ProxyKit.Testing;
+using ProxyKit.RoutingHandler;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -50,7 +50,7 @@ namespace ProxyKit
 
             var upstreamhost = new WebHostBuilder()
                 .Configure(
-                    app => app.Use(async (c, n) =>
+                    app => app.Use((c, n) =>
                     {
                         if (c.Request.ContentLength > 0)
                         {
@@ -60,6 +60,8 @@ namespace ProxyKit
                         {
                             c.Response.StatusCode = 400;
                         }
+
+                        return Task.CompletedTask;
                     }));
 
 
@@ -71,7 +73,7 @@ namespace ProxyKit
             using (var downstreamServer = new TestServer(downstreamHost))
             using (var upstreamServer = new TestServer(upstreamhost))
             {
-                router.AddHandler("upstream", 80, upstreamServer.CreateHandler());
+                router.AddHandler(new Origin("upstream", 80), upstreamServer.CreateHandler());
 
                 var client = downstreamServer.CreateClient();
                 var result = await client.PostAsJsonAsync("/post", new
