@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ProxyKit.Infra;
+using ProxyKit.Testing;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,6 +44,59 @@ namespace ProxyKit
                 result.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
             }
         }
+
+        [Fact]
+        public async Task Body_for_post_is_not_lost()
+        {
+            var router = new RoutingMessageHandler();
+
+            var upstreamhost = new WebHostBuilder()
+                .Configure(
+                    app => app.Use(async (c, n) =>
+                    {
+                        if (c.Request.ContentLength > 0)
+                        {
+                            c.Response.StatusCode = 200;
+                        }
+                        else
+                        {
+                            c.Response.StatusCode = 400;
+                        }
+                    }));
+
+
+            var downstreamHost = new WebHostBuilder()
+                .ConfigureServices(s => s.AddProxy(c => c.ConfigurePrimaryHttpMessageHandler(() => router)))
+                .Configure(
+                    app => app.RunProxy(HandleProxyRequest));
+
+            using (var downstreamServer = new TestServer(downstreamHost))
+            using (var upstreamServer = new TestServer(upstreamhost))
+            {
+                router.AddHandler("upstream", 80, upstreamServer.CreateHandler());
+
+                var client = downstreamServer.CreateClient();
+                var result = await client.PostAsJsonAsync("/post", new
+                {
+                    name="henk"
+                });
+
+                result.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+            }
+        }
+
+        private static Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
+        {
+            //if (context.Request.Method != "GET" && context.Request.ContentLength == null)
+            //{
+            //    // Hack: content length is not always set correctly when sending requests from test server
+            //    context.Request.ContentLength = context.Request.Body?.Length;
+            //}
+
+            return context.ForwardTo(new UpstreamHost("http://upstream")).Send();
+        }
+
 
         [Fact]
         public async Task Responses_from_real_server_are_handled_correctly()
