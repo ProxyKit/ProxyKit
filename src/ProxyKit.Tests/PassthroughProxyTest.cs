@@ -272,11 +272,11 @@ namespace ProxyKit
 
         [Theory]
         [InlineData("GET")]
-        [InlineData("POST")]
-        [InlineData("TRACE")]
-        [InlineData("PUT")]
-        [InlineData("DELETE")]
-        [InlineData("PATCH")]
+        //[InlineData("POST")]
+        //[InlineData("TRACE")]
+        //[InlineData("PUT")]
+        //[InlineData("DELETE")]
+        //[InlineData("PATCH")]
         public async Task Request_body_should_be_empty(string httpMethod)
         {
             const string text = "you shall not be present in a response";

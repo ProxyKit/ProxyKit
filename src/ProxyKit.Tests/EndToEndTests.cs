@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -50,18 +51,21 @@ namespace ProxyKit
 
             var upstreamhost = new WebHostBuilder()
                 .Configure(
-                    app => app.Use((c, n) =>
+                    app => app.Use(async (c, n) =>
                     {
-                        if (c.Request.ContentLength > 0)
+                        using (var reader = new StreamReader(c.Request.Body))
                         {
-                            c.Response.StatusCode = 200;
-                        }
-                        else
-                        {
-                            c.Response.StatusCode = 400;
-                        }
+                            var body = await reader.ReadToEndAsync();
+                            if (body.Length > 0)
+                            {
+                                c.Response.StatusCode = 200;
+                            }
+                            else
+                            {
+                                c.Response.StatusCode = 400;
+                            }
 
-                        return Task.CompletedTask;
+                        }
                     }));
 
 

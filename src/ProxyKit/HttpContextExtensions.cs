@@ -53,7 +53,8 @@ namespace ProxyKit
             var requestMessage = new HttpRequestMessage();
             
             //Only copy Body when original request has a body.
-            if (request.ContentLength.HasValue)
+            if (//request.Method != "GET" || 
+                request.ContentLength.HasValue)
             {
                 var streamContent = new StreamContent(request.Body);
                 requestMessage.Content = streamContent;
