@@ -295,10 +295,9 @@ namespace ProxyKit
                     router.AddHandler(new Origin("upstream", 80), upstreamServer.CreateHandler());
 
                     var client = downstreamServer.CreateClient();
-                    var result = await client.PostAsJsonAsync("/post", new
-                    {
-                        name = "henk"
-                    });
+
+                    var content = new StringContent("henk", Encoding.UTF8, "text/plain");
+                    var result = await client.PostAsync("/post", content);
 
                     result.StatusCode.ShouldBe(HttpStatusCode.OK);
                 }
