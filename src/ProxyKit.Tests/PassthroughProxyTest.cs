@@ -11,8 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using ProxyKit.RoutingHandler;
 using Shouldly;
 using Xunit;
 
@@ -309,6 +311,55 @@ namespace ProxyKit
             sentContent.ShouldBeNull();
 
             server.Dispose();
+        }
+
+        [Fact]
+        public async Task Body_for_post_is_not_lost()
+        {
+            var router = new RoutingMessageHandler();
+
+            var upstreamHost = new WebHostBuilder()
+                .Configure(
+                    app => app.Use((c, n) =>
+                    {
+                        c.Response.StatusCode = c.Request.ContentLength > 0
+                            ? 200
+                            : 400;
+                        return Task.CompletedTask;
+                    }));
+
+
+            var downstreamHost = new WebHostBuilder()
+                .ConfigureServices(s => s.AddProxy(c => c.ConfigurePrimaryHttpMessageHandler(() => router)))
+                .Configure(
+                    app => app.RunProxy(HandleProxyRequest));
+
+            using (var downstreamServer = new TestServer(downstreamHost))
+            {
+                using (var upstreamServer = new TestServer(upstreamHost))
+                {
+                    router.AddHandler(new Origin("upstream", 80), upstreamServer.CreateHandler());
+
+                    var client = downstreamServer.CreateClient();
+                    var result = await client.PostAsJsonAsync("/post", new
+                    {
+                        name = "henk"
+                    });
+
+                    result.StatusCode.ShouldBe(HttpStatusCode.OK);
+                }
+            }
+        }
+
+        private static Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
+        {
+            //if (context.Request.Method != "GET" && context.Request.ContentLength == null)
+            //{
+            //    // Hack: content length is not always set correctly when sending requests from test server
+            //    context.Request.ContentLength = context.Request.Body?.Length;
+            //}
+
+            return context.ForwardTo(new UpstreamHost("http://upstream")).Send();
         }
     }
 
