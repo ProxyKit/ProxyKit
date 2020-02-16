@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -17,16 +18,19 @@ using Microsoft.Extensions.DependencyInjection;
 using ProxyKit.RoutingHandler;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ProxyKit
 {
     public class ProxyTests
     {
+        private readonly ITestOutputHelper _outputHelper;
         private TestMessageHandler _testMessageHandler;
         private readonly IWebHostBuilder _builder;
 
-        public ProxyTests()
+        public ProxyTests(ITestOutputHelper outputHelper)
         {
+            _outputHelper = outputHelper;
             _testMessageHandler = new TestMessageHandler(req =>
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Created);
@@ -276,7 +280,7 @@ namespace ProxyKit
                 .Configure(
                     app => app.Use((c, n) =>
                     {
-                        c.Response.StatusCode = c.Request.ContentLength > 0
+                        c.Response.StatusCode = c.Request.ContentLength > 0 || c.Request.Body.CanRead
                             ? 200
                             : 400;
                         return Task.CompletedTask;
