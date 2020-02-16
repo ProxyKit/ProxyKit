@@ -37,25 +37,39 @@ namespace ProxyKit
             var response = await client.GetAsync("/normal");
 
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
 
-            // error status codes should just be proxied
-            response = await client.GetAsync("/badrequest");
+        [Fact]
+        public async Task Error_codes_should_be_proxied()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync("/badrequest");
+
             response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
             response = await client.GetAsync("/error");
             response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        }
 
-            // server timeouts should return GatewayTimeout 
-            using (var cts = new CancellationTokenSource())
-            {
-                cts.CancelAfter(TimeSpan.FromSeconds(4)); // should be longer than timeout
-                response = await client.GetAsync("/slow", cts.Token);
-                response.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
-            }
+        [Fact]
+        public async Task Redirect_location_header_should_have_correct_uri()
+        {
+            var client = CreateClient();
 
-            // redirect location header should have correct host
-            response = await client.GetAsync("/redirect");
+            var response = await client.GetAsync("/redirect");
+
             response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
             response.Headers.Location.ShouldBe(new Uri($"http://localhost:{ProxyPort}/redirect"));
+        }
+
+        [Fact]
+        public async Task Proxy_client_timeout_timeout_should_return_GatewayTimeout()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync("/slow");
+
+            response.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
         }
 
         protected class UpstreamStartup
@@ -100,7 +114,7 @@ namespace ProxyKit
 
                 app.Map("/slow", a => a.Run(async ctx =>
                 {
-                    await Task.Delay(5000);
+                    await Task.Delay(4000);
                     ctx.Response.StatusCode = 200;
                     await ctx.Response.WriteAsync("Ok... i guess");
                 }));
