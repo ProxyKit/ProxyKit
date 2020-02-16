@@ -238,11 +238,6 @@ namespace ProxyKit
 
             _builder.Configure(app =>
             {
-                app.Use((context, next) =>
-                {
-                    context.Request.ContentLength = contentStream.Length;
-                    return next();
-                });
                 app.RunProxy(context => context
                     .ForwardTo("http://localhost:5000/bar/")
                     .Send());
