@@ -21,8 +21,12 @@ namespace ProxyKit
 
         protected override int ProxyPort => _proxyPort;
 
-        protected override HttpClient CreateClient() 
-            => _proxyTestServer.CreateClient();
+        protected override HttpClient CreateClient()
+        {
+            var client = _proxyTestServer.CreateClient();
+            client.BaseAddress = new Uri($"http://localhost:{_proxyPort}/");
+            return client;
+        }
 
         public override Task InitializeAsync()
         {
@@ -36,7 +40,6 @@ namespace ProxyKit
             var proxyWebHostBuilder = new WebHostBuilder()
                 .UseStartup<ProxyStartup>()
                 .UseSetting("port", _proxyPort.ToString())
-                .UseSetting("timeout", "60")
                 .ConfigureServices(services =>
                 {
                     services.AddProxy(c =>
