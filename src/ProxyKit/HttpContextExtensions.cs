@@ -52,8 +52,9 @@ namespace ProxyKit
         {
             var requestMessage = new HttpRequestMessage();
             
+            Console.WriteLine(request.ContentLength.HasValue);
             //Only copy Body when original request has a body.
-            if (request.ContentLength.HasValue)
+            if (request.Body.CanRead)
             {
                 var streamContent = new StreamContent(request.Body);
                 requestMessage.Content = streamContent;
