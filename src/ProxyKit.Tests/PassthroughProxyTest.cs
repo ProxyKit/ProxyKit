@@ -267,47 +267,6 @@ namespace ProxyKit
             contentStream.Dispose();
         }
 
-        [Theory]
-        [InlineData("GET")]
-        [InlineData("POST")]
-        [InlineData("TRACE")]
-        [InlineData("PUT")]
-        [InlineData("DELETE")]
-        [InlineData("PATCH")]
-        public async Task Request_body_should_be_empty(string httpMethod)
-        {
-            const string text = "you shall not be present in a response";
-
-            _testMessageHandler = new TestMessageHandler(message => new HttpResponseMessage(HttpStatusCode.OK));
-
-            _builder.Configure(app =>
-                app.RunProxy(
-                    context => context
-                               .ForwardTo("http://localhost:5000/bar/")
-                               .Send())
-                )
-                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
-                {
-                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
-                }));
-
-            var server = new TestServer(_builder);
-            var client = server.CreateClient();
-
-            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
-            {
-                Content = new StringContent(text)
-            };
-
-            await client.SendAsync(requestMessage);
-            var sentRequest = _testMessageHandler.SentRequestMessages.First();
-            var sentContent = sentRequest.Content;
-
-            sentContent.ShouldBeNull();
-
-            server.Dispose();
-        }
-
         [Fact]
         public async Task Body_for_post_is_not_lost()
         {
