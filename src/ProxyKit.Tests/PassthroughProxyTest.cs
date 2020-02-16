@@ -288,7 +288,9 @@ namespace ProxyKit
 
 
             var downstreamHost = new WebHostBuilder()
-                .ConfigureServices(s => s.AddProxy(c => c.ConfigurePrimaryHttpMessageHandler(() => router)))
+                .ConfigureServices(s => 
+                    s.AddProxy(c =>
+                        c.ConfigurePrimaryHttpMessageHandler(() => router)))
                 .Configure(
                     app => app.RunProxy(HandleProxyRequest));
 
@@ -312,7 +314,7 @@ namespace ProxyKit
         {
             //if (context.Request.Method != "GET" && context.Request.ContentLength == null)
             //{
-            //    // Hack: content length is not always set correctly when sending requests from test server
+            //    // Hack: content length is not alwaysC:\dev\proxykit\ProxyKit\src\ProxyKit.Tests\Class.cs set correctly when sending requests from test server
             //    context.Request.ContentLength = context.Request.Body?.Length;
             //}
 
