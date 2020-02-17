@@ -45,7 +45,7 @@ namespace ProxyKit
                     services.AddProxy(c =>
                     {
                         c.ConfigurePrimaryHttpMessageHandler(() => router);
-                        c.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(2));
+                        c.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(1));
                     });
                 });
             _proxyTestServer = new TestServer(proxyWebHostBuilder);

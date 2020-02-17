@@ -72,7 +72,7 @@ namespace ProxyKit
                 .ConfigureServices(services =>
                 {
                     services.AddProxy(httpClientBuilder => httpClientBuilder
-                        .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(2)));
+                        .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(1)));
                 })
                 .Build();
             await _proxyServer.StartAsync();

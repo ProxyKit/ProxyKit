@@ -114,7 +114,7 @@ namespace ProxyKit
 
                 app.Map("/slow", a => a.Run(async ctx =>
                 {
-                    await Task.Delay(4000);
+                    await Task.Delay(10000);
                     ctx.Response.StatusCode = 200;
                     await ctx.Response.WriteAsync("Ok... i guess");
                 }));
