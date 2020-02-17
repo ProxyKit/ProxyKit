@@ -88,7 +88,7 @@ namespace ProxyKit
                     // When server is stopped, should return 
                     await server.StopAsync();
                     result = await client.GetAsync("/realserver/normal");
-                    result?.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+                    result?.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
                 }
             }
         }
@@ -113,13 +113,13 @@ namespace ProxyKit
                     // When server is stopped, should return ServiceUnavailable.
                     await server.StopAsync();
                     result = await client.GetAsync("/realserver/normal");
-                    Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
+                    result.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
                 }
             }
         }
 
         [Fact]
-        public async Task When_upstream_host_is_not_running_and_timeout_is_small_then_operation_cancelled_is_service_unavailable()
+        public async Task When_upstream_host_is_not_running_and_timeout_is_small_then_operation_cancelled_is_bad_gateway()
         {
             using (var server = RealStartup.BuildKestrelBasedServerOnRandomPort(_testOutputHelper))
             {
@@ -134,7 +134,7 @@ namespace ProxyKit
                     var client = testServer.CreateClient();
                     await server.StopAsync();
                     var result = await client.GetAsync("/realserver/normal");
-                    Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
+                    Assert.Equal(HttpStatusCode.BadGateway, result.StatusCode);
                 }
             }
         }

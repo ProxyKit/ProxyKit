@@ -40,7 +40,7 @@ namespace ProxyKit
             await _upstreamServer.StopAsync();
             
             var response = await client.GetAsync("/normal");
-            response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+            response.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
         }
 
         public override async Task InitializeAsync()
