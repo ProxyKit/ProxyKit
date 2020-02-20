@@ -6,6 +6,9 @@
 [![NuGet][nuget badge]][nuget package]
 [![Feedz][feedz badge]][feedz package]
 
+ℹ️ **`master` branch is now focused on the next major version, 3. To view docs related to
+the current supported release, go to `releases/2.x` [branch](https://github.com/proxykit/ProxyKit/tree/releases/2.x). Pull requests for the current release should target that branch.**
+
 A toolkit to create code-first **HTTP Reverse Proxies** hosted in ASP.NET Core as middleware. This
 allows focused code-first proxies that can be embedded in existing ASP.NET Core
 applications or deployed as a standalone server. Deployable anywhere ASP.NET
@@ -20,35 +23,8 @@ customization of headers and (optionally) request / response bodies. It also
 uses [`HttpClientFactory`] internally that will mitigate against DNS caching
 issues making it suitable for microservice / container environments.
 
-<!-- TOC depthFrom:2 -->
+toc
 
-- [1. Quick Start](#1-quick-start)
-    - [1.1. Install](#11-install)
-    - [1.2. Forward HTTP Requests](#12-forward-http-requests)
-    - [1.3. Forward WebSocket Requests](#13-forward-websocket-requests)
-- [2. Core Features](#2-core-features)
-    - [2.1. Customising the upstream HTTP request](#21-customising-the-upstream-http-request)
-    - [2.2. Customising the upstream response](#22-customising-the-upstream-response)
-    - [2.3. X-Forwarded Headers](#23-x-forwarded-headers)
-        - [2.3.1. Client Sent X-Forwarded-Headers](#231-client-sent-x-forwarded-headers)
-        - [2.3.2. Adding `X-Forwarded-*` Headers](#232-adding-x-forwarded--headers)
-        - [2.3.3. Copying `X-Forwarded` headers](#233-copying-x-forwarded-headers)
-    - [2.4. Configuring ProxyKit's HttpClient](#24-configuring-proxykits-httpclient)
-    - [2.5. Error handling](#25-error-handling)
-    - [2.6. Testing](#26-testing)
-    - [2.7. Load Balancing](#27-load-balancing)
-        - [2.7.1. Weighted Round Robin](#271-weighted-round-robin)
-    - [2.8. Typed Handlers](#28-typed-handlers)
-- [3. Recipes](#3-recipes)
-- [4. Making upstream servers reverse proxy friendly](#4-making-upstream-servers-reverse-proxy-friendly)
-- [5. Performance considerations](#5-performance-considerations)
-- [6. Note about serverless](#6-note-about-serverless)
-- [7. Comparison with Ocelot](#7-comparison-with-ocelot)
-- [8. How to build](#8-how-to-build)
-- [9. Contributing / Feedback / Questions](#9-contributing--feedback--questions)
-- [10. Articles, blogs and other external links](#10-articles-blogs-and-other-external-links)
-
-<!-- /TOC -->
 
 ## 1. Quick Start
 
@@ -75,15 +51,7 @@ public void ConfigureServices(IServiceCollection services)
 
 Forward HTTP requests to `upstream-server:5001`:
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001/")
-        .AddXForwardedHeaders()
-        .Send());
-}
-```
+snippet: ForwardHTTPToUpstreamServer
 
 What is happening here?
 
@@ -105,15 +73,7 @@ Note: `RunProxy` is [terminal] - anything added to the pipeline _after_
 
 Forward WebSocket requests to `upstream-server:5002`:
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.UseWebSockets();
-    app.UseWebSocketProxy(
-        context => new Uri("ws://upstream-host:80/"),
-        options => options.AddXForwardedHeaders());
-}
-```
+snippet: ForwardWebSocketToUpstreamServer
 
 What is happening here?
 
@@ -134,73 +94,22 @@ default; one must opt in any behaviours explicitly.
 
 In this example we will add a `X-Correlation-ID` header if the incoming request does not bear one:
 
-```csharp
-public const string XCorrelationId = "X-Correlation-ID";
-
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(context =>
-    {
-        var forwardContext = context.ForwardTo("http://upstream-server:5001/");
-        if (!forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
-        {
-            forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
-        }
-        return forwardContext.Send();
-    });
-}
-```
+snippet: AddXCorrelationIDHeader
 
 This can be encapsulated as an extension method:
 
-```csharp
-public static class CorrelationIdExtensions
-{
-    public const string XCorrelationId = "X-Correlation-ID";
-    
-    public static ForwardContext ApplyCorrelationId(this ForwardContext forwardContext)
-    {
-        if (!forwardContext.UpstreamRequest.Headers.Contains(XCorrelationId))
-        {
-            forwardContext.UpstreamRequest.Headers.Add(XCorrelationId, Guid.NewGuid().ToString());
-        }
-        return forwardContext;
-    }
-}
-```
+snippet: CorrelationIdExtensions
 
 ... making the proxy code a little nicer to read:
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001/")
-        .ApplyCorrelationId()
-        .Send());
-}
-```
+snippet: AddXCorrelationIDHeaderWithExtension
 
 ### 2.2. Customising the upstream response
 
 The response from an upstream server can be modified before it is sent to the
 client. In this example we are removing a header:
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(async context =>
-    {
-        var response = await context
-            .ForwardTo("http://localhost:5001/")
-            .Send();
-
-        response.Headers.Remove("MachineID");
-
-        return response;
-    });
-}
-```
+snippet: CustomisingTheUpstreamResponse
 
 ### 2.3. X-Forwarded Headers
 
@@ -222,15 +131,7 @@ in ASP.NET Core.
 
 To add `X-Forwarded-*` headers to the request to the upstream server:
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001/")
-        .AddXForwardedHeaders()
-        .Send());
-}
-```
+snippet: AddXForwardedHeadersToRequestToUpstreamServer
 
 This will add `X-Forwarded-For`, `X-Forwarded-Host` and `X-Forwarded-Proto`
 headers to the upstream request using values from `HttpContext`. If the proxy
@@ -243,30 +144,13 @@ Chaining proxies is a common pattern in more complex setups. In this case, if
 the proxy is an "internal" proxy, you will want to copy the "X-Forwarded-*"
 headers from previous proxy. To do so, use `CopyXForwardedHeaders()`:
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001/")
-        .CopyXForwardedHeaders()
-        .Send());
-}
-```
+snippet: CopyingXForwardedHeaders
 
 You may optionally also add the "internal" proxy details to the `X-Forwarded-*`
 header values by combining `CopyXForwardedHeaders()` and
 `AddXForwardedHeaders()` (*note the order is important*):
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    app.RunProxy(context => context
-        .ForwardTo("http://upstream-server:5001/")
-        .CopyXForwardedHeaders()
-        .AddXForwardedHeaders()
-        .Send());
-}
-```
+snippet: CopyAndAddXForwardedHeaders
 
 ### 2.4. Configuring ProxyKit's HttpClient
 
@@ -283,20 +167,12 @@ Below are two examples of what you might want to do:
 
 1. Configure the HTTP Client's timeout to 5 seconds:
 
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigureHttpClient =
-            client => client.Timeout = TimeSpan.FromSeconds(5));
-    ```
+snippet: ConfigureHttpTimeout
 
 2. Configure the primary `HttpMessageHandler`. This is typically used in testing
    to inject a test handler (see _Testing_ below). 
 
-    ```csharp
-    services.AddProxy(httpClientBuilder =>
-        httpClientBuilder.ConfigurePrimaryHttpMessageHandler = 
-            () => _testMessageHandler);
-    ```
+snippet: ConfigurePrimaryHttpMessageHandler
 
 ### 2.5. Error handling
 
@@ -359,26 +235,7 @@ Round Robin simply distributes requests as they arrive to the next host in a
 distribution list. With optional weighting, more requests are sent to the host with
 the greater weight.
 
-```csharp
-public void Configure(IApplicationBuilder app)
-{
-    var roundRobin = new RoundRobin
-    {
-        new UpstreamHost("http://localhost:5001/", weight: 1),
-        new UpstreamHost("http://localhost:5002/", weight: 2)
-    };
-
-    app.RunProxy(
-        async context =>
-        {
-            var host = roundRobin.Next();
-
-            return await context
-                .ForwardTo(host)
-                .Send();
-        });
-}
-```
+snippet: WeightedRoundRobin
 
 ### 2.8. Typed Handlers
 
@@ -392,26 +249,7 @@ Typed handlers must implement `IProxyHandler` that has a single method with same
 signature as `HandleProxyRequest`. In this example our typed handler has a
 dependency on an imaginary service to lookup hosts:
 
-```csharp
-public class MyTypedHandler : IProxyHandler
-{
-    private IUpstreamHostLookup _upstreamHostLookup;
-
-    public MyTypeHandler(IUpstreamHostLookup upstreamHostLookup)
-    {
-        _upstreamHostLookup = upstreamHostLookup;
-    }
-
-    public Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
-    {
-        var upstreamHost = _upstreamHostLookup.Find(context);
-        return context
-            .ForwardTo(upstreamHost)
-            .AddXForwardedHeaders()
-            .Send();
-    }
-}
-```
+snippet: TypedHandler
 
 We then need to register our typed handler service:
 
@@ -430,7 +268,7 @@ When adding the proxy to the pipeline, use the generic form:
 public void ConfigureServices(IServiceCollection services)
 {
     ...
-    appInner.RunProxy<MyTypedHandler>());
+    appInner.RunProxy<MyTypedHandler>();
     ...
 }
 ```
@@ -463,21 +301,7 @@ Related issues and discussions:
 To support PathBase dynamically in your application with `X-Forwarded-PathBase`,
 examine the header early in your pipeline and set the `PathBase` accordingly:
 
-```csharp
-var options = new ForwardedHeadersOptions
-{
-   ...
-};
-app.UseForwardedHeaders(options);
-app.Use((context, next) => 
-{
-    if (context.Request.Headers.TryGetValue("X-Forwarded-PathBase", out var pathBases))
-    {
-        context.Request.PathBase = pathBases.First();
-    }
-    return next();
-});
-```
+snippet: SupportPathBaseDynamically
 
 Alternatively you can use ProxyKit's `UseXForwardedHeaders` extension that
 performs the same as the above (including calling `UseForwardedHeaders`):
