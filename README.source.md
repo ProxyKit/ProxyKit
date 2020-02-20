@@ -221,7 +221,7 @@ to specific hosts based on the origin it is configured with. For ProxyKit
 to forward requests (in memory) to the upstream hosts, it needs to be configured
 to use the `RoutingMessageHandler` as its primary `HttpMessageHandler`.
 
-Full example can been viewed in [Recipe 6](src/Recipes/06_Testing.cs).
+Full example can been viewed in [Recipe 6](https://github.com/ProxyKit/Recipes/blob/master/Recipes/06_Testing.cs).
 
 ### 2.7. Load Balancing
 
