@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <Description>An AspNet core middleware toolkit to create proxy servers. Can be embedded in applications or used as a standalone proxy.</Description>
     <PackageId>ProxyKit</PackageId>
     <Authors>Damian Hickey</Authors>
