@@ -65,12 +65,6 @@ namespace ProxyKit
                 // Happens when server is not reachable
                 return new HttpResponseMessage(HttpStatusCode.BadGateway);
             }
-            // HACK - occurs if when the request is cancelled. This is here to 
-            // give same behaviour as real server.
-            catch (IOException ex) when (ex.Source == "Microsoft.AspNetCore.TestHost")
-            {
-                return new HttpResponseMessage(HttpStatusCode.GatewayTimeout);
-            }
         }
     }
 }
