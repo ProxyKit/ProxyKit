@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace ProxyKit.Testing
     ///     An <see cref="HttpMessageHandler"/> that acts like a router
     ///     between multiple handlers that represent different hosts.
     /// </summary>
+    [Obsolete("Use ProxyKit.RoutingHandler package instead: https://github.com/ProxyKit/RoutingHandler. This will be removed in a future version.", false)]
     public class RoutingMessageHandler : HttpMessageHandler
     {
         private readonly Dictionary<string, HostHandler> _hosts
