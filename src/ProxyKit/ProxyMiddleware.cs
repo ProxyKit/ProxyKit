@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -50,12 +51,26 @@ namespace ProxyKit
 
             if (responseMessage.Content != null)
             {
-                using (var responseStream = await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                using (var responseStream = await responseMessage
+                    .Content
+                    .ReadAsStreamAsync()
+                    .ConfigureAwait(false))
                 {
-                    await responseStream.CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted).ConfigureAwait(false);
-                    if (responseStream.CanWrite)
+                    try
                     {
-                        await responseStream.FlushAsync(context.RequestAborted).ConfigureAwait(false);    
+                        await responseStream
+                            .CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted)
+                            .ConfigureAwait(false);
+                        if (responseStream.CanWrite)
+                        {
+                            await responseStream
+                                .FlushAsync(context.RequestAborted)
+                                .ConfigureAwait(false);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        // Usually a client abort. Ignore.
                     }
                 }
             }

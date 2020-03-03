@@ -7,24 +7,30 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using ProxyKit.RoutingHandler;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ProxyKit
 {
     public class ProxyTests
     {
+        private readonly ITestOutputHelper _outputHelper;
         private TestMessageHandler _testMessageHandler;
         private readonly IWebHostBuilder _builder;
 
-        public ProxyTests()
+        public ProxyTests(ITestOutputHelper outputHelper)
         {
+            _outputHelper = outputHelper;
             _testMessageHandler = new TestMessageHandler(req =>
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Created);
@@ -177,7 +183,7 @@ namespace ProxyKit
         }
 
         [Fact]
-        public async Task Response_stream_should_not_be_Flushed_if_the_response_is_ReadyOnly()
+        public void Response_stream_should_not_be_Flushed_if_the_response_is_ReadyOnly()
         {
             _testMessageHandler = new TestMessageHandler(req =>
             {
@@ -199,7 +205,7 @@ namespace ProxyKit
                     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
                 }));
             var server = new TestServer(_builder);
-            HttpClient client = server.CreateClient();
+            var client = server.CreateClient();
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://mydomain.example")
             {
@@ -236,11 +242,6 @@ namespace ProxyKit
 
             _builder.Configure(app =>
             {
-                app.Use((context, next) =>
-                {
-                    context.Request.ContentLength = contentStream.Length;
-                    return next();
-                });
                 app.RunProxy(context => context
                     .ForwardTo("http://localhost:5000/bar/")
                     .Send());
@@ -270,45 +271,54 @@ namespace ProxyKit
             contentStream.Dispose();
         }
 
-        [Theory]
-        [InlineData("GET")]
-        [InlineData("POST")]
-        [InlineData("TRACE")]
-        [InlineData("PUT")]
-        [InlineData("DELETE")]
-        [InlineData("PATCH")]
-        public async Task Request_body_should_be_empty(string httpMethod)
+        [Fact]
+        public async Task Body_for_post_is_not_lost()
         {
-            const string text = "you shall not be present in a response";
+            var router = new RoutingMessageHandler();
 
-            _testMessageHandler = new TestMessageHandler(message => new HttpResponseMessage(HttpStatusCode.OK));
+            var upstreamHost = new WebHostBuilder()
+                .Configure(
+                    app => app.Use((c, n) =>
+                    {
+                        c.Response.StatusCode = c.Request.ContentLength > 0 || c.Request.Body.CanRead
+                            ? 200
+                            : 400;
+                        return Task.CompletedTask;
+                    }));
 
-            _builder.Configure(app =>
-                app.RunProxy(
-                    context => context
-                               .ForwardTo("http://localhost:5000/bar/")
-                               .Send())
-                )
-                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
-                {
-                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
-                }));
 
-            var server = new TestServer(_builder);
-            var client = server.CreateClient();
+            var downstreamHost = new WebHostBuilder()
+                .ConfigureServices(s => 
+                    s.AddProxy(c =>
+                        c.ConfigurePrimaryHttpMessageHandler(() => router)))
+                .Configure(
+                    app => app.RunProxy(HandleProxyRequest));
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
+            using (var downstreamServer = new TestServer(downstreamHost))
             {
-                Content = new StringContent(text)
-            };
+                using (var upstreamServer = new TestServer(upstreamHost))
+                {
+                    router.AddHandler(new Origin("upstream", 80), upstreamServer.CreateHandler());
 
-            await client.SendAsync(requestMessage);
-            var sentRequest = _testMessageHandler.SentRequestMessages.First();
-            var sentContent = sentRequest.Content;
+                    var client = downstreamServer.CreateClient();
 
-            sentContent.ShouldBeNull();
+                    var content = new StringContent("henk", Encoding.UTF8, "text/plain");
+                    var result = await client.PostAsync("/post", content);
 
-            server.Dispose();
+                    result.StatusCode.ShouldBe(HttpStatusCode.OK);
+                }
+            }
+        }
+
+        private static Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
+        {
+            //if (context.Request.Method != "GET" && context.Request.ContentLength == null)
+            //{
+            //    // Hack: content length is not alwaysC:\dev\proxykit\ProxyKit\src\ProxyKit.Tests\Class.cs set correctly when sending requests from test server
+            //    context.Request.ContentLength = context.Request.Body?.Length;
+            //}
+
+            return context.ForwardTo(new UpstreamHost("http://upstream")).Send();
         }
     }
 
