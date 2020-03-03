@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,20 +19,18 @@ namespace ProxyKit
     {
         private IWebHost _upstreamServer;
         private IWebHost _proxyServer;
-        private int _proxyPort;
 
         public KestrelServerAcceptanceTests(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {}
 
-        protected override int ProxyPort => _proxyPort;
+        protected override int ProxyPort => _proxyServer.GetServerPort();
 
         protected override HttpClient CreateClient()
         {
-            _proxyPort = _proxyServer.GetServerPort();
 ;           return new HttpClient
             {
-                BaseAddress = new Uri($"http://localhost:{_proxyPort}")
+                BaseAddress = new Uri($"http://localhost:{ProxyPort}")
             };
         }
 
@@ -40,6 +41,7 @@ namespace ProxyKit
             await _upstreamServer.StopAsync();
             
             var response = await client.GetAsync("/normal");
+
             response.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
         }
 
@@ -54,6 +56,50 @@ namespace ProxyKit
 
             response.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
         }
+
+        [Fact]
+        public async Task Can_proxy_websockets()
+        {
+            var clientWebSocket = new ClientWebSocket();
+            await clientWebSocket.ConnectAsync(new Uri($"ws://localhost:{ProxyPort}/ws/"), CancellationToken.None);
+            await SendText(clientWebSocket, "foo");
+
+            var result = await ReceiveText(clientWebSocket);
+            
+            result.ShouldBe("foo");
+
+            await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close", CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task Can_proxy_websockets_with_request_customization()
+        {
+            var clientWebSocket = new ClientWebSocket();
+            await clientWebSocket.ConnectAsync(new Uri($"ws://localhost:{ProxyPort}/ws-custom/?a=b"), CancellationToken.None);
+            await SendText(clientWebSocket, "foo");
+            
+            var result = await ReceiveText(clientWebSocket);
+
+            result.ShouldBe("X-TraceId=123?a=b"); // Custom websocket echos this header
+
+            await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close", CancellationToken.None);
+        }
+
+        private async Task SendText(ClientWebSocket clientWebSocket, string s)
+        {
+            var bytes = Encoding.UTF8.GetBytes(s);
+            await clientWebSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        private async Task<string> ReceiveText(ClientWebSocket clientWebSocket)
+        {
+            var buffer = new Memory<byte>(new byte[1024]);
+            var receiveResult = await clientWebSocket.ReceiveAsync(buffer, CancellationToken.None);
+            receiveResult.EndOfMessage.ShouldBeTrue();
+            var echoResult = Encoding.UTF8.GetString(buffer.Slice(0, receiveResult.Count).Span);
+            return echoResult;
+        }
+
 
         public override async Task InitializeAsync()
         {

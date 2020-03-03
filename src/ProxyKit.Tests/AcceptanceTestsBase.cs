@@ -62,16 +62,6 @@ namespace ProxyKit
             response.Headers.Location.ShouldBe(new Uri($"http://localhost:{ProxyPort}/redirect"));
         }
 
-        [Fact]
-        public async Task Proxy_client_timeout_timeout_should_return_GatewayTimeout()
-        {
-            var client = CreateClient();
-
-            var response = await client.GetAsync("/slow");
-
-            response.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
-        }
-
         public abstract Task InitializeAsync();
 
         public abstract Task DisposeAsync();
@@ -216,6 +206,23 @@ namespace ProxyKit
 
             public void Configure(IApplicationBuilder app)
             {
+                var port = _config.GetValue("port", 0);
+
+                app.UseWebSockets();
+                app.Map("/ws", appInner =>
+                {
+                    appInner.UseWebSocketProxy(
+                        _ => new Uri($"ws://localhost:{port}/ws/"),
+                        options => options.AddXForwardedHeaders());
+                });
+
+                app.Map("/ws-custom", appInner =>
+                {
+                    appInner.UseWebSocketProxy(
+                        _ => new Uri($"ws://localhost:{port}/ws-custom/"),
+                        options => options.SetRequestHeader("X-TraceId", "123"));
+                });
+
                 app.RunProxy<ProxyHandler>();
             }
         }
