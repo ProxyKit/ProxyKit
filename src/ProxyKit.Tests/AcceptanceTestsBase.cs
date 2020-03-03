@@ -125,10 +125,11 @@ namespace ProxyKit
                     await ctx.Response.WriteAsync("cute..... BUT IT'S WRONG!");
                 }));
 
-                app.Map("/redirect", a => a.Run(async ctx =>
+                app.Map("/redirect", a => a.Run(ctx =>
                 {
                     ctx.Response.StatusCode = 302;
                     ctx.Response.Headers.Add("Location", ctx.Request.GetEncodedUrl());
+                    return Task.CompletedTask;
                 }));
 
                 app.Map("/ws", wsApp =>

@@ -183,7 +183,7 @@ namespace ProxyKit
         }
 
         [Fact]
-        public async Task Response_stream_should_not_be_Flushed_if_the_response_is_ReadyOnly()
+        public void Response_stream_should_not_be_Flushed_if_the_response_is_ReadyOnly()
         {
             _testMessageHandler = new TestMessageHandler(req =>
             {
@@ -205,7 +205,7 @@ namespace ProxyKit
                     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
                 }));
             var server = new TestServer(_builder);
-            HttpClient client = server.CreateClient();
+            var client = server.CreateClient();
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, "http://mydomain.example")
             {
