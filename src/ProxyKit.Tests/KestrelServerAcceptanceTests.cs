@@ -43,6 +43,18 @@ namespace ProxyKit
             response.StatusCode.ShouldBe(HttpStatusCode.BadGateway);
         }
 
+        // This client test is only valid with a real network and server
+        // https://github.com/dotnet/aspnetcore/issues/19541#issuecomment-594201070
+        [Fact]
+        public async Task Proxy_client_timeout_timeout_should_return_GatewayTimeout()
+        {
+            var client = CreateClient();
+
+            var response = await client.GetAsync("/slow");
+
+            response.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
+        }
+
         public override async Task InitializeAsync()
         {
             _upstreamServer = new WebHostBuilder()
@@ -81,7 +93,7 @@ namespace ProxyKit
         public override async Task DisposeAsync()
         {
             await _proxyServer.StopAsync();
-            await _upstreamServer.StopAsync();
+            await _upstreamServer.StopAsync(TimeSpan.FromMilliseconds(100));
         }
     }
 }
