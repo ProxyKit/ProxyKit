@@ -72,6 +72,10 @@ namespace ProxyKit
             response.StatusCode.ShouldBe(HttpStatusCode.GatewayTimeout);
         }
 
+        public abstract Task InitializeAsync();
+
+        public abstract Task DisposeAsync();
+
         protected class UpstreamStartup
         {
             public void ConfigureServices(IServiceCollection services)
@@ -114,7 +118,7 @@ namespace ProxyKit
 
                 app.Map("/slow", a => a.Run(async ctx =>
                 {
-                    await Task.Delay(10000);
+                    await Task.Delay(5000);
                     ctx.Response.StatusCode = 200;
                     await ctx.Response.WriteAsync("Ok... i guess");
                 }));
@@ -215,10 +219,6 @@ namespace ProxyKit
                 app.RunProxy<ProxyHandler>();
             }
         }
-
-        public abstract Task InitializeAsync();
-
-        public abstract Task DisposeAsync();
 
         private class ProxyHandler : IProxyHandler
         {
