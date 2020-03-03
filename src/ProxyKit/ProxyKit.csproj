@@ -18,7 +18,7 @@
     <NoWarn>$(NoWarn);NU5105;1701;1702;1705;1591</NoWarn>
     <LangVersion>7.3</LangVersion>
     <DebugType>full</DebugType>
-    <PackageIconUrl>https://raw.githubusercontent.com/damianh/ProxyKit/master/logo.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageReleaseNotes>See https://github.com/damianh/ProxyKit/releases for release notes.</PackageReleaseNotes>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
@@ -32,6 +32,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+   <ItemGroup>
+    <None Include="icon.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
