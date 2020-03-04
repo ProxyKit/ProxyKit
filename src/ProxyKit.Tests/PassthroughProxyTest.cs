@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using ProxyKit.RoutingHandler;
@@ -287,20 +286,22 @@ namespace ProxyKit
                     }));
 
 
-            var downstreamHost = new WebHostBuilder()
-                .ConfigureServices(s => 
+            var proxyHost = new WebHostBuilder()
+                .ConfigureServices(s =>
                     s.AddProxy(c =>
                         c.ConfigurePrimaryHttpMessageHandler(() => router)))
                 .Configure(
-                    app => app.RunProxy(HandleProxyRequest));
+                    app => app.RunProxy(
+                        ctx => 
+                            ctx.ForwardTo(new UpstreamHost("http://upstream")).Send()));
 
-            using (var downstreamServer = new TestServer(downstreamHost))
+            using (var proxyServer = new TestServer(proxyHost))
             {
                 using (var upstreamServer = new TestServer(upstreamHost))
                 {
                     router.AddHandler(new Origin("upstream", 80), upstreamServer.CreateHandler());
 
-                    var client = downstreamServer.CreateClient();
+                    var client = proxyServer.CreateClient();
 
                     var content = new StringContent("henk", Encoding.UTF8, "text/plain");
                     var result = await client.PostAsync("/post", content);
@@ -308,17 +309,6 @@ namespace ProxyKit
                     result.StatusCode.ShouldBe(HttpStatusCode.OK);
                 }
             }
-        }
-
-        private static Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
-        {
-            //if (context.Request.Method != "GET" && context.Request.ContentLength == null)
-            //{
-            //    // Hack: content length is not alwaysC:\dev\proxykit\ProxyKit\src\ProxyKit.Tests\Class.cs set correctly when sending requests from test server
-            //    context.Request.ContentLength = context.Request.Body?.Length;
-            //}
-
-            return context.ForwardTo(new UpstreamHost("http://upstream")).Send();
         }
     }
 
