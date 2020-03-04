@@ -223,19 +223,18 @@ namespace ProxyKit
 
         private class ProxyHandler : IProxyHandler
         {
-            private readonly IConfiguration _config;
+            private readonly string _forwardTo;
 
             public ProxyHandler(IConfiguration config)
             {
-                _config = config;
+                var port = config.GetValue("port", 0);
+                _forwardTo = $"http://localhost:{port}/";
             }
 
             public async Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
             {
-                var port = _config.GetValue("port", 0);
-
                 var response= await context
-                    .ForwardTo("http://localhost:" + port + "/")
+                    .ForwardTo(_forwardTo)
                     .AddXForwardedHeaders()
                     .Send();
 
