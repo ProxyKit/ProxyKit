@@ -87,12 +87,6 @@ namespace ProxyKit
                     await ctx.Response.WriteAsync("Ok");
                 }));
 
-                app.Map("/normal", a => a.Run(async ctx =>
-                {
-                    ctx.Response.StatusCode = 200;
-                    await ctx.Response.WriteAsync("Ok");
-                }));
-
                 app.Map("/cachable", a => a.Run(async ctx =>
                 {
                     ctx.Response.StatusCode = 200;
