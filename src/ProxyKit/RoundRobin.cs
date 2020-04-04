@@ -7,7 +7,7 @@ namespace ProxyKit
     /// <summary>
     ///     Represents a round robing collection of hosts.
     /// </summary>
-    public class RoundRobin: IEnumerable<UpstreamHost>
+    public sealed class RoundRobin: IEnumerable<UpstreamHost>
     {
         private readonly HashSet<UpstreamHost> _hosts = new HashSet<UpstreamHost>();
         private UpstreamHost[] _distribution;
@@ -71,11 +71,8 @@ namespace ProxyKit
             _lockSlim.ExitWriteLock();
         }
 
-        public IEnumerator<UpstreamHost> GetEnumerator()
-        {
-            return _hosts.GetEnumerator();
-        }
-
+        public IEnumerator<UpstreamHost> GetEnumerator() => _hosts.GetEnumerator();
+       
         IEnumerator IEnumerable.GetEnumerator() => _hosts.GetEnumerator();
     }
 }
