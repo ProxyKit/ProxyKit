@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace ProxyKit
 {
@@ -13,10 +15,11 @@ namespace ProxyKit
     {
         private static readonly HashSet<string> NotForwardedWebSocketHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept",
-            "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version",
+            HeaderNames.Connection, HeaderNames.Host, HeaderNames.Upgrade, HeaderNames.SecWebSocketAccept,
+            HeaderNames.SecWebSocketProtocol, HeaderNames.SecWebSocketKey, HeaderNames.SecWebSocketVersion,
             "Sec-WebSocket-Extensions"
         };
+
         private const int DefaultWebSocketBufferSize = 4096;
         private readonly RequestDelegate _next;
         private readonly ProxyOptions _options;
