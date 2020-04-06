@@ -20,7 +20,7 @@ namespace ProxyKit
             if (!host.HasValue)
                 throw new ArgumentException("Value must be supplied", nameof(host));
 
-            Scheme = scheme;
+            Scheme = scheme.ToLowerInvariant();
             Host = host;
             PathBase = pathBase;
             Weight = weight;
@@ -58,7 +58,7 @@ namespace ProxyKit
                 "https" => 443,
                 "ws" => 80,
                 "wss" => 443,
-                _ => throw new NotSupportedException(),
+                _ => throw new NotSupportedException()
             };
         }
 
