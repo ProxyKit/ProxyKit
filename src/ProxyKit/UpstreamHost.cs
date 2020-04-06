@@ -45,14 +45,14 @@ namespace ProxyKit
 
         private Uri GetUri()
         {
-            var port = Host.Port ?? DefaultPort(Scheme);
+            var port = Host.Port ?? GetDefaultPort(Scheme);
             var builder = new UriBuilder(Scheme, Host.Host, port, PathBase.Value);
             return builder.Uri;
         }
 
-        private int DefaultPort(string scheme)
+        private static int GetDefaultPort(string scheme)
         {
-            return scheme.ToLowerInvariant() switch
+            return scheme switch
             {
                 "http" => 80,
                 "https" => 443,
