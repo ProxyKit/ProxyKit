@@ -51,12 +51,7 @@ namespace build
                 Console.WriteLine($"Feedz API Key ({apiKey.Substring(0,5)}) available. Pushing packages to Feedz...");
                 foreach (var packageToPush in packagesToPush)
                 {
-                    // NOTE: the try catch can be removed when https://github.com/NuGet/Home/issues/1630 is released.
-                    try
-                    {
-                        Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/dh/oss-ci/nuget/index.json -k {apiKey}", noEcho: true);
-                    }
-                    catch (SimpleExec.NonZeroExitCodeException) { } //can get 1 if try to push package that differs only in build metadata
+                    Run("dotnet", $"nuget push {packageToPush} -s https://f.feedz.io/dh/oss-ci/nuget/index.json -k {apiKey} --skip-duplicate", noEcho: true);
                 }
             });
 
