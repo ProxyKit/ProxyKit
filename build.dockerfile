@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1.100-alpine3.10
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1.200-alpine3.11
 
 # Install DotNet Core 2.1
 RUN wget -O dotnet.tar.gz https://dotnetcli.blob.core.windows.net/dotnet/Sdk/2.1.607/dotnet-sdk-2.1.607-linux-musl-x64.tar.gz \
