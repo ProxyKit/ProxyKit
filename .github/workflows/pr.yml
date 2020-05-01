@@ -11,7 +11,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        fetch-depth: 0
+        fetch-depth: 100
     - name: Build and Test
       run: bash build.sh
       shell: bash
