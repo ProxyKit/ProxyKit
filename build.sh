@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 docker build \
  -f build.dockerfile \
  --tag proxykit-build .
