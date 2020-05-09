@@ -20,7 +20,7 @@ namespace ProxyKit.Infra
         public ILogger CreateLogger(string categoryName) 
             => new TestOutputHelperLogger(categoryName, _outputHelper, _name);
 
-        public class TestOutputHelperLogger : ILogger
+        private class TestOutputHelperLogger : ILogger
         {
             private readonly string _categoryName;
             private readonly ITestOutputHelper _outputHelper;
