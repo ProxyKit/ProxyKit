@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using ProxyKit.RoutingHandler;
@@ -31,14 +30,10 @@ namespace ProxyKit
         public override Task InitializeAsync()
         {
             var router = new RoutingMessageHandler();
-
-            var upstreamWebHostBuilder = new WebHostBuilder()
-                .UseStartup<UpstreamStartup>();
-            _upstreamTestServer = new TestServer(upstreamWebHostBuilder);
+            _upstreamTestServer = new TestServer(UpstreamBuilder);
             _proxyPort = 81;
 
-            var proxyWebHostBuilder = new WebHostBuilder()
-                .UseStartup<ProxyStartup>()
+            var proxyBuilder = ProxyBuilder
                 .UseSetting("port", _proxyPort.ToString())
                 .ConfigureServices(services =>
                 {
@@ -48,7 +43,8 @@ namespace ProxyKit
                         c.ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(1));
                     });
                 });
-            _proxyTestServer = new TestServer(proxyWebHostBuilder);
+
+            _proxyTestServer = new TestServer(proxyBuilder);
 
             router.AddHandler(new Origin("localhost", _proxyPort), _upstreamTestServer.CreateHandler());
 

@@ -6,11 +6,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProxyKit.Infra;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,6 +25,22 @@ namespace ProxyKit
         protected AcceptanceTestsBase(ITestOutputHelper outputHelper)
         {
             OutputHelper = outputHelper;
+
+            UpstreamBuilder = new WebHostBuilder()
+                .UseStartup<UpstreamStartup>()
+                .ConfigureLogging(builder =>
+                {
+                    builder.AddProvider(new XunitLoggerProvider(OutputHelper, "Upstream"));
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                });
+
+            ProxyBuilder = new WebHostBuilder()
+                .UseStartup<ProxyStartup>()
+                .ConfigureLogging(builder =>
+                {
+                    builder.AddProvider(new XunitLoggerProvider(OutputHelper, "Proxy"));
+                    builder.SetMinimumLevel(LogLevel.Debug);
+                });
         }
 
         protected ITestOutputHelper OutputHelper { get; }
@@ -29,6 +48,10 @@ namespace ProxyKit
         protected abstract int ProxyPort { get; }
 
         protected abstract HttpClient CreateClient();
+
+        protected IWebHostBuilder UpstreamBuilder { get; }
+
+        protected IWebHostBuilder ProxyBuilder { get; }
 
         [Fact]
         public async Task Can_proxy_request()

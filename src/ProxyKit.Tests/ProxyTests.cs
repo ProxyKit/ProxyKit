@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProxyKit.Infra;
 using ProxyKit.RoutingHandler;
 using Shouldly;
 using Xunit;
@@ -23,13 +25,11 @@ namespace ProxyKit
 {
     public class ProxyTests
     {
-        private readonly ITestOutputHelper _outputHelper;
         private TestMessageHandler _testMessageHandler;
         private readonly IWebHostBuilder _builder;
 
         public ProxyTests(ITestOutputHelper outputHelper)
         {
-            _outputHelper = outputHelper;
             _testMessageHandler = new TestMessageHandler(req =>
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Created);
@@ -42,7 +42,11 @@ namespace ProxyKit
                 .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
                 {
                     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
-                }));
+                }))
+                .ConfigureLogging(l =>
+                {
+                    l.AddProvider(new XunitLoggerProvider(outputHelper, "ProxyTests"));
+                });
         }
 
         [Theory]
@@ -59,12 +63,12 @@ namespace ProxyKit
             }));
             var server = new TestServer(_builder);
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(methodType), "");
-            var responseMessage = await server.CreateClient().SendAsync(requestMessage);
-            var responseContent = await responseMessage.Content.ReadAsStringAsync();
-            responseMessage.Headers.TryGetValues("testHeader", out var testHeaderValue);
+            var request = new HttpRequestMessage(new HttpMethod(methodType), "");
+            var response = await server.CreateClient().SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            response.Headers.TryGetValues("testHeader", out var testHeaderValue);
 
-            responseMessage.StatusCode.ShouldBe(HttpStatusCode.Created);
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
             responseContent.ShouldBe("Response Body");
             testHeaderValue.SingleOrDefault().ShouldBe("testHeaderValue");
 

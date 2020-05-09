@@ -7,8 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using ProxyKit.Infra;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,13 +24,11 @@ namespace ProxyKit
 
         protected override int ProxyPort => _proxyServer.GetServerPort();
 
-        protected override HttpClient CreateClient()
-        {
-;           return new HttpClient
+        protected override HttpClient CreateClient() =>
+            new HttpClient
             {
                 BaseAddress = new Uri($"http://localhost:{ProxyPort}")
             };
-        }
 
         [Fact]
         public async Task When_upstream_host_is_not_running_then_should_get_service_unavailable()
@@ -100,39 +96,28 @@ namespace ProxyKit
             return echoResult;
         }
 
-
         public override async Task InitializeAsync()
         {
-            _upstreamServer = new WebHostBuilder()
+            _upstreamServer = UpstreamBuilder
                 .UseKestrel()
                 .UseUrls("http://*:0")
-                .UseStartup<UpstreamStartup>()
-                .ConfigureLogging(builder =>
-                {
-                    builder.AddProvider(new XunitLoggerProvider(OutputHelper, "Upstream"));
-                    builder.SetMinimumLevel(LogLevel.Debug);
-                })
                 .Build();
             await _upstreamServer.StartAsync();
             
             var port = _upstreamServer.GetServerPort();
 
-            _proxyServer = new WebHostBuilder()
+            _proxyServer = ProxyBuilder
                 .UseKestrel()
                 .UseUrls("http://*:0")
-                .UseStartup<ProxyStartup>()
                 .UseSetting("port", port.ToString())
-                .ConfigureLogging(builder =>
-                {
-                    builder.AddProvider(new XunitLoggerProvider(OutputHelper, "Proxy"));
-                    builder.SetMinimumLevel(LogLevel.Debug);
-                })
                 .ConfigureServices(services =>
                 {
-                    services.AddProxy(httpClientBuilder => httpClientBuilder
-                        .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(1)));
+                    services
+                        .AddProxy(httpClientBuilder => httpClientBuilder
+                            .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(1)));
                 })
                 .Build();
+           
             await _proxyServer.StartAsync();
         }
 
