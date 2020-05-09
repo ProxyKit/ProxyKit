@@ -310,58 +310,58 @@ namespace ProxyKit
                 }
             }
         }
-    }
 
-    internal class TestMessageHandler : HttpMessageHandler
-    {
-        private readonly Func<HttpRequestMessage, HttpResponseMessage> _sender;
-
-        public TestMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> sender)
+        private class TestMessageHandler : HttpMessageHandler
         {
-            _sender = sender;
-        }
+            private readonly Func<HttpRequestMessage, HttpResponseMessage> _sender;
 
-        public List<HttpRequestMessage> SentRequestMessages { get; } = new List<HttpRequestMessage>();
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var clone = await CloneHttpRequestMessageAsync(request);
-            SentRequestMessages.Add(clone);
-            return _sender(request);
-        }
-
-        private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
-        {
-            var clone = new HttpRequestMessage(req.Method, req.RequestUri);
-
-            // Copy the request's content (via a MemoryStream) into the cloned object
-            var ms = new MemoryStream();
-            if (req.Content != null)
+            public TestMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> sender)
             {
-                await req.Content.CopyToAsync(ms).ConfigureAwait(false);
-                ms.Position = 0;
-                clone.Content = new StreamContent(ms);
-
-                // Copy the content headers
-                if (req.Content.Headers != null)
-                    foreach (var h in req.Content.Headers)
-                        clone.Content.Headers.Add(h.Key, h.Value);
+                _sender = sender;
             }
 
+            public List<HttpRequestMessage> SentRequestMessages { get; } = new List<HttpRequestMessage>();
 
-            clone.Version = req.Version;
-
-            foreach (var prop in req.Properties)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                clone.Properties.Add(prop);
+                var clone = await CloneHttpRequestMessageAsync(request);
+                SentRequestMessages.Add(clone);
+                return _sender(request);
             }
 
-            foreach (var header in req.Headers)
+            private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
             {
-                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
+                var clone = new HttpRequestMessage(req.Method, req.RequestUri);
 
-            return clone;
+                // Copy the request's content (via a MemoryStream) into the cloned object
+                var ms = new MemoryStream();
+                if (req.Content != null)
+                {
+                    await req.Content.CopyToAsync(ms).ConfigureAwait(false);
+                    ms.Position = 0;
+                    clone.Content = new StreamContent(ms);
+
+                    // Copy the content headers
+                    if (req.Content.Headers != null)
+                        foreach (var h in req.Content.Headers)
+                            clone.Content.Headers.Add(h.Key, h.Value);
+                }
+
+
+                clone.Version = req.Version;
+
+                foreach (var prop in req.Properties)
+                {
+                    clone.Properties.Add(prop);
+                }
+
+                foreach (var header in req.Headers)
+                {
+                    clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+
+                return clone;
+            }
         }
     }
 }
