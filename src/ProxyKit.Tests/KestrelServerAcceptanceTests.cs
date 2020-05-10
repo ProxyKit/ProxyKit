@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
@@ -110,7 +111,7 @@ namespace ProxyKit
                 .UseKestrel()
                 .UseUrls("http://*:0")
                 .UseSetting("port", port.ToString())
-                .ConfigureServices(services =>
+                .ConfigureTestServices(services =>
                 {
                     services
                         .AddProxy(httpClientBuilder => httpClientBuilder

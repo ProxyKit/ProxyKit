@@ -35,7 +35,7 @@ namespace ProxyKit
 
             var proxyBuilder = ProxyBuilder
                 .UseSetting("port", _proxyPort.ToString())
-                .ConfigureServices(services =>
+                .ConfigureTestServices(services =>
                 {
                     services.AddProxy(c =>
                     {

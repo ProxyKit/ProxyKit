@@ -218,6 +218,7 @@ namespace ProxyKit
 
             public void ConfigureServices(IServiceCollection services)
             {
+                services.AddProxy();
                 services.AddSingleton<ProxyHandler>();
             }
 
