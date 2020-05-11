@@ -85,13 +85,13 @@ namespace ProxyKit
             response.Headers.Location.ShouldBe(new Uri($"http://localhost:{ProxyPort}/redirect"));
         }
 
-        [Fact]
+        [Fact(Skip = "Passes in kestrel but fails because of bug in TestServer https://github.com/dotnet/aspnetcore/issues/21677")]
         public async Task When_body_included_with_transfer_encoding_should_get_ok()
         {
             var client = CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Post, "/normal")
             {
-                // This enforces using Transfer-Encoding: chunked
+                // This enforces usage of header Transfer-Encoding: chunked
                 Content = new PushStreamContent(async (stream, httpContext, transPortContext) =>
                 {
                     var buffer = new byte[100];
