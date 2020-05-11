@@ -5,7 +5,7 @@
     <Description>An AspNet core middleware toolkit to create proxy servers. Can be embedded in applications or used as a standalone proxy.</Description>
     <PackageId>ProxyKit</PackageId>
     <Authors>Damian Hickey</Authors>
-    <PackageProjectUrl>https://github.com/damianh/ProxyKit</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/ProxyKit/ProxyKit</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -19,7 +19,7 @@
     <LangVersion>7.3</LangVersion>
     <DebugType>full</DebugType>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageReleaseNotes>See https://github.com/damianh/ProxyKit/releases for release notes.</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/ProxyKit/ProxyKit/releases for release notes.</PackageReleaseNotes>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <Deterministic>true</Deterministic>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
