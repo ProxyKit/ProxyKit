@@ -51,9 +51,11 @@ namespace ProxyKit
         private static HttpRequestMessage CreateProxyHttpRequest(this HttpRequest request)
         {
             var requestMessage = new HttpRequestMessage();
-            
-            //Only copy Body when original request has a body.
-            if (request.Body.CanRead)
+
+            // The presence of a message-body in a request is signaled by the
+            // inclusion of a Content-Length or Transfer-Encoding header field in
+            // the request's message-headers. https://tools.ietf.org/html/rfc2616 4.3 MessageBody
+            if (request.ContentLength > 0 || request.Headers.ContainsKey("Transfer-Encoding"))
             {
                 var streamContent = new StreamContent(request.Body);
                 requestMessage.Content = streamContent;
