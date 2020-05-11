@@ -85,6 +85,28 @@ namespace ProxyKit
             response.Headers.Location.ShouldBe(new Uri($"http://localhost:{ProxyPort}/redirect"));
         }
 
+        [Fact(Skip = "Passes in kestrel but fails because of bug in TestServer https://github.com/dotnet/aspnetcore/issues/21677")]
+        public async Task When_body_included_with_transfer_encoding_should_get_ok()
+        {
+            var client = CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Post, "/normal")
+            {
+                // This enforces usage of header Transfer-Encoding: chunked
+                Content = new PushStreamContent(async (stream, httpContext, transPortContext) =>
+                {
+                    var buffer = new byte[100];
+                    await stream.WriteAsync(buffer, 0, 100);
+                    await stream.FlushAsync();
+                    stream.Dispose();
+                })
+            };
+            var response = await client.SendAsync(request);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+            var readAsByteArrayAsync = await response.Content.ReadAsByteArrayAsync();
+            readAsByteArrayAsync.Length.ShouldBe(100);
+        }
+
         public abstract Task InitializeAsync();
 
         public abstract Task DisposeAsync();
@@ -107,7 +129,13 @@ namespace ProxyKit
                 app.Map("/normal", a => a.Run(async ctx =>
                 {
                     ctx.Response.StatusCode = 200;
-                    await ctx.Response.WriteAsync("Ok");
+                    ctx.Response.ContentLength = ctx.Request.ContentLength;
+                    var buffer = new byte[1024];
+                    var bytesRead = await ctx.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                    if (bytesRead > 0)
+                    {
+                        await ctx.Response.Body.WriteAsync(buffer, 0, bytesRead);
+                    }
                 }));
 
                 app.Map("/cachable", a => a.Run(async ctx =>
