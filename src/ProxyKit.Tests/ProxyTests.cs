@@ -257,12 +257,11 @@ namespace ProxyKit
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
+            var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
             {
-                Content = new StringContent(text)
+                Content = new StringContentWithLength(text)
             };
-
-            await client.SendAsync(requestMessage);
+            await client.SendAsync(request);
             var sentRequest = _testMessageHandler.SentRequestMessages.First();
             var sentContent = sentRequest.Content;
 
