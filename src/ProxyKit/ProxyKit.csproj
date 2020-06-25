@@ -21,7 +21,15 @@
     <PackageIconUrl>https://raw.githubusercontent.com/damianh/ProxyKit/master/logo.png</PackageIconUrl>
     <PackageReleaseNotes>See https://github.com/damianh/ProxyKit/releases for release notes.</PackageReleaseNotes>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="ConfigureAwaitChecker.Analyzer" Version="4.0.0">
       <PrivateAssets>all</PrivateAssets>
