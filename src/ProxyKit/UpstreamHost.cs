@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
@@ -19,7 +20,7 @@ namespace ProxyKit
             if (!host.HasValue)
                 throw new ArgumentException("Value must be supplied", nameof(host));
 
-            Scheme = scheme;
+            Scheme = scheme.ToLowerInvariant();
             Host = host;
             PathBase = pathBase;
             Weight = weight;
@@ -44,26 +45,21 @@ namespace ProxyKit
 
         private Uri GetUri()
         {
-            var port = Host.Port ?? DefaultPort(Scheme);
+            var port = Host.Port ?? GetDefaultPort(Scheme);
             var builder = new UriBuilder(Scheme, Host.Host, port, PathBase.Value);
             return builder.Uri;
         }
 
-        private int DefaultPort(string scheme)
+        private static int GetDefaultPort(string scheme)
         {
-            switch (scheme.ToLower())
+            return scheme switch
             {
-                case "http":
-                    return 80;
-                case "https":
-                    return 443;
-                case "ws":
-                    return 80;
-                case "wss":
-                    return 443;
-                default:
-                    throw new NotSupportedException();
-            }
+                "http" => 80,
+                "https" => 443,
+                "ws" => 80,
+                "wss" => 443,
+                _ => throw new NotSupportedException()
+            };
         }
 
         public string Scheme { get; }
@@ -81,8 +77,7 @@ namespace ProxyKit
             return $"{Scheme}://{Host.ToString()}{PathBase.Value}";
         }
 
-        public static implicit operator UpstreamHost(string uri) 
-            => new Uri(uri);
+        public static implicit operator UpstreamHost(string uri) => new Uri(uri);
 
         public static implicit operator UpstreamHost(Uri upstreamUri) => new UpstreamHost(
             upstreamUri.Scheme,
@@ -91,34 +86,28 @@ namespace ProxyKit
 
         public bool Equals(UpstreamHost other)
         {
-            if (ReferenceEquals(null, other)) return false;
+            if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-            return string.Equals(Scheme, other.Scheme) && Host.Equals(other.Host) && PathBase.Equals(other.PathBase);
+
+            return string.Equals(Scheme, other.Scheme, StringComparison.Ordinal)
+                && Host.Equals(other.Host) 
+                && PathBase.Equals(other.PathBase);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((UpstreamHost)obj);
+
+            return obj is UpstreamHost other && Equals(other);
         }
 
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = Scheme.GetHashCode();
-                hashCode = (hashCode * 397) ^ Host.GetHashCode();
-                hashCode = (hashCode * 397) ^ PathBase.GetHashCode();
-                return hashCode;
-            }
-        }
+        public override int GetHashCode() => HashCode.Combine(Scheme, Host, PathBase);
 
-        public static bool operator ==(UpstreamHost left, UpstreamHost right) 
+        public static bool operator ==(UpstreamHost left, UpstreamHost right)
             => Equals(left, right);
 
-        public static bool operator !=(UpstreamHost left, UpstreamHost right) 
+        public static bool operator !=(UpstreamHost left, UpstreamHost right)
             => !Equals(left, right);
     }
 }

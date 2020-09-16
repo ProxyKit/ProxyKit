@@ -21,12 +21,12 @@ namespace ProxyKit
             this IApplicationBuilder app,
             HandleProxyRequest handleProxyRequest)
         {
-            if (app == null)
+            if (app is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (handleProxyRequest == null)
+            if (handleProxyRequest is null)
             {
                 throw new ArgumentNullException(nameof(handleProxyRequest));
             }
@@ -44,7 +44,7 @@ namespace ProxyKit
         public static void RunProxy<TProxyHandler>(this IApplicationBuilder app) 
             where TProxyHandler : IProxyHandler
         {
-            if (app == null)
+            if (app is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
@@ -73,7 +73,7 @@ namespace ProxyKit
             PathString pathMatch,
             HandleProxyRequest handleProxyRequest)
         {
-            if (app == null)
+            if (app is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
@@ -100,12 +100,12 @@ namespace ProxyKit
             this IApplicationBuilder app, 
             Func<HttpContext, UpstreamHost> getUpstreamUri)
         {
-            if (app == null)
+            if (app is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (getUpstreamUri == null)
+            if (getUpstreamUri is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
@@ -134,12 +134,12 @@ namespace ProxyKit
             Func<HttpContext, UpstreamHost> getUpstreamUri,
             Action<WebSocketClientOptions> configureClientOptions)
         {
-            if (app == null)
+            if (app is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (getUpstreamUri == null)
+            if (getUpstreamUri is null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
