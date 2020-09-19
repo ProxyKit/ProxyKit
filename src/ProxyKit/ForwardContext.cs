@@ -32,9 +32,6 @@ namespace ProxyKit
         /// </summary>
         public HttpRequestMessage UpstreamRequest { get; }
 
-        [Obsolete("Use Send() instead.", true)]
-        public Task<HttpResponseMessage> Execute() => Send();
-
         /// <summary>
         /// Sends the upstream request to the upstream host.
         /// </summary>
