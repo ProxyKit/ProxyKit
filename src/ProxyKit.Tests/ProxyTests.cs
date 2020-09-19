@@ -7,14 +7,19 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ProxyKit.Infra;
+using ProxyKit.RoutingHandler;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ProxyKit
 {
@@ -23,7 +28,7 @@ namespace ProxyKit
         private TestMessageHandler _testMessageHandler;
         private readonly IWebHostBuilder _builder;
 
-        public ProxyTests()
+        public ProxyTests(ITestOutputHelper outputHelper)
         {
             _testMessageHandler = new TestMessageHandler(req =>
             {
@@ -37,7 +42,11 @@ namespace ProxyKit
                 .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
                 {
                     httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
-                }));
+                }))
+                .ConfigureLogging(l =>
+                {
+                    l.AddProvider(new XunitLoggerProvider(outputHelper, "ProxyTests"));
+                });
         }
 
         [Theory]
@@ -54,12 +63,12 @@ namespace ProxyKit
             }));
             var server = new TestServer(_builder);
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(methodType), "");
-            var responseMessage = await server.CreateClient().SendAsync(requestMessage);
-            var responseContent = await responseMessage.Content.ReadAsStringAsync();
-            responseMessage.Headers.TryGetValues("testHeader", out var testHeaderValue);
+            var request = new HttpRequestMessage(new HttpMethod(methodType), "");
+            var response = await server.CreateClient().SendAsync(request);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            response.Headers.TryGetValues("testHeader", out var testHeaderValue);
 
-            responseMessage.StatusCode.ShouldBe(HttpStatusCode.Created);
+            response.StatusCode.ShouldBe(HttpStatusCode.Created);
             responseContent.ShouldBe("Response Body");
             testHeaderValue.SingleOrDefault().ShouldBe("testHeaderValue");
 
@@ -236,11 +245,6 @@ namespace ProxyKit
 
             _builder.Configure(app =>
             {
-                app.Use((context, next) =>
-                {
-                    context.Request.ContentLength = contentStream.Length;
-                    return next();
-                });
                 app.RunProxy(context => context
                     .ForwardTo("http://localhost:5000/bar/")
                     .Send());
@@ -253,12 +257,11 @@ namespace ProxyKit
             var server = new TestServer(_builder);
             var client = server.CreateClient();
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
+            var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
             {
-                Content = new StringContent(text)
+                Content = new StringContentWithLength(text)
             };
-
-            await client.SendAsync(requestMessage);
+            await client.SendAsync(request);
             var sentRequest = _testMessageHandler.SentRequestMessages.First();
             var sentContent = sentRequest.Content;
 
@@ -270,98 +273,98 @@ namespace ProxyKit
             contentStream.Dispose();
         }
 
-        [Theory]
-        [InlineData("GET")]
-        [InlineData("POST")]
-        [InlineData("TRACE")]
-        [InlineData("PUT")]
-        [InlineData("DELETE")]
-        [InlineData("PATCH")]
-        public async Task Request_body_should_be_empty(string httpMethod)
+        [Fact]
+        public async Task Body_for_post_is_not_lost()
         {
-            const string text = "you shall not be present in a response";
+            var router = new RoutingMessageHandler();
 
-            _testMessageHandler = new TestMessageHandler(message => new HttpResponseMessage(HttpStatusCode.OK));
+            var upstreamHost = new WebHostBuilder()
+                .Configure(
+                    app => app.Use((c, n) =>
+                    {
+                        c.Response.StatusCode = c.Request.ContentLength > 0 || c.Request.Body.CanRead
+                            ? 200
+                            : 400;
+                        return Task.CompletedTask;
+                    }));
 
-            _builder.Configure(app =>
-                app.RunProxy(
-                    context => context
-                               .ForwardTo("http://localhost:5000/bar/")
-                               .Send())
-                )
-                .ConfigureServices(services => services.AddProxy(httpClientBuilder =>
+
+            var proxyHost = new WebHostBuilder()
+                .ConfigureServices(s =>
+                    s.AddProxy(c =>
+                        c.ConfigurePrimaryHttpMessageHandler(() => router)))
+                .Configure(
+                    app => app.RunProxy(
+                        ctx => 
+                            ctx.ForwardTo(new UpstreamHost("http://upstream")).Send()));
+
+            using (var proxyServer = new TestServer(proxyHost))
+            {
+                using (var upstreamServer = new TestServer(upstreamHost))
                 {
-                    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => _testMessageHandler);
-                }));
+                    router.AddHandler(new Origin("upstream", 80), upstreamServer.CreateHandler());
 
-            var server = new TestServer(_builder);
-            var client = server.CreateClient();
+                    var client = proxyServer.CreateClient();
 
-            var requestMessage = new HttpRequestMessage(new HttpMethod(httpMethod), "http://mydomain.example")
-            {
-                Content = new StringContent(text)
-            };
+                    var content = new StringContent("henk", Encoding.UTF8, "text/plain");
+                    var result = await client.PostAsync("/post", content);
 
-            await client.SendAsync(requestMessage);
-            var sentRequest = _testMessageHandler.SentRequestMessages.First();
-            var sentContent = sentRequest.Content;
-
-            sentContent.ShouldBeNull();
-
-            server.Dispose();
-        }
-    }
-
-    internal class TestMessageHandler : HttpMessageHandler
-    {
-        private readonly Func<HttpRequestMessage, HttpResponseMessage> _sender;
-
-        public TestMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> sender)
-        {
-            _sender = sender;
+                    result.StatusCode.ShouldBe(HttpStatusCode.OK);
+                }
+            }
         }
 
-        public List<HttpRequestMessage> SentRequestMessages { get; } = new List<HttpRequestMessage>();
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        private class TestMessageHandler : HttpMessageHandler
         {
-            var clone = await CloneHttpRequestMessageAsync(request);
-            SentRequestMessages.Add(clone);
-            return _sender(request);
-        }
+            private readonly Func<HttpRequestMessage, HttpResponseMessage> _sender;
 
-        private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
-        {
-            var clone = new HttpRequestMessage(req.Method, req.RequestUri);
-
-            // Copy the request's content (via a MemoryStream) into the cloned object
-            var ms = new MemoryStream();
-            if (req.Content != null)
+            public TestMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> sender)
             {
-                await req.Content.CopyToAsync(ms).ConfigureAwait(false);
-                ms.Position = 0;
-                clone.Content = new StreamContent(ms);
-
-                // Copy the content headers
-                if (req.Content.Headers != null)
-                    foreach (var h in req.Content.Headers)
-                        clone.Content.Headers.Add(h.Key, h.Value);
+                _sender = sender;
             }
 
+            public List<HttpRequestMessage> SentRequestMessages { get; } = new List<HttpRequestMessage>();
 
-            clone.Version = req.Version;
-
-            foreach (var prop in req.Properties)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                clone.Properties.Add(prop);
+                var clone = await CloneHttpRequestMessageAsync(request);
+                SentRequestMessages.Add(clone);
+                return _sender(request);
             }
 
-            foreach (var header in req.Headers)
+            private static async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage req)
             {
-                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
+                var clone = new HttpRequestMessage(req.Method, req.RequestUri);
 
-            return clone;
+                // Copy the request's content (via a MemoryStream) into the cloned object
+                var ms = new MemoryStream();
+                if (req.Content != null)
+                {
+                    await req.Content.CopyToAsync(ms).ConfigureAwait(false);
+                    ms.Position = 0;
+                    clone.Content = new StreamContent(ms);
+
+                    // Copy the content headers
+                    if (req.Content.Headers != null)
+                        foreach (var h in req.Content.Headers)
+                            clone.Content.Headers.Add(h.Key, h.Value);
+                }
+
+
+                clone.Version = req.Version;
+
+                foreach (var prop in req.Properties)
+                {
+                    clone.Properties.Add(prop);
+                }
+
+                foreach (var header in req.Headers)
+                {
+                    clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+
+                return clone;
+            }
         }
     }
 }

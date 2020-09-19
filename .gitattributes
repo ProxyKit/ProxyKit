@@ -3,6 +3,7 @@
 
 [attr]utf16 diff merge -lf
 *.ncrunchproject utf16 eol=lf
+*.sh utf16 eol=lf
 
 # Custom for Visual Studio
 *.sln text eol=crlf merge=union

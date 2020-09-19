@@ -17,12 +17,10 @@ namespace ProxyKit.Infra
 
         public void Dispose() { }
 
-        public ILogger CreateLogger(string categoryName)
-        {
-            return new TestOutputHelperLogger(categoryName, _outputHelper, _name);
-        }
+        public ILogger CreateLogger(string categoryName) 
+            => new TestOutputHelperLogger(categoryName, _outputHelper, _name);
 
-        public class TestOutputHelperLogger : ILogger
+        private class TestOutputHelperLogger : ILogger
         {
             private readonly string _categoryName;
             private readonly ITestOutputHelper _outputHelper;
@@ -35,25 +33,24 @@ namespace ProxyKit.Infra
                 _name = name;
             }
 
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            public void Log<TState>(
+                LogLevel logLevel,
+                EventId eventId,
+                TState state,
+                Exception exception,
+                Func<TState, Exception, string> formatter)
             {
-                if (!IsEnabled(logLevel))
+                if (IsEnabled(logLevel))
                 {
-                    return;
+                    _outputHelper.WriteLine(
+                        $"{_name} {logLevel}: {_categoryName}[{eventId.Id}]:{Environment.NewLine}  " +
+                        $"{formatter(state, exception)}");
                 }
-                
-                _outputHelper.WriteLine($"{_name} {logLevel}: {_categoryName}[{eventId.Id}]:{Environment.NewLine}  {formatter(state, exception)}");
             }
 
-            public bool IsEnabled(LogLevel logLevel)
-            {
-                return true;
-            }
+            public bool IsEnabled(LogLevel logLevel) => true;
 
-            public IDisposable BeginScope<TState>(TState state)
-            {
-                return null;
-            }
+            public IDisposable BeginScope<TState>(TState state) => null;
         }
     }
 }
