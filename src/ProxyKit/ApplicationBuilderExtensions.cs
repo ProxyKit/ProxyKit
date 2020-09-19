@@ -52,37 +52,13 @@ namespace ProxyKit
             app.UseMiddleware<ProxyMiddleware<TProxyHandler>>();
         }
 
-        /// <summary>
-        ///     Runs reverse proxy forwarding requests to an upstream host.
-        /// </summary>
-        /// <param name="app">
-        ///     The application builder.
-        /// </param>
-        /// <param name="pathMatch">
-        ///     Branches the request pipeline based on matches of the given
-        ///     request path. If the request path starts with the given path,
-        ///     the branch is executed.
-        /// </param>
-        /// <param name="handleProxyRequest">
-        ///     A delegate that can resolve the destination Uri.
-        /// </param>
         [Obsolete("Use app.Map(\"/path\", appProxy=> { appProxy.RunProxy(...); } instead. " +
-                  "This will be removed in a future version", false)]
+                  "This will be removed in a future version", true)]
         public static void RunProxy(
             this IApplicationBuilder app,
             PathString pathMatch,
-            HandleProxyRequest handleProxyRequest)
-        {
-            if (app is null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            app.Map(pathMatch, appInner =>
-            {
-                appInner.UseMiddleware<ProxyMiddleware<HandleProxyRequestWrapper>>(new HandleProxyRequestWrapper(handleProxyRequest));
-            });
-        }
+            HandleProxyRequest handleProxyRequest) =>
+            throw new NotSupportedException();
 
         /// <summary>
         ///     Adds WebSocket proxy that forwards websocket connections
