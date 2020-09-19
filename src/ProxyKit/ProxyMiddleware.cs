@@ -21,10 +21,8 @@ namespace ProxyKit
 
         public async Task Invoke(HttpContext context)
         {
-            using (var response = await _handler.HandleProxyRequest(context).ConfigureAwait(false))
-            {
-                await CopyProxyHttpResponse(context, response).ConfigureAwait(false);
-            }
+            using var response = await _handler.HandleProxyRequest(context).ConfigureAwait(false);
+            await CopyProxyHttpResponse(context, response).ConfigureAwait(false);
         }
 
         private static async Task CopyProxyHttpResponse(HttpContext context, HttpResponseMessage responseMessage)
@@ -32,9 +30,9 @@ namespace ProxyKit
             var response = context.Response;
 
             response.StatusCode = (int)responseMessage.StatusCode;
-            foreach (var header in responseMessage.Headers)
+            foreach (var (key, value) in responseMessage.Headers)
             {
-                response.Headers[header.Key] = header.Value.ToArray();
+                response.Headers[key] = value.ToArray();
             }
 
             if (responseMessage.Content != null)
@@ -50,27 +48,26 @@ namespace ProxyKit
 
             if (responseMessage.Content != null)
             {
-                using (var responseStream = await responseMessage
+                await using var responseStream = await responseMessage
                     .Content
                     .ReadAsStreamAsync()
-                    .ConfigureAwait(false))
+                    .ConfigureAwait(false);
+                try
                 {
-                    try
+                    await responseStream
+                        .CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted)
+                        .ConfigureAwait(false);
+
+                    if (responseStream.CanWrite)
                     {
                         await responseStream
-                            .CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted)
+                            .FlushAsync(context.RequestAborted)
                             .ConfigureAwait(false);
-                        if (responseStream.CanWrite)
-                        {
-                            await responseStream
-                                .FlushAsync(context.RequestAborted)
-                                .ConfigureAwait(false);
-                        }
                     }
-                    catch (IOException)
-                    {
-                        // Usually a client abort. Ignore.
-                    }
+                }
+                catch (IOException)
+                {
+                    // Usually a client abort. Ignore.
                 }
             }
         }
