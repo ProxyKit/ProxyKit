@@ -32,9 +32,6 @@ namespace ProxyKit
         /// </summary>
         public HttpRequestMessage UpstreamRequest { get; }
 
-        [Obsolete("Use Send() instead.", true)]
-        public Task<HttpResponseMessage> Execute() => Send();
-
         /// <summary>
         /// Sends the upstream request to the upstream host.
         /// </summary>
@@ -57,13 +54,13 @@ namespace ProxyKit
             catch (OperationCanceledException)
             {
                 // Happens when Timeout is low and upstream host is not reachable.
-                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+                return new HttpResponseMessage(HttpStatusCode.BadGateway);
             }
             catch (HttpRequestException ex)
                 when (ex.InnerException is IOException || ex.InnerException is SocketException)
             {
                 // Happens when server is not reachable
-                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+                return new HttpResponseMessage(HttpStatusCode.BadGateway);
             }
         }
     }

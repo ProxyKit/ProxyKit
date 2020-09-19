@@ -1,5 +1,7 @@
 using System;
+
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace ProxyKit
 {
@@ -22,7 +24,7 @@ namespace ProxyKit
             var headers = forwardContext.UpstreamRequest.Headers;
             var protocol = forwardContext.HttpContext.Request.Scheme;
             var @for = forwardContext.HttpContext.Connection.RemoteIpAddress;
-            var host = forwardContext.HttpContext.Request.Headers["Host"];
+            var host = forwardContext.HttpContext.Request.Headers[HeaderNames.Host];
             var hostString = HostString.FromUriComponent(host);
             var pathBase = forwardContext.HttpContext.Request.PathBase.Value;
 

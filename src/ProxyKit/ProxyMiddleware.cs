@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ProxyKit
 {
-    public class ProxyMiddleware<TProxyHandler> where TProxyHandler:IProxyHandler
+    public sealed class ProxyMiddleware<TProxyHandler> where TProxyHandler : IProxyHandler
     {
         private readonly TProxyHandler _handler;
         private const int StreamCopyBufferSize = 81920;
@@ -21,10 +21,8 @@ namespace ProxyKit
 
         public async Task Invoke(HttpContext context)
         {
-            using (var response = await _handler.HandleProxyRequest(context).ConfigureAwait(false))
-            {
-                await CopyProxyHttpResponse(context, response).ConfigureAwait(false);
-            }
+            using var response = await _handler.HandleProxyRequest(context).ConfigureAwait(false);
+            await CopyProxyHttpResponse(context, response).ConfigureAwait(false);
         }
 
         private static async Task CopyProxyHttpResponse(HttpContext context, HttpResponseMessage responseMessage)
@@ -32,9 +30,9 @@ namespace ProxyKit
             var response = context.Response;
 
             response.StatusCode = (int)responseMessage.StatusCode;
-            foreach (var header in responseMessage.Headers)
+            foreach (var (key, value) in responseMessage.Headers)
             {
-                response.Headers[header.Key] = header.Value.ToArray();
+                response.Headers[key] = value.ToArray();
             }
 
             if (responseMessage.Content != null)
@@ -50,13 +48,26 @@ namespace ProxyKit
 
             if (responseMessage.Content != null)
             {
-                using (var responseStream = await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                await using var responseStream = await responseMessage
+                    .Content
+                    .ReadAsStreamAsync()
+                    .ConfigureAwait(false);
+                try
                 {
-                    await responseStream.CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted).ConfigureAwait(false);
+                    await responseStream
+                        .CopyToAsync(response.Body, StreamCopyBufferSize, context.RequestAborted)
+                        .ConfigureAwait(false);
+
                     if (responseStream.CanWrite)
                     {
-                        await responseStream.FlushAsync(context.RequestAborted).ConfigureAwait(false);    
+                        await responseStream
+                            .FlushAsync(context.RequestAborted)
+                            .ConfigureAwait(false);
                     }
+                }
+                catch (IOException)
+                {
+                    // Usually a client abort. Ignore.
                 }
             }
         }
