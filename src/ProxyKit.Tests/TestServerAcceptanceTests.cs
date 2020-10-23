@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -26,9 +25,12 @@ namespace ProxyKit
 
         protected override int ProxyPort => _proxyPort;
 
-        protected override HttpClient CreateClient()
+        protected override HttpClient CreateClient(bool useCookies = true)
         {
-            var handler = new CookieHandler(_proxyTestServer.CreateHandler(), CookieContainer);
+            var handler = useCookies 
+                ? new CookieHandler(_proxyTestServer.CreateHandler(), CookieContainer)
+                : _proxyTestServer.CreateHandler();
+
             var client = new HttpClient(handler)
             {
                 BaseAddress = new Uri($"http://localhost:{_proxyPort}/")

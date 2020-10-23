@@ -47,7 +47,7 @@ namespace ProxyKit
 
         protected abstract int ProxyPort { get; }
 
-        protected abstract HttpClient CreateClient();
+        protected abstract HttpClient CreateClient(bool useCookies = true);
 
         protected CookieContainer CookieContainer { get; } = new CookieContainer();
 
@@ -73,6 +73,21 @@ namespace ProxyKit
             
             var response = await client.GetAsync("/cookie-count");
             
+            var body = await response.Content.ReadAsStringAsync();
+            body.ShouldBe("2");
+        }
+
+
+        [Fact]
+        public async Task Can_handle_cookies_on_multiple_headers()
+        {
+            var client = CreateClient(false);
+            var request = new HttpRequestMessage(HttpMethod.Get, "/cookie-count");
+            request.Headers.TryAddWithoutValidation("Cookie", "yummy_cookie=choco");
+            request.Headers.TryAddWithoutValidation("Cookie", "tasty_cookie=strawberry");
+
+            var response = await client.SendAsync(request);
+
             var body = await response.Content.ReadAsStringAsync();
             body.ShouldBe("2");
         }

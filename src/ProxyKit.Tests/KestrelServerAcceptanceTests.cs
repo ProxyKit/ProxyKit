@@ -25,11 +25,12 @@ namespace ProxyKit
 
         protected override int ProxyPort => _proxyServer.GetServerPort();
 
-        protected override HttpClient CreateClient()
+        protected override HttpClient CreateClient(bool useCookies = true)
         {
             var handler = new HttpClientHandler
             {
-                CookieContainer = CookieContainer
+                CookieContainer = CookieContainer,
+                UseCookies = useCookies,
             };
             return new HttpClient(handler)
             {
