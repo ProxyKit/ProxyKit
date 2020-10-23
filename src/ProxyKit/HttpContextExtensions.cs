@@ -3,6 +3,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace ProxyKit
 {
@@ -68,9 +69,32 @@ namespace ProxyKit
                 {
                     continue;
                 }
-                if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
+
+                var headerName = header.Key;
+                var value = header.Value;
+
+                // Lifted from YARP because of
+
+                if (string.Equals(headerName, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase) && value.Count > 1)
                 {
-                    requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+                    value = string.Join("; ", value);
+                }
+
+                if (value.Count == 1)
+                {
+                    string headerValue = value;
+                    if (!requestMessage.Headers.TryAddWithoutValidation(headerName, headerValue))
+                    {
+                        requestMessage.Content?.Headers.TryAddWithoutValidation(headerName, headerValue);
+                    }
+                }
+                else
+                {
+                    string[] headerValues = value;
+                    if (!requestMessage.Headers.TryAddWithoutValidation(headerName, headerValues))
+                    {
+                        requestMessage.Content?.Headers.TryAddWithoutValidation(headerName, headerValues);
+                    }
                 }
             }
 

@@ -80,7 +80,7 @@ namespace ProxyKit
             {
                 // my blog is currently hosted on azure. If it move this will need to be changed.
                 app.RunProxy(context => context
-                    .ForwardTo("http://dhickey.ie")
+                    .ForwardTo("https://proxykit.azurewebsites.net")
                     .Send());
             }
         }
