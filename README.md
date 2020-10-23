@@ -6,7 +6,7 @@
 [![NuGet][nuget badge]][nuget package]
 [![Feedz][feedz badge]][feedz package]
 
-⚠️ **ProxyKit is obsolescent.** See [announcement](https://github.com/ProxyKit/ProxyKit/issues/230). Migration to https://github.com/microsoft/reverse-proxy
+⚠️ **ProxyKit is obsolescent.** See [announcement](https://github.com/ProxyKit/ProxyKit/issues/230). Migrate to [YARP](https://github.com/microsoft/reverse-proxy).
 
 A toolkit to create code-first **HTTP Reverse Proxies** hosted in ASP.NET Core as middleware. This
 allows focused code-first proxies that can be embedded in existing ASP.NET Core
