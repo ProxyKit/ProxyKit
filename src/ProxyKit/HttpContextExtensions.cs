@@ -3,6 +3,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace ProxyKit
 {
@@ -68,14 +69,38 @@ namespace ProxyKit
                 {
                     continue;
                 }
-                if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
+
+                var headerName = header.Key;
+                var value = header.Value;
+
+                // Lifted from YARP because of
+
+                if (string.Equals(headerName, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase) && value.Count > 1)
                 {
-                    requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+                    value = string.Join("; ", value);
+                }
+
+                if (value.Count == 1)
+                {
+                    string headerValue = value;
+                    if (!requestMessage.Headers.TryAddWithoutValidation(headerName, headerValue))
+                    {
+                        requestMessage.Content?.Headers.TryAddWithoutValidation(headerName, headerValue);
+                    }
+                }
+                else
+                {
+                    string[] headerValues = value;
+                    if (!requestMessage.Headers.TryAddWithoutValidation(headerName, headerValues))
+                    {
+                        requestMessage.Content?.Headers.TryAddWithoutValidation(headerName, headerValues);
+                    }
                 }
             }
 
+
+#if NETSTANDARD2_0
             // HACK: Attempting to send a malformed User-Agent will throw from with HttpClient
-            // Remove when .net core 3 is released. Consider supporting netcoreapp2.x with #ifdef
             // https://github.com/damianh/ProxyKit/issues/53
             // https://github.com/dotnet/corefx/issues/34933
             try
@@ -86,6 +111,7 @@ namespace ProxyKit
             {
                 requestMessage.Headers.Remove("User-Agent");
             }
+#endif
 
             requestMessage.Method = new HttpMethod(request.Method);
 
