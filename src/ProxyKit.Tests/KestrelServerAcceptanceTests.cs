@@ -25,11 +25,17 @@ namespace ProxyKit
 
         protected override int ProxyPort => _proxyServer.GetServerPort();
 
-        protected override HttpClient CreateClient() =>
-            new HttpClient
+        protected override HttpClient CreateClient()
+        {
+            var handler = new HttpClientHandler
+            {
+                CookieContainer = CookieContainer
+            };
+            return new HttpClient(handler)
             {
                 BaseAddress = new Uri($"http://localhost:{ProxyPort}")
             };
+        }
 
         [Fact]
         public async Task When_upstream_host_is_not_running_then_should_get_service_unavailable()

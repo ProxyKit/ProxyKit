@@ -49,6 +49,8 @@ namespace ProxyKit
 
         protected abstract HttpClient CreateClient();
 
+        protected CookieContainer CookieContainer { get; } = new CookieContainer();
+
         protected IWebHostBuilder UpstreamBuilder { get; }
 
         protected IWebHostBuilder ProxyBuilder { get; }
@@ -60,6 +62,19 @@ namespace ProxyKit
             var response = await client.GetAsync("/normal");
 
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task Can_handle_cookies()
+        {
+            var client = CreateClient();
+            CookieContainer.Add(client.BaseAddress, new Cookie("yummy_cookie", "choco"));
+            CookieContainer.Add(client.BaseAddress, new Cookie("tasty_cookie", "strawberry"));
+            
+            var response = await client.GetAsync("/cookie-count");
+            
+            var body = await response.Content.ReadAsStringAsync();
+            body.ShouldBe("2");
         }
 
         [Fact]
@@ -143,6 +158,11 @@ namespace ProxyKit
                     ctx.Response.StatusCode = 200;
                     ctx.Response.Headers.Add("Cache-Control", "max-age=60");
                     await ctx.Response.WriteAsync("Ok");
+                }));
+
+                app.Map("/cookie-count", a => a.Run(async ctx =>
+                {
+                    await ctx.Response.WriteAsync(ctx.Request.Cookies.Count.ToString());
                 }));
 
                 app.Map("/badrequest", a => a.Run(async ctx =>
@@ -283,14 +303,13 @@ namespace ProxyKit
                 _forwardTo = $"http://localhost:{port}/";
             }
 
-            public async Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
+            public Task<HttpResponseMessage> HandleProxyRequest(HttpContext context)
             {
-                var response= await context
+                var forwardContext = context
                     .ForwardTo(_forwardTo)
-                    .AddXForwardedHeaders()
-                    .Send();
+                    .AddXForwardedHeaders();
 
-                return response;
+                return forwardContext.Send();
             }
         }
     }
